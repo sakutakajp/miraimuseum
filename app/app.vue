@@ -56,7 +56,7 @@ watch(
 </script>
 <template>
   <div class="museum-app" :class="{ 'is-playing': view === 'game' }">
-    <header class="site-header">
+    <header v-if="view !== 'game'" class="site-header">
       <button
         class="brand"
         aria-label="みらい博物館のホーム"
