@@ -36,4 +36,31 @@ describe("museum persistence", () => {
     expect(factFor("rex", 0)).not.toBe(factFor("rex", 1));
     expect(factFor("rex", 100)).toBe(factFor("rex", 2));
   });
+  it("keeps the original v1 dinosaur save when adding discoveries from both new worlds", () => {
+    const old = parseProgress(
+      JSON.stringify({
+        version: 1,
+        visits: { rex: 3, fossil: 2 },
+        expeditions: 4,
+        muted: true,
+      }),
+    );
+    const space = recordExpedition(old, ["earth", "moon", "blackhole"]);
+    const ocean = recordExpedition(space, ["coral", "whale", "vent"]);
+    expect(parseProgress(JSON.stringify(ocean))).toEqual({
+      version: 1,
+      visits: {
+        rex: 3,
+        fossil: 2,
+        earth: 1,
+        moon: 1,
+        blackhole: 1,
+        coral: 1,
+        whale: 1,
+        vent: 1,
+      },
+      expeditions: 6,
+      muted: true,
+    });
+  });
 });

@@ -370,7 +370,7 @@ nav {
 }
 .world-cards {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 17px;
 }
 .world-card {
@@ -416,7 +416,7 @@ nav {
 .world-card-copy {
   position: relative;
   z-index: 1;
-  width: 65%;
+  width: 100%;
 }
 .world-card h3 {
   font-size: 19px;
@@ -456,8 +456,8 @@ nav {
   position: absolute;
   right: -2px;
   bottom: 19px;
-  width: 121px;
-  opacity: 0.9;
+  width: 110px;
+  opacity: 0.55;
   transform: rotate(-5deg);
 }
 .future {
@@ -1102,6 +1102,50 @@ body:has(.is-playing) {
   width: min(100%, calc((100dvh - 114px) * 0.6));
 }
 /* Expedition results */
+.world-card.world-space {
+  background: #e4e1ee;
+  border-color: #cbc4db;
+}
+.world-card.world-ocean {
+  background: #dcecef;
+  border-color: #b8d5d8;
+}
+.world-card.world-space .card-index > span {
+  background: #d8d1e7;
+}
+.world-card.world-ocean .card-index > span {
+  background: #c9e1e5;
+}
+.gallery-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 22px;
+}
+.gallery-filters button {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--white);
+  font-size: 12px;
+}
+.gallery-filters button[aria-pressed="true"] {
+  background: var(--yellow);
+  border-color: #cfa943;
+}
+.gallery-filters small {
+  font: 10px monospace;
+  margin-left: 8px;
+}
+.expedition-space .game-frame {
+  border-color: #283751;
+}
+.expedition-ocean .game-frame {
+  border-color: #204a60;
+}
+.world-card .card-bottom {
+  max-width: 190px;
+}
 .results {
   text-align: center;
   max-width: 740px;

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import {
   discoveries,
+  discoveriesFor,
   getDiscovery,
   factFor,
   type DiscoveryId,
 } from "~/data/discoveries";
+import { getWorld, worlds, type WorldId } from "~/data/worlds";
 import { museumAudio } from "~/game/audio";
 const { progress, foundCount, storageAvailable, finish, toggleSound } =
   useMuseum();
@@ -13,6 +15,22 @@ const selected = ref<DiscoveryId | null>(null);
 const expedition = ref<DiscoveryId[]>([]);
 const previousVisits = ref<Partial<Record<DiscoveryId, number>>>({});
 const run = ref(0);
+const activeWorld = ref<WorldId>("dinosaur");
+const galleryWorld = ref<WorldId>("dinosaur");
+const galleryItems = computed(() => discoveriesFor(galleryWorld.value));
+const galleryInfo = computed(() => getWorld(galleryWorld.value));
+const activeInfo = computed(() => getWorld(activeWorld.value));
+const nextWorld = computed(
+  () =>
+    worlds[
+      (worlds.findIndex((world) => world.id === activeWorld.value) + 1) %
+        worlds.length
+    ]!,
+);
+function worldFound(id: WorldId) {
+  return discoveriesFor(id).filter((item) => progress.value.visits[item.id])
+    .length;
+}
 const latestNew = computed(
   () => expedition.value.filter((id) => !previousVisits.value[id]).length,
 );
@@ -20,8 +38,8 @@ const highlights = computed(() =>
   [...expedition.value]
     .sort(
       (a, b) =>
-        (a === "fossil" || a === "rex" ? -1 : 0) -
-        (b === "fossil" || b === "rex" ? -1 : 0),
+        (activeInfo.value.highlights.includes(a) ? -1 : 0) -
+        (activeInfo.value.highlights.includes(b) ? -1 : 0),
     )
     .slice(0, 2),
 );
@@ -29,7 +47,9 @@ function navigate(next: "home" | "museum") {
   view.value = next;
   window.scrollTo({ top: 0 });
 }
-function start() {
+function start(world: WorldId = "dinosaur") {
+  activeWorld.value = world;
+  galleryWorld.value = world;
   museumAudio.setMuted(progress.value.muted);
   void museumAudio.unlock();
   previousVisits.value = { ...progress.value.visits };
@@ -68,12 +88,14 @@ watch(
       <nav aria-label="メインメニュー">
         <button
           class="header-museum"
-          :aria-label="`わたしの博物館、発見 ${foundCount} / 6`"
+          :aria-label="`わたしの博物館、発見 ${foundCount} / ${discoveries.length}`"
           :class="{ active: view === 'museum' }"
           @click="navigate('museum')"
         >
           <MuseumIcon name="museum" /><span>わたしの博物館</span
-          ><b>{{ foundCount }}<i> / 6</i></b></button
+          ><b
+            >{{ foundCount }}<i> / {{ discoveries.length }}</i></b
+          ></button
         ><button
           class="sound-button icon-button"
           :aria-label="progress.muted ? '音をオンにする' : '音をオフにする'"
@@ -97,7 +119,7 @@ watch(
               走って、跳んで、見つける。<br />きみの発見で、博物館が広がっていく。
             </p>
             <div class="hero-actions">
-              <button class="button primary" @click="start">
+              <button class="button primary" @click="start('dinosaur')">
                 <MuseumIcon name="compass" />冒険をはじめる<MuseumIcon
                   name="arrow"
                 /></button
@@ -112,7 +134,7 @@ watch(
           </div>
           <div class="hero-world">
             <div class="world-topline">
-              <span><i /> A WINDOW TO ANOTHER WORLD</span><span>01 / 06</span>
+              <span><i /> A WINDOW TO ANOTHER WORLD</span><span>01 / 03</span>
             </div>
             <div class="world-window">
               <WorldIllustration /><span class="world-badge"
@@ -137,35 +159,29 @@ watch(
             <span class="section-note">小さな一歩から、大きな冒険。</span>
           </div>
           <div class="world-cards">
-            <button class="world-card available" @click="start">
+            <button
+              v-for="world in worlds"
+              :key="world.id"
+              class="world-card available"
+              :class="'world-' + world.id"
+              :aria-label="world.name + 'を冒険する'"
+              @click="start(world.id)"
+            >
               <div class="world-card-copy">
                 <span class="card-index"
-                  >01 <span>OPEN FOR EXPLORATION</span></span
+                  >{{ world.index }} <span>OPEN FOR EXPLORATION</span></span
                 >
-                <h3>恐竜の世界</h3>
-                <p>化石の向こうに、会いに行こう。</p>
+                <h3>{{ world.name }}</h3>
+                <p>{{ world.subtitle }}</p>
                 <span class="card-bottom"
                   ><span
-                    ><MuseumIcon name="star" />発見 {{ foundCount }} / 6</span
+                    ><MuseumIcon name="star" />発見 {{ worldFound(world.id) }} /
+                    {{ discoveriesFor(world.id).length }}</span
                   ><span class="round-arrow">↗</span></span
                 >
               </div>
-              <PixelSprite class="card-dinosaur" name="rex" />
+              <PixelSprite class="card-dinosaur" :name="world.sprite" />
             </button>
-            <div class="world-card future">
-              <span class="card-index">02 <MuseumIcon name="lock" /></span>
-              <div class="planet-art"><span /><i /><b /></div>
-              <h3>宇宙の世界</h3>
-              <p>次の扉は、まだひみつ。</p>
-              <span class="coming-soon">準備中</span>
-            </div>
-            <div class="world-card future ocean-card">
-              <span class="card-index">03 <MuseumIcon name="lock" /></span>
-              <div class="ocean-art"><i /><i /><i /><span>≈</span></div>
-              <h3>海・深海の世界</h3>
-              <p>深い青の、その先へ。</p>
-              <span class="coming-soon">準備中</span>
-            </div>
           </div>
         </section>
         <section class="museum-invitation">
@@ -202,19 +218,37 @@ watch(
             <p>小さな発見が、世界をちょっと広くする。</p>
           </div>
           <div class="collection-counter">
-            <strong>{{ foundCount }}<span>/ 6</span></strong
-            ><small>恐竜の世界の発見</small>
+            <strong
+              >{{ foundCount }}<span>/ {{ discoveries.length }}</span></strong
+            ><small>3つの世界の発見</small>
           </div>
         </section>
+        <nav class="gallery-filters" aria-label="展示室">
+          <button
+            v-for="world in worlds"
+            :key="world.id"
+            :aria-pressed="galleryWorld === world.id"
+            @click="galleryWorld = world.id"
+          >
+            {{ world.name }}
+            <small
+              >{{ worldFound(world.id) }} /
+              {{ discoveriesFor(world.id).length }}</small
+            >
+          </button>
+        </nav>
         <div class="gallery-toolbar">
-          <span><MuseumIcon name="museum" /> 01　恐竜と地球の展示室</span
-          ><button class="text-button" @click="start">
+          <span
+            ><MuseumIcon name="museum" /> {{ galleryInfo.index }}　{{
+              galleryInfo.room
+            }}</span
+          ><button class="text-button" @click="start(galleryWorld)">
             発見を探しに行く <span>↗</span>
           </button>
         </div>
         <div class="exhibit-grid">
           <button
-            v-for="(item, i) in discoveries"
+            v-for="(item, i) in galleryItems"
             :key="item.id"
             class="exhibit-card"
             :class="{ undiscovered: !progress.visits[item.id] }"
@@ -270,6 +304,7 @@ watch(
       <ClientOnly v-else-if="view === 'game'"
         ><GameStage
           :key="run"
+          :world="activeWorld"
           :visits="previousVisits"
           :muted="progress.muted"
           @finish="complete"
@@ -280,7 +315,7 @@ watch(
         <div class="result-emblem"><MuseumIcon name="star" /></div>
         <span class="eyebrow">EXPEDITION COMPLETE</span>
         <h1>おかえり、冒険家！</h1>
-        <p>世界は、ちょっと広くなったね。</p>
+        <p>{{ activeInfo.name }}を冒険したよ。世界は、ちょっと広くなったね。</p>
         <div class="result-count">
           <strong>{{ expedition.length }}</strong
           ><span
@@ -321,8 +356,11 @@ watch(
             <MuseumIcon name="museum" />博物館で見てみる<MuseumIcon
               name="arrow"
             /></button
-          ><button class="button secondary" @click="start">
+          ><button class="button secondary" @click="start(activeWorld)">
             もう一度、冒険する
+          </button>
+          <button class="text-button" @click="start(nextWorld.id)">
+            次は{{ nextWorld.name }}へ <span>↗</span>
           </button>
         </div>
       </section>

@@ -5,7 +5,7 @@ import {
   obstacles,
   collectibles,
 } from "../app/game/expedition";
-import { discoveryIds } from "../app/data/discoveries";
+import { discoveriesFor } from "../app/data/discoveries";
 function play(jumping: boolean) {
   const run = new Expedition();
   const targets = [
@@ -32,7 +32,11 @@ describe("a complete dinosaur expedition", () => {
     expect(run.finished).toBe(true);
     expect(run.x).toBeGreaterThanOrEqual(STAGE_LENGTH);
     expect(run.bumps).toBe(0);
-    expect([...run.found].sort()).toEqual([...discoveryIds].sort());
+    expect([...run.found].sort()).toEqual(
+      discoveriesFor("dinosaur")
+        .map((item) => item.id)
+        .sort(),
+    );
   });
   it("helps a player who never jumps finish, while leaving elevated discoveries for replay", () => {
     const run = play(false);

@@ -10,18 +10,7 @@ import {
 } from "./expedition";
 import { museumAudio } from "./audio";
 import type { DiscoveryId } from "../data/discoveries";
-export interface GameState {
-  phase: Phase;
-  distance: number;
-  found: DiscoveryId[];
-  paused: boolean;
-}
-export interface SceneHooks {
-  state: (state: GameState) => void;
-  discover: (id: DiscoveryId) => void;
-  cue: (message: string) => void;
-  finish: (ids: DiscoveryId[]) => void;
-}
+import type { SceneHooks } from "./scene-types";
 const W = 420,
   PLAYER_X = 106;
 export class DinosaurScene extends Phaser.Scene {
@@ -149,7 +138,7 @@ export class DinosaurScene extends Phaser.Scene {
       this.scale.off(Phaser.Scale.Events.RESIZE, this.resizeWorld, this);
     });
     this.resizeWorld();
-    museumAudio.start();
+    museumAudio.start("dinosaur");
     this.hooks.state({
       phase: this.phase,
       distance: 0,

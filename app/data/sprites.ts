@@ -1,4 +1,5 @@
 // Original bitmap art. Dots are transparent; each character is one square pixel.
+import { voyageSprites } from "./voyage-sprites";
 export const palette: Record<string, string> = {
   o: "#293d35",
   g: "#7c9c83",
@@ -16,8 +17,12 @@ export const palette: Record<string, string> = {
   T: "#266b6c",
   s: "#e7ad80",
   n: "#344b60",
+  N: "#607f9b",
+  p: "#776794",
+  v: "#b4a0d0",
 };
 export const sprites: Record<string, string[]> = {
+  ...voyageSprites,
   rex: [
     "................ooooooo.........",
     "..............ooGGgggggoo.......",

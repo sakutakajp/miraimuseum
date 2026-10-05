@@ -50,7 +50,7 @@ test("desktop: empty museum, corrupt save recovery and sound preference", async 
     SAVE_KEY,
   );
   await page.reload();
-  await expect(page.locator(".header-museum b")).toHaveText("0 / 6");
+  await expect(page.locator(".header-museum b")).toHaveText("0 / 18");
   await page.getByRole("button", { name: "冒険をはじめる" }).click();
   await expect(page.locator("canvas")).toBeVisible();
   await expect(page.locator(".site-header")).toHaveCount(0);
@@ -150,7 +150,7 @@ test("mobile: play the full expedition, pause, discover all exhibits and restore
   await expect(page.getByRole("dialog")).toContainText("北アメリカ");
   await page.getByRole("button", { name: "展示を閉じる" }).tap();
   await page.reload();
-  await expect(page.locator(".header-museum b")).toHaveText("6 / 6");
+  await expect(page.locator(".header-museum b")).toHaveText("6 / 18");
   const save = await page.evaluate(
     (key) => JSON.parse(localStorage.getItem(key)!),
     SAVE_KEY,
