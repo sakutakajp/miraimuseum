@@ -1,0 +1,27 @@
+{
+  "name": "MIRAI MUSEUM (Node.js 24)",
+  "build": { "dockerfile": "Dockerfile" },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/miraimuseum,type=bind,consistency=cached",
+  "workspaceFolder": "/workspaces/miraimuseum",
+  "remoteUser": "node",
+  "init": true,
+  "mounts": [
+    "source=mirai-museum-node-modules-${devcontainerId},target=/workspaces/miraimuseum/node_modules,type=volume"
+  ],
+  "forwardPorts": [3000, 3001],
+  "portsAttributes": {
+    "3000": {
+      "label": "MIRAI MUSEUM / Nuxt",
+      "onAutoForward": "silent",
+      "requireLocalPort": true
+    },
+    "3001": { "label": "Playwright test server", "onAutoForward": "silent" }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": ["Vue.volar"],
+      "settings": { "typescript.tsdk": "node_modules/typescript/lib" }
+    }
+  }
+}
