@@ -19,6 +19,9 @@ test("desktop: empty museum, corrupt save recovery and sound preference", async 
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+  await expect(page.getByRole("button", { name: /Lv. 1 ·/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /Lv. 2 ·/ })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Lv. 3 ·/ })).toBeDisabled();
   await page.getByRole("button", { name: "わたしの博物館" }).click();
   await expect(page.locator(".exhibit-card:disabled")).toHaveCount(6);
   await page.getByRole("button", { name: "音をオフにする" }).click();
@@ -88,6 +91,7 @@ test("mobile: play the full expedition, pause, discover all exhibits and restore
   await expect(
     page.getByRole("heading", { name: "おかえり、冒険家！" }),
   ).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".level-result")).toContainText("Lv. 2");
   await expect(page.locator(".result-count > strong")).toHaveText("6");
   await expect(page.locator(".result-count b")).toContainText("6 個が初めて");
   await page.getByRole("button", { name: "博物館で見てみる" }).tap();
@@ -106,7 +110,11 @@ test("mobile: play the full expedition, pause, discover all exhibits and restore
   );
   expect(save.expeditions).toBe(1);
   expect(Object.values(save.visits)).toEqual([1, 1, 1, 1, 1, 1]);
+  await expect(page.getByRole("button", { name: /Lv. 2 ·/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /Lv. 3 ·/ })).toBeDisabled();
+  await page.getByRole("button", { name: /Lv. 1 ·/ }).tap();
   await page.getByRole("button", { name: "冒険をはじめる" }).tap();
+  await expect(page.locator(".stage-heading h1")).toContainText("Lv. 1");
   await expect(page.locator("canvas")).toHaveCount(1);
   await page.getByRole("button", { name: "一時停止" }).tap();
   await page
@@ -122,4 +130,14 @@ test("mobile: play the full expedition, pause, discover all exhibits and restore
   expect(afterLeaving.expeditions).toBe(1);
   expect(errors).toEqual([]);
   await context.close();
+});
+
+test("existing saves unlock higher levels and start the chosen difficulty", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate((key) => localStorage.setItem(key, JSON.stringify({ version: 1, visits: { rex: 2 }, expeditions: 2, muted: true })), SAVE_KEY);
+  await page.reload();
+  await expect(page.getByRole("button", { name: /Lv. 3 ·/ })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "冒険をはじめる" }).click();
+  await expect(page.locator(".stage-heading h1")).toContainText("Lv. 3");
+  await expect(page.locator("canvas")).toBeVisible();
 });

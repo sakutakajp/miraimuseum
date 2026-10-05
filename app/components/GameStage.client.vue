@@ -5,6 +5,7 @@ import { factFor, getDiscovery, type DiscoveryId } from "~/data/discoveries";
 const props = defineProps<{
   visits: Partial<Record<DiscoveryId, number>>;
   muted: boolean;
+  level: number;
 }>();
 const emit = defineEmits<{
   finish: [ids: DiscoveryId[]];
@@ -75,7 +76,7 @@ onMounted(async () => {
         }),
       cue: (message) => showToast({ title: message }, 2800),
       finish: (ids) => emit("finish", ids),
-    });
+    }, props.level);
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: host.value,
@@ -108,8 +109,8 @@ onBeforeUnmount(() => {
   <section class="expedition-layout">
     <div class="stage-heading">
       <div>
-        <span class="eyebrow">EXPEDITION 01</span>
-        <h1>恐竜の世界</h1>
+        <span class="eyebrow">EXPEDITION 01 · LEVEL {{ level }}</span>
+        <h1>恐竜の世界 <small>Lv. {{ level }}</small></h1>
       </div>
       <p>走って、跳んで。<br />まだ知らない世界に会いに行こう。</p>
     </div>

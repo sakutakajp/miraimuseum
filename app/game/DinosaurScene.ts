@@ -2,7 +2,6 @@ import Phaser from "phaser";
 import { sprites, palette, spriteSize } from "../data/sprites";
 import {
   Expedition,
-  obstacles,
   collectibles,
   STAGE_LENGTH,
   phaseAt,
@@ -27,7 +26,7 @@ const W = 420,
   FLOOR = 568,
   PLAYER_X = 106;
 export class DinosaurScene extends Phaser.Scene {
-  readonly expedition = new Expedition();
+  readonly expedition: Expedition;
   private art!: Phaser.GameObjects.Graphics;
   private foreground!: Phaser.GameObjects.Graphics;
   private player!: Phaser.GameObjects.Image;
@@ -45,8 +44,9 @@ export class DinosaurScene extends Phaser.Scene {
   private endingSoundPlayed = false;
   private hasJumped = false;
   private stopped = false;
-  constructor(private hooks: SceneHooks) {
+  constructor(private hooks: SceneHooks, level = 1) {
     super("dinosaur");
+    this.expedition = new Expedition(level);
   }
   create() {
     const frames = {
@@ -99,7 +99,7 @@ export class DinosaurScene extends Phaser.Scene {
           )
           .setScale(item.id === "fossil" ? 2.8 : 2.5),
       );
-    this.rockImages = obstacles.map(() =>
+    this.rockImages = this.expedition.obstacles.map(() =>
       this.add.image(0, FLOOR, "rock").setOrigin(0.5, 1),
     );
     this.player = this.add
@@ -269,8 +269,8 @@ export class DinosaurScene extends Phaser.Scene {
           .fillRect(sx, FLOOR - 6, 4, 8)
           .fillRect(sx + 4, FLOOR - 10, 4, 12);
     }
-    for (let i = 0; i < obstacles.length; i++) {
-      const obstacle = obstacles[i]!,
+    for (let i = 0; i < this.expedition.obstacles.length; i++) {
+      const obstacle = this.expedition.obstacles[i]!,
         sprite = this.rockImages[i]!;
       sprite
         .setPosition(PLAYER_X + obstacle.x - x, FLOOR)
@@ -336,7 +336,7 @@ export class DinosaurScene extends Phaser.Scene {
       );
     // A pulsing finger demonstrates tapping without a text tutorial.
     this.tutor
-      .setVisible(!this.hasJumped && x > 440 && x < 940)
+      .setVisible(!this.hasJumped && x > 264 && x < 564)
       .setY(FLOOR - 129 + Math.sin(this.elapsed * 6) * 12);
     if (this.phase === "rewind") {
       f.fillStyle(0xf5dfa6, 0.5).fillRect(0, 0, W, H);

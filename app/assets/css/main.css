@@ -1792,3 +1792,14 @@ nav {
     transform: none;
   }
 }
+
+.level-selection {
+  padding: 24px 0;
+  border-top: 1px solid var(--line, #d8d4c5);
+}
+.level-selection h2 { margin: 8px 0; }
+.level-selection p { line-height: 1.7; }
+.level-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.level-buttons button[aria-pressed="true"] { background: #263d34; color: #fff7da; }
+.level-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
+.level-result { font-weight: 700; }

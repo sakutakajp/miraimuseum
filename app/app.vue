@@ -5,6 +5,7 @@ import {
   factFor,
   type DiscoveryId,
 } from "~/data/discoveries";
+import { MAX_LEVEL, unlockedLevel } from "~/game/expedition";
 import { museumAudio } from "~/game/audio";
 const { progress, foundCount, storageAvailable, finish, toggleSound } =
   useMuseum();
@@ -13,6 +14,14 @@ const selected = ref<DiscoveryId | null>(null);
 const expedition = ref<DiscoveryId[]>([]);
 const previousVisits = ref<Partial<Record<DiscoveryId, number>>>({});
 const run = ref(0);
+const availableLevel = computed(() => unlockedLevel(progress.value.expeditions));
+const selectedLevel = ref(1);
+const playedLevel = ref(1);
+watch(
+  availableLevel,
+  (level) => { selectedLevel.value = level; },
+  { immediate: true },
+);
 const latestNew = computed(
   () => expedition.value.filter((id) => !previousVisits.value[id]).length,
 );
@@ -32,6 +41,7 @@ function navigate(next: "home" | "museum") {
 function start() {
   museumAudio.setMuted(progress.value.muted);
   void museumAudio.unlock();
+  playedLevel.value = selectedLevel.value;
   previousVisits.value = { ...progress.value.visits };
   expedition.value = [];
   run.value++;
@@ -107,7 +117,7 @@ watch(
             </div>
             <div class="hero-note">
               <span class="mini-dot" />タップひとつで遊べる <span>·</span> 1回
-              約80秒 <span>·</span> ゲームオーバーなし
+              約45〜55秒 <span>·</span> ゲームオーバーなし
             </div>
           </div>
           <div class="hero-world">
@@ -127,6 +137,27 @@ watch(
               ><MuseumIcon name="star" />発見は、すぐそこ。</span
             >
           </div>
+        </section>
+        <section class="level-selection" aria-label="冒険のレベル">
+          <div>
+            <span class="eyebrow">YOUR NEXT CHALLENGE</span>
+            <h2>レベルを選ぼう</h2>
+            <p>クリアすると次のレベルへ。速さと岩の高さが少しずつアップ！</p>
+          </div>
+          <div class="level-buttons">
+            <button
+              v-for="level in MAX_LEVEL"
+              :key="level"
+              class="button secondary"
+              :disabled="level > availableLevel"
+              :aria-pressed="selectedLevel === level"
+              @click="selectedLevel = level"
+            >
+              Lv. {{ level }} · {{ level === 1 ? 'はじめの一歩' : level === 2 ? 'わくわく探検' : '冒険の達人' }}
+              <span v-if="level > availableLevel">（未解放）</span>
+            </button>
+          </div>
+          <p>今回の冒険：Lv. {{ selectedLevel }} · クリア {{ progress.expeditions }} 回</p>
         </section>
         <section class="worlds-section">
           <div class="section-title">
@@ -272,6 +303,7 @@ watch(
           :key="run"
           :visits="previousVisits"
           :muted="progress.muted"
+          :level="playedLevel"
           @finish="complete"
           @leave="navigate('museum')"
           @sound="sound"
@@ -280,7 +312,9 @@ watch(
         <div class="result-emblem"><MuseumIcon name="star" /></div>
         <span class="eyebrow">EXPEDITION COMPLETE</span>
         <h1>おかえり、冒険家！</h1>
-        <p>世界は、ちょっと広くなったね。</p>
+        <p>Lv. {{ playedLevel }} クリア！世界は、ちょっと広くなったね。</p>
+        <p v-if="availableLevel > playedLevel" class="level-result">Lv. {{ availableLevel }} に挑戦できるよ！</p>
+        <p v-else-if="playedLevel === MAX_LEVEL" class="level-result">最高レベルをクリア！また新しい発見を探そう。</p>
         <div class="result-count">
           <strong>{{ expedition.length }}</strong
           ><span
@@ -322,7 +356,7 @@ watch(
               name="arrow"
             /></button
           ><button class="button secondary" @click="start">
-            もう一度、冒険する
+            {{ selectedLevel > playedLevel ? `Lv. ${selectedLevel} に挑戦する` : 'もう一度、冒険する' }}
           </button>
         </div>
       </section>
