@@ -95,6 +95,11 @@ class MuseumAudio {
       if (this.running) this.tone(783.99, 0.24);
     }, 90);
   }
+  impact(combo = 1) {
+    this.tone(80, .18, .055, 'sawtooth');
+    this.tone(440 + Math.min(combo, 10)*55, .1, .03, 'square');
+  }
+  spark() { this.tone(1100, .055, .018, 'triangle'); }
   bump() {
     this.tone(130, 0.17, 0.045, "triangle");
   }

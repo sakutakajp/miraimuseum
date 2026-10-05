@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useLoop } from "@tresjs/core";
-import type { Shooter } from "~/games/shooter";
+import type { Impact, Shooter } from "~/games/shooter";
 const props = defineProps<{ model: Shooter; paused: boolean }>();
 const emit = defineEmits<{ tick: [] }>();
 const { onBeforeRender } = useLoop();
@@ -10,6 +10,40 @@ onBeforeRender(({ delta }) => {
     emit("tick");
   }
 });
+const color = (impact: Impact) =>
+  ({
+    burst: "#ffb64f",
+    spark: "#a5efff",
+    pickup: "#ffe65a",
+    damage: "#ff5081",
+  })[impact.kind];
+const sparks = Array.from({ length: 10 }, (_, n) => ({
+  x: Math.cos((n * Math.PI) / 5),
+  y: Math.sin((n * Math.PI) / 5),
+  z: Math.sin(n * 2.3) * 0.6,
+}));
+const reducedMotion = ref(false);
+onMounted(() => {
+  reducedMotion.value = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+});
+const kick = computed(() =>
+  reducedMotion.value
+    ? 0
+    : props.model.impacts.reduce(
+        (max, i) =>
+          Math.max(
+            max,
+            i.kind === "damage"
+              ? Math.max(0, 0.24 - i.age)
+              : i.kind === "burst"
+                ? Math.max(0, 0.09 - i.age)
+                : 0,
+          ),
+        0,
+      ),
+);
 const stars = Array.from({ length: 75 }, (_, i): [number, number, number] => [
   Math.sin(i * 37) * 18,
   Math.cos(i * 19) * 12,
@@ -18,7 +52,11 @@ const stars = Array.from({ length: 75 }, (_, i): [number, number, number] => [
 </script>
 <template>
   <TresPerspectiveCamera
-    :position="[0, 3, 14]"
+    :position="[
+      Math.sin(model.elapsed * 85) * kick,
+      3 + Math.cos(model.elapsed * 73) * kick,
+      14,
+    ]"
     :look-at="[0, 0, -12]"
     :fov="60"
   />
@@ -69,6 +107,48 @@ const stars = Array.from({ length: 75 }, (_, i): [number, number, number] => [
       :roughness="0.4"
     />
   </TresMesh>
+  <TresGroup
+    v-for="impact in model.impacts"
+    :key="'impact' + impact.id"
+    :position="[impact.x, impact.y, impact.z]"
+  >
+    <TresMesh :scale="0.15 + impact.age * 3">
+      <TresSphereGeometry :args="[0.5, 10, 8]" />
+      <TresMeshBasicMaterial
+        :color="impact.age < 0.08 ? '#ffffff' : color(impact)"
+        transparent
+        :opacity="Math.max(0, 1 - impact.age / 0.3)"
+        :depth-write="false"
+      />
+    </TresMesh>
+    <TresMesh :scale="0.3 + impact.age * 5">
+      <TresTorusGeometry :args="[0.5, 0.035, 6, 24]" />
+      <TresMeshBasicMaterial
+        :color="color(impact)"
+        transparent
+        :opacity="1 - impact.age / 0.65"
+        :depth-write="false"
+      />
+    </TresMesh>
+    <TresMesh
+      v-for="(spark, n) in sparks"
+      :key="n"
+      :position="[
+        spark.x * impact.age * 5,
+        spark.y * impact.age * 5,
+        spark.z * impact.age * 5,
+      ]"
+      :rotation="[n, impact.age * 8, n]"
+      :scale="Math.max(0.01, 0.13 * (1 - impact.age / 0.65))"
+    >
+      <TresOctahedronGeometry />
+      <TresMeshBasicMaterial
+        :color="n % 2 ? color(impact) : '#ffffff'"
+        transparent
+        :opacity="1 - impact.age / 0.65"
+      />
+    </TresMesh>
+  </TresGroup>
   <TresMesh
     v-for="shot in model.shots"
     :key="shot.id"

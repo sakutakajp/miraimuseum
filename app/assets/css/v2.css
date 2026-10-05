@@ -446,3 +446,54 @@
 .mvp-hud button {
   color: #202349;
 }
+.shoot-feedback {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.damage-flash {
+  box-shadow: inset 0 0 90px 25px #ff316875;
+}
+.hit-reward {
+  position: absolute;
+  top: 22%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #fff5a5;
+  filter: drop-shadow(0 3px 0 #542463);
+  animation: hit-pop 0.65s ease-out forwards;
+}
+.hit-reward strong {
+  display: block;
+  font-size: 42px;
+  font-weight: 900;
+}
+.hit-reward span {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #75fffb;
+}
+@keyframes hit-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  16% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  35% {
+    transform: scale(1);
+  }
+  100% {
+    transform: translateY(-25px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hit-reward {
+    animation: none;
+  }
+}

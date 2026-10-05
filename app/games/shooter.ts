@@ -11,7 +11,36 @@ export interface Shot {
   y: number;
   z: number;
 }
+export interface Impact {
+  id: number;
+  x: number;
+  y: number;
+  z: number;
+  kind: "burst" | "spark" | "pickup" | "damage";
+  age: number;
+  points: number;
+  combo: number;
+}
 export class Shooter {
+  impacts: Impact[] = [];
+  private impact(
+    x: number,
+    y: number,
+    z: number,
+    kind: Impact["kind"],
+    points = 0,
+  ) {
+    this.impacts.push({
+      id: ++this.serial,
+      x,
+      y,
+      z,
+      kind,
+      age: 0,
+      points,
+      combo: this.combo,
+    });
+  }
   x = 0;
   y = 0;
   elapsed = 0;
@@ -32,6 +61,9 @@ export class Shooter {
   update(dt: number) {
     if (this.finished) return;
     dt = Math.min(dt, 0.05);
+    this.impacts = this.impacts
+      .map((i) => ({ ...i, age: i.age + dt }))
+      .filter((i) => i.age < 0.65);
     this.elapsed += dt;
     this.invulnerable = Math.max(0, this.invulnerable - dt);
     this.spawn -= dt;
@@ -56,7 +88,7 @@ export class Shooter {
     for (const target of this.targets) {
       target.z += dt * 12;
       if (
-        target.kind === "enemy" &&
+        target.kind !== "item" &&
         this.shots.some(
           (s) =>
             !removed.has(s.id) &&
@@ -66,8 +98,15 @@ export class Shooter {
         )
       ) {
         removed.add(target.id);
+        if (target.kind === "rock") {
+          removed.delete(target.id);
+          this.impact(target.x, target.y, target.z, "spark");
+          continue;
+        }
         this.combo++;
-        this.score += 100 + Math.min(this.combo, 10) * 20;
+        const points = 100 + Math.min(this.combo, 10) * 20;
+        this.score += points;
+        this.impact(target.x, target.y, target.z, "burst", points);
         continue;
       }
       if (
@@ -76,9 +115,11 @@ export class Shooter {
       ) {
         if (target.kind === "item") {
           this.score += 250;
+          this.impact(target.x, target.y, target.z, "pickup", 250);
           removed.add(target.id);
         } else if (!this.invulnerable) {
           this.shield--;
+          this.impact(this.x, this.y, 0, "damage");
           this.combo = 0;
           this.invulnerable = 1.4;
           removed.add(target.id);

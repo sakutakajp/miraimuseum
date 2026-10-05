@@ -162,3 +162,35 @@ test("dinosaur clear with keyboard jumps and responsive Japanese museum", async 
     ),
   ).toBe(2);
 });
+
+test("shooting hits show burst particles and score feedback", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      "mirai-museum:v2",
+      JSON.stringify({
+        "star-flight": { stages: { 1: { best: 0, cleared: false } } },
+      }),
+    ),
+  );
+  await page.goto("/");
+  await page.getByRole("button", { name: "English", exact: true }).click();
+  await openGame(page, "Star Flight");
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.mouse.move(313, 468);
+  await page.mouse.down();
+  await page.mouse.up();
+  await expect(page.locator(".hit-reward")).toContainText(/HIT!|COMBO!/, {
+    timeout: 15000,
+  });
+  await expect(page.locator(".hit-reward strong")).toHaveText(/\+\d+/);
+  await page.screenshot({ path: "/tmp/shooter-impact.png" });
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Sound off", exact: true }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+});

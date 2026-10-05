@@ -20,6 +20,19 @@ let phaser: import("phaser").Game | undefined;
 let observer: ResizeObserver | undefined;
 let disposed = false;
 let done = false;
+let lastImpact = 0;
+const muted = ref(museumAudio.muted);
+const latestReward = computed(() =>
+  [...shooter.impacts].reverse().find((i) => i.points > 0),
+);
+const damageFlash = computed(() =>
+  shooter.impacts.some((i) => i.kind === "damage" && i.age < 0.3),
+);
+function toggleSound() {
+  muted.value = !muted.value;
+  museumAudio.setMuted(muted.value);
+  if (!muted.value) museumAudio.unlock();
+}
 const demo = ref(props.demo);
 let demoTimer: ReturnType<typeof setTimeout> | undefined;
 function finish(result: StageResult) {
@@ -29,6 +42,14 @@ function finish(result: StageResult) {
 }
 function tick() {
   ready.value = true;
+  for (const impact of shooter.impacts) {
+    if (impact.id <= lastImpact) continue;
+    lastImpact = impact.id;
+    if (impact.kind === "burst") museumAudio.impact(impact.combo);
+    else if (impact.kind === "spark") museumAudio.spark();
+    else if (impact.kind === "pickup") museumAudio.discover();
+    else museumAudio.bump();
+  }
   health.value = shooter.shield;
   score.value = shooter.score;
   distance.value = shooter.elapsed / 40;
@@ -43,6 +64,7 @@ function tick() {
     });
 }
 function move(event: PointerEvent) {
+  if (event.type === "pointerdown") museumAudio.unlock();
   if (event.buttons !== 1 || paused.value || demo.value) return;
   const rect = host.value!.getBoundingClientRect();
   shooter.move(
@@ -52,12 +74,14 @@ function move(event: PointerEvent) {
 }
 function pause(value: boolean) {
   paused.value = value;
+  if (!value) museumAudio.unlock();
   scene?.setPaused(value || demo.value);
 }
 function visibility() {
   if (document.hidden) pause(true);
 }
 function key(event: KeyboardEvent) {
+  museumAudio.unlock();
   if (event.key === "Escape") pause(!paused.value);
   if (props.game === "star-flight") {
     const dx =
@@ -187,6 +211,19 @@ onBeforeUnmount(() => {
         ><SpaceWorld :model="shooter" :paused="paused || demo" @tick="tick"
       /></TresCanvas>
     </div>
+    <div
+      v-if="game === 'star-flight' && !paused && !demo"
+      class="shoot-feedback"
+      :class="{ 'damage-flash': damageFlash }"
+      aria-hidden="true"
+    >
+      <div v-if="latestReward" :key="latestReward.id" class="hit-reward">
+        <strong>+{{ latestReward.points }}</strong
+        ><span v-if="latestReward.kind === 'burst'">{{
+          latestReward.combo > 1 ? latestReward.combo + " COMBO!" : "HIT!"
+        }}</span>
+      </div>
+    </div>
     <div class="mvp-hud">
       <strong>{{ "♥".repeat(health) }}{{ "♡".repeat(3 - health) }}</strong
       ><span>SCORE {{ score.toLocaleString() }}</span
@@ -207,11 +244,11 @@ onBeforeUnmount(() => {
       <h2>
         <RubyText :text="error ? '読み込めませんでした' : 'ひとやすみ'" />
       </h2>
-      <LanguageSwitch /><button
-        v-if="!error"
-        class="button primary"
-        @click="pause(false)"
-      >
+      <LanguageSwitch />
+      <button class="button" @click="toggleSound">
+        <RubyText :text="muted ? '音をオンにする' : '音をオフにする'" />
+      </button>
+      <button v-if="!error" class="button primary" @click="pause(false)">
         <RubyText text="冒険をつづける" /></button
       ><button class="button" @click="emit('leave')">
         <RubyText text="博物館にもどる" />

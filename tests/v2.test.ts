@@ -84,3 +84,32 @@ describe("MVP game conditions", () => {
     expect(clear.score).toBeGreaterThan(1500);
   });
 });
+
+describe("shooting impact feedback", () => {
+  it("creates a scored burst once, then expires the particles", () => {
+    const s = new Shooter();
+    s.targets = [{ id: 100, x: 0, y: 0, z: -2, kind: "enemy" }];
+    s.update(0.05);
+    expect(s.impacts).toMatchObject([
+      { kind: "burst", points: 120, combo: 1, age: 0 },
+    ]);
+    expect(s.targets.some((t) => t.id === 100)).toBe(false);
+    const id = s.impacts[0]!.id;
+    for (let i = 0; i < 14; i++) s.update(0.05);
+    expect(s.impacts.some((i) => i.id === id)).toBe(false);
+    expect(s.score).toBe(120);
+  });
+  it("shows sparks on rocks without awarding a kill and flashes on shield damage", () => {
+    const s = new Shooter();
+    s.targets = [{ id: 100, x: 0, y: 0, z: -2, kind: "rock" }];
+    s.update(0.05);
+    expect(s.impacts[0]?.kind).toBe("spark");
+    expect(s.score).toBe(0);
+    expect(s.targets.some((t) => t.id === 100)).toBe(true);
+    s.targets = [{ id: 101, x: 0, y: 0, z: -0.6, kind: "enemy" }];
+    s.shots = [];
+    s.update(0.05);
+    expect(s.impacts.at(-1)?.kind).toBe("damage");
+    expect(s.shield).toBe(2);
+  });
+});
