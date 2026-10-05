@@ -24,6 +24,23 @@ Node.js は **22.19 以上の22系、24.11以上の24系、または26以上**�
 
 ピクセルアートとWeb AudioのBGM・効果音は、この実装のために作成したものです。実行時に外部の素材・フォント・APIを取得する必要はありません。
 
+### VS CodeのDev Containerでデバッグ
+
+Docker Desktop（LinuxはDocker Engine）、VS Codeの **Dev Containers** 拡張、ホスト側のChromeまたはEdgeを用意してください。ホストへのNode.jsのインストールは必要ありません。
+
+1. このリポジトリをVS Codeで開き、コマンドパレットから **Dev Containers: Reopen in Container** を実行します。
+2. 初回はNode.js 24のコンテナをビルドし、`npm ci`を自動実行します。コンテナにはブラウザーテスト用のChromiumも入ります。
+3. 「実行とデバッグ」で **MIRAI: Chrome** または **MIRAI: Edge** を選び、**F5**を押します。Nuxtの起動を待って、ホスト側のブラウザーが開きます。
+4. `app/game/expedition.ts`の`jump()`や`update()`、`app/game/DinosaurScene.ts`、Vueコンポーネントにブレークポイントを置いて操作します。ゲームのファイルは「冒険をはじめる」を押すと読み込まれます。
+
+コンテナのポート3000をホストの3000へ転送します。デバッグを始める前に、同じポートを使うサーバーを止めてください。Chrome/Edgeはホスト側で起動する設定なので、コンテナの画面環境を用意する必要はありません。
+
+サーバー側の処理を調べるときは **Nuxt: server (SSR)** を選んでF5を押し、転送されたポート3000をブラウザーで開きます。ゲームロジックとクライアント側のVueはChrome/Edge、SSRはNode.jsのデバッガーを使います。
+
+ブラウザーのデバッグを終了してもNuxtのタスクは動き続けます。止めるときは、そのターミナルでCtrl+C、または **Tasks: Terminate Task → Nuxt: dev** を実行してください。型チェックと単体テストも **Tasks: Run Task** から実行できます。
+
+`node_modules`はチェックアウトごとのDockerボリュームへ保存し、ホストの依存関係と分けています。依存関係を更新した後はコンテナ内で`npm ci`を実行してください。Dockerfileなどを変更した場合は **Dev Containers: Rebuild Container** で反映します。ブラウザーテストはコンテナ内のターミナルで`npm run test:e2e`を実行できます。
+
 ### 検証と本番起動
 
 ```sh

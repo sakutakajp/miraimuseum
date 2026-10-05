@@ -1,6 +1,9 @@
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-05",
   devtools: { enabled: false },
+  // Prebundle the lazy game dependency so Vite does not reload the page when
+  // the first expedition starts in a fresh development container.
+  vite: { optimizeDeps: { include: ["phaser"] } },
   css: ["~/assets/css/main.css"],
   app: {
     head: {
