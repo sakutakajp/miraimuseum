@@ -8,14 +8,15 @@
   "mounts": [
     "source=mirai-museum-node-modules-${devcontainerId},target=/workspaces/miraimuseum/node_modules,type=volume"
   ],
-  "forwardPorts": [3000, 3001],
+  "forwardPorts": [3000, 3001, 6006],
   "portsAttributes": {
     "3000": {
       "label": "MIRAI MUSEUM / Nuxt",
       "onAutoForward": "silent",
       "requireLocalPort": true
     },
-    "3001": { "label": "Playwright test server", "onAutoForward": "silent" }
+    "3001": { "label": "Playwright test server", "onAutoForward": "silent" },
+    "6006": { "label": "MIRAI MUSEUM / Storybook", "onAutoForward": "silent" }
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {

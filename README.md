@@ -32,6 +32,27 @@ Node.jsは22.19以上の22系、24.11以上の24系、または26以上を使う
 
 記録は `mirai-museum:v2` に保存する。旧仕様の発見保存 `mirai-museum:v1` は保持し、V2のスコアには変換しない。言語設定は引き継ぐ。
 
+### UI・アセットをStorybookで確認する
+
+    npm run storybook
+
+http://localhost:6006 を開く。Dev Containerでもポート6006を転送する。
+
+- **UI**: 実際のゲームカード、クリア記録、ボタン、言語切替
+- **Characters**: 主人公・ロボット・恐竜のドット絵、3D宇宙船と被弾状態
+- **Objects**: ドット絵一覧、3Dの敵・隕石・アイテム、爆発・火花・被弾演出
+- **Backgrounds**: 恐竜の現在／太古の森／追跡場面、イラスト、3Dの星空
+
+上部の言語メニューで日本語／英語を切り替え、Controlsでスプライト、座標、背景の進行位置を変更できる。3D演出は `animate` でループ再生を切り替え、オフにすると `age` で任意の時点（0〜0.64秒）を静止確認できる。恐竜背景はPhaserの実シーンを一時停止して表示する。
+
+ゲームカードと3Dアセットは本番ゲームとStorybookで同じVueコンポーネントを使用する。新しいストーリーは `stories/*.stories.ts` に追加する。
+
+    npm run build-storybook
+    npm run preview-storybook
+    npm run test:storybook
+
+静的出力は `storybook-static/`。ブラウザーテストで4カテゴリの描画と翻訳を検証する。
+
 ### VS CodeのDev Containerでデバッグ
 
 Docker Desktop（LinuxはDocker Engine）、VS CodeのDev Containers拡張、ホスト側のChromeまたはEdgeを用意する。ホスト側へのNode.jsのインストールは不要。

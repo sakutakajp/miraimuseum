@@ -133,34 +133,13 @@ useHead(() => ({
           </button>
         </div>
         <div class="v2-grid">
-          <button
+          <GameCard
             v-for="item in listed"
             :key="item.id"
-            class="v2-card"
-            :style="{ '--accent': item.color }"
-            @click="select(item.id)"
-          >
-            <div class="card-art">
-              {{ item.icon }}<span>{{ item.visual }}</span>
-            </div>
-            <div class="card-info">
-              <small
-                ><RubyText :text="item.theme" /> / <RubyText :text="item.style"
-              /></small>
-              <h2><RubyText :text="item.title" /></h2>
-              <p>
-                STAGE
-                {{
-                  Object.values(progress[item.id].stages).filter(
-                    (s) => s.cleared,
-                  ).length
-                }}
-                / {{ item.stages.length }}
-                <span>BEST {{ progress[item.id].best.toLocaleString() }}</span>
-              </p>
-              <strong><RubyText text="ゲームを見る" /> →</strong>
-            </div>
-          </button>
+            :game="item"
+            :record="progress[item.id]"
+            @select="select(item.id)"
+          />
         </div>
       </section>
     </main>

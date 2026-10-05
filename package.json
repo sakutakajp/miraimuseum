@@ -9,7 +9,11 @@
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:e2e": "npm run build && playwright test",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "storybook": "storybook dev -p 6006 --host 0.0.0.0 --no-open --disable-telemetry",
+    "build-storybook": "storybook build --disable-telemetry",
+    "preview-storybook": "vite preview --outDir storybook-static --host 0.0.0.0 --port 6006 --strictPort",
+    "test:storybook": "npm run build-storybook && playwright test --config playwright.storybook.config.ts"
   },
   "dependencies": {
     "@tresjs/core": "^5.9.2",
@@ -20,7 +24,10 @@
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
+    "@storybook-vue/nuxt": "^10.0.0",
+    "@storybook/addon-docs": "^10.6.1",
     "@types/three": "^0.186.0",
+    "storybook": "^10.6.1",
     "typescript": "5.9.3",
     "vitest": "3.2.4",
     "vue-tsc": "3.2.6"

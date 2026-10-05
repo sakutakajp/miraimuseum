@@ -224,12 +224,12 @@ onBeforeUnmount(() => {
         }}</span>
       </div>
     </div>
-    <div class="mvp-hud">
-      <strong>{{ "♥".repeat(health) }}{{ "♡".repeat(3 - health) }}</strong
-      ><span>SCORE {{ score.toLocaleString() }}</span
-      ><button :aria-label="t('一時停止')" @click="pause(true)">II</button
-      ><progress :value="distance" max="1" />
-    </div>
+    <GameHUD
+      :health="health"
+      :score="score"
+      :distance="distance"
+      @pause="pause(true)"
+    />
     <div v-if="demo && !error" class="mvp-overlay demo">
       <div class="demo-finger" :class="{ drag: game === 'star-flight' }">
         ☝
