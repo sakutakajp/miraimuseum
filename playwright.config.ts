@@ -6,7 +6,7 @@ const executablePath =
 export default defineConfig({
   testDir: "./tests/browser",
   timeout: 150_000,
-  workers: 1,
+  workers: 2,
   use: {
     baseURL: "http://127.0.0.1:3001",
     headless: true,

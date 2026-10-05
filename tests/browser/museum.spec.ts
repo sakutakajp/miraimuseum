@@ -1,10 +1,29 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import {
   obstacles,
   collectibles,
   STAGE_LENGTH,
 } from "../../app/game/expedition";
 import { SAVE_KEY } from "../../app/game/progress";
+async function expectMobileViewportFilled(page: Page) {
+  await expect
+    .poll(() => page.locator("canvas").evaluate((canvas) => {
+      const bounds = canvas.getBoundingClientRect();
+      return Math.max(
+        Math.abs(bounds.x),
+        Math.abs(bounds.y),
+        Math.abs(bounds.width - innerWidth),
+        Math.abs(bounds.height - innerHeight),
+      );
+    }))
+    .toBeLessThan(2);
+  expect(
+    await page.evaluate(() =>
+      document.documentElement.scrollHeight <= innerHeight &&
+      document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+}
 test("desktop: empty museum, corrupt save recovery and sound preference", async ({
   page,
 }) => {
@@ -34,7 +53,23 @@ test("desktop: empty museum, corrupt save recovery and sound preference", async 
     SAVE_KEY,
   );
   await page.reload();
-  await expect(page.locator(".header-museum b")).toHaveText("0 / 6");
+  await expect(page.locator(".header-museum b")).toHaveText("0 / 18");
+  await page.getByRole("button", { name: "冒険をはじめる" }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator(".site-header")).toHaveCount(0);
+  expect(
+    await page.locator("canvas").evaluate((canvas) => {
+      const bounds = canvas.getBoundingClientRect();
+      return bounds.height > innerHeight * 0.75 &&
+        bounds.width < bounds.height && bounds.y >= 0 &&
+        bounds.bottom <= innerHeight;
+    }),
+  ).toBe(true);
+  await page.getByRole("button", { name: "一時停止" }).click();
+  await page.getByRole("button", {
+    name: "博物館にもどる（今回の発見は保存されません）",
+  }).click();
+  await expect(page.locator(".site-header")).toBeVisible();
   expect(errors).toEqual([]);
 });
 test("mobile: play the full expedition, pause, discover all exhibits and restore them", async ({
@@ -60,11 +95,27 @@ test("mobile: play the full expedition, pause, discover all exhibits and restore
   await page.getByRole("button", { name: "みらい博物館のホーム" }).tap();
   await page.getByRole("button", { name: "冒険をはじめる" }).tap();
   await expect(page.locator("canvas")).toBeVisible();
+  await expectMobileViewportFilled(page);
+  await expect(page.locator(".site-header")).toHaveCount(0);
   const progress = page.getByRole("progressbar");
   await expect(progress).toHaveAttribute("aria-valuenow", /\d/);
   await page.getByRole("button", { name: "一時停止" }).tap();
   const before = await progress.getAttribute("aria-valuenow");
   await page.waitForTimeout(700);
+  expect(await progress.getAttribute("aria-valuenow")).toBe(before);
+  await page.setViewportSize({ width: 320, height: 568 });
+  await expectMobileViewportFilled(page);
+  await expect(page.getByRole("button", { name: "冒険をつづける" })).toBeInViewport();
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect
+    .poll(() => page.locator("canvas").evaluate((canvas) => {
+      const bounds = canvas.getBoundingClientRect();
+      return Math.abs(bounds.height - innerHeight);
+    }))
+    .toBeLessThan(2);
+  await expect(page.getByRole("button", { name: "冒険をつづける" })).toBeInViewport();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expectMobileViewportFilled(page);
   expect(await progress.getAttribute("aria-valuenow")).toBe(before);
   await page.getByRole("button", { name: "冒険をつづける" }).tap();
   const targets = [
@@ -103,7 +154,7 @@ test("mobile: play the full expedition, pause, discover all exhibits and restore
   await expect(page.getByRole("dialog")).toContainText("北アメリカ");
   await page.getByRole("button", { name: "展示を閉じる" }).tap();
   await page.reload();
-  await expect(page.locator(".header-museum b")).toHaveText("6 / 6");
+  await expect(page.locator(".header-museum b")).toHaveText("6 / 18");
   const save = await page.evaluate(
     (key) => JSON.parse(localStorage.getItem(key)!),
     SAVE_KEY,

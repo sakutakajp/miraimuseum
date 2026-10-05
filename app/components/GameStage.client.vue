@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import type { GameState, DinosaurScene } from "~/game/DinosaurScene";
+import type { GameState, SceneHooks } from "~/game/scene-types";
+import type { createScene } from "~/game/scenes";
+import { getWorld, type WorldId } from "~/data/worlds";
 import { museumAudio } from "~/game/audio";
-import { factFor, getDiscovery, type DiscoveryId } from "~/data/discoveries";
+import {
+  discoveriesFor,
+  factFor,
+  getDiscovery,
+  type DiscoveryId,
+} from "~/data/discoveries";
 const props = defineProps<{
+  world: WorldId;
   visits: Partial<Record<DiscoveryId, number>>;
   muted: boolean;
   level: number;
@@ -25,18 +33,13 @@ const toast = ref<{ title: string; fact?: string; sprite?: string } | null>(
   null,
 );
 let game: import("phaser").Game | undefined;
-let scene: DinosaurScene | undefined;
+let scene: ReturnType<typeof createScene> | undefined;
+let resizeObserver: ResizeObserver | undefined;
 let disposed = false,
   timer: ReturnType<typeof setTimeout> | undefined;
+const world = computed(() => getWorld(props.world));
 const phaseLabel = computed(
-  () =>
-    ({
-      present: "化石の眠る大地",
-      rewind: "時間をこえて",
-      past: "白亜紀の森",
-      chase: "大きな出会い",
-      ending: "未来へつなぐ発見",
-    })[state.value.phase],
+  () => world.value.phases[state.value.phase] ?? world.value.name,
 );
 function showToast(value: typeof toast.value, duration = 3500) {
   clearTimeout(timer);
@@ -59,12 +62,12 @@ watch(
 onMounted(async () => {
   document.addEventListener("visibilitychange", visibility);
   try {
-    const [{ default: Phaser }, { DinosaurScene: Scene }] = await Promise.all([
+    const [{ default: Phaser }, { createScene }] = await Promise.all([
       import("phaser"),
-      import("~/game/DinosaurScene"),
+      import("~/game/scenes"),
     ]);
     if (disposed || !host.value) return;
-    scene = new Scene({
+    const hooks: SceneHooks = {
       state: (value) => {
         state.value = value;
       },
@@ -76,12 +79,17 @@ onMounted(async () => {
         }),
       cue: (message) => showToast({ title: message }, 2800),
       finish: (ids) => emit("finish", ids),
-    }, props.level);
+    };
+    scene = createScene(props.world, hooks, props.level);
+    // Keep the horizontal game scale (and jump timing) unchanged while using
+    // the available height, including changes to mobile browser chrome.
+    const worldHeight = () =>
+      (host.value!.clientHeight * 420) / host.value!.clientWidth;
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: host.value,
       width: 420,
-      height: 700,
+      height: worldHeight(),
       backgroundColor: "#eadfb8",
       pixelArt: true,
       roundPixels: true,
@@ -90,6 +98,13 @@ onMounted(async () => {
       input: { activePointers: 2 },
       audio: { noAudio: true },
     });
+    resizeObserver = new ResizeObserver(() => {
+      if (!game || !host.value?.clientWidth || !host.value.clientHeight) return;
+      const height = worldHeight();
+      if (Math.abs(game.scale.height - height) > 0.1)
+        game.scale.setGameSize(420, height);
+    });
+    resizeObserver.observe(host.value);
     loading.value = false;
   } catch (err) {
     error.value = true;
@@ -101,29 +116,35 @@ onBeforeUnmount(() => {
   disposed = true;
   clearTimeout(timer);
   document.removeEventListener("visibilitychange", visibility);
+  resizeObserver?.disconnect();
   museumAudio.stop();
   game?.destroy(true);
 });
 </script>
 <template>
-  <section class="expedition-layout">
+  <section class="expedition-layout" :class="'expedition-' + world.id">
     <div class="stage-heading">
       <div>
-        <span class="eyebrow">EXPEDITION 01 · LEVEL {{ level }}</span>
-        <h1>恐竜の世界 <small>Lv. {{ level }}</small></h1>
+        <span class="eyebrow">EXPEDITION {{ world.index }}<template v-if="world.id === 'dinosaur'"> · LEVEL {{ level }}</template></span>
+        <h1>{{ world.name }} <small v-if="world.id === 'dinosaur'">Lv. {{ level }}</small></h1>
       </div>
-      <p>走って、跳んで。<br />まだ知らない世界に会いに行こう。</p>
+      <p>{{ world.subtitle }}<br />まだ知らない世界に会いに行こう。</p>
     </div>
     <div class="game-frame">
       <div
         ref="host"
         class="game-canvas"
-        aria-label="恐竜ステージ。画面をタップ、またはスペースキーでジャンプ"
+        :aria-label="
+          world.name + '。タップ、またはスペースキーで' + world.action
+        "
       />
       <div class="game-hud">
         <div class="game-location">
           <span class="live-dot" />{{ phaseLabel
-          }}<small>{{ state.found.length }} / 6 発見</small>
+          }}<small
+            >{{ state.found.length }} /
+            {{ discoveriesFor(world.id).length }} 発見</small
+          >
         </div>
         <div
           class="game-progress"
@@ -187,7 +208,8 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div class="game-footnote">
-      <span>タップ / Space でジャンプ</span><span>失敗しても、何度でも。</span>
+      <span>タップ / Space で{{ world.action }}</span
+      ><span>失敗しても、何度でも。</span>
     </div>
   </section>
 </template>
