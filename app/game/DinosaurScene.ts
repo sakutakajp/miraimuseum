@@ -23,8 +23,6 @@ export interface SceneHooks {
   finish: (ids: DiscoveryId[]) => void;
 }
 const W = 420,
-  H = 700,
-  FLOOR = 568,
   PLAYER_X = 106;
 export class DinosaurScene extends Phaser.Scene {
   readonly expedition = new Expedition();
@@ -48,7 +46,14 @@ export class DinosaurScene extends Phaser.Scene {
   constructor(private hooks: SceneHooks) {
     super("dinosaur");
   }
+  private get height() {
+    return this.scale.height;
+  }
+  private get floor() {
+    return this.height - 132;
+  }
   create() {
+    const FLOOR = this.floor;
     const frames = {
       ...sprites,
       playerStride: sprites.player!.map((row, y) =>
@@ -139,6 +144,11 @@ export class DinosaurScene extends Phaser.Scene {
       if (!event.repeat) this.jump();
     });
     this.input.keyboard?.on("keydown-ESC", () => this.setPaused(!this.stopped));
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.resizeWorld, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.scale.off(Phaser.Scale.Events.RESIZE, this.resizeWorld, this);
+    });
+    this.resizeWorld();
     museumAudio.start();
     this.hooks.state({
       phase: this.phase,
@@ -146,6 +156,12 @@ export class DinosaurScene extends Phaser.Scene {
       found: [],
       paused: false,
     });
+  }
+  private resizeWorld() {
+    this.endingSprite.setY(this.height / 2 - 20);
+    this.endingText.setY(this.height / 2 + 90);
+    this.renderWorld();
+    if (this.phase === "ending") this.renderEnding(0);
   }
   jump() {
     if (this.stopped) return;
@@ -209,10 +225,14 @@ export class DinosaurScene extends Phaser.Scene {
     }
   }
   private renderWorld() {
-    const x = this.expedition.x,
+    const H = this.height,
+      FLOOR = this.floor,
+      x = this.expedition.x,
       past = this.phase === "past" || this.phase === "chase";
     const g = this.art.clear();
     g.fillStyle(past ? 0xcbdac4 : 0xeadfb8).fillRect(0, 0, W, H);
+    // Anchor the landscape to the ground, extending the sky on tall phones.
+    g.save().translateCanvas(0, FLOOR - 568);
     g.fillStyle(past ? 0xe8edce : 0xf1e8cc).fillRect(0, 310, W, 265);
     g.fillStyle(0xf6cf71).fillCircle(319, 126, 36);
     for (let i = 0; i < 4; i++) {
@@ -255,6 +275,7 @@ export class DinosaurScene extends Phaser.Scene {
         g.fillStyle(0xa99c77).fillRect(tx + 7, 490, 22, 61);
       }
     }
+    g.restore();
     g.fillStyle(past ? 0x3e604e : 0x8e9162).fillRect(0, FLOOR, W, 13);
     g.fillStyle(past ? 0x93a572 : 0xc0ad71).fillRect(0, FLOOR + 13, W, 9);
     g.fillStyle(0xa6855e).fillRect(0, FLOOR + 22, W, 39);
@@ -350,6 +371,7 @@ export class DinosaurScene extends Phaser.Scene {
     }
   }
   private renderEnding(dt: number) {
+    const H = this.height;
     this.endTime += dt;
     this.tutor.setVisible(false);
     this.dinosaur.setVisible(false);

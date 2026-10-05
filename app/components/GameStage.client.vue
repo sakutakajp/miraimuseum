@@ -25,6 +25,7 @@ const toast = ref<{ title: string; fact?: string; sprite?: string } | null>(
 );
 let game: import("phaser").Game | undefined;
 let scene: DinosaurScene | undefined;
+let resizeObserver: ResizeObserver | undefined;
 let disposed = false,
   timer: ReturnType<typeof setTimeout> | undefined;
 const phaseLabel = computed(
@@ -76,11 +77,15 @@ onMounted(async () => {
       cue: (message) => showToast({ title: message }, 2800),
       finish: (ids) => emit("finish", ids),
     });
+    // Keep the horizontal game scale (and jump timing) unchanged while using
+    // the available height, including changes to mobile browser chrome.
+    const worldHeight = () =>
+      (host.value!.clientHeight * 420) / host.value!.clientWidth;
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: host.value,
       width: 420,
-      height: 700,
+      height: worldHeight(),
       backgroundColor: "#eadfb8",
       pixelArt: true,
       roundPixels: true,
@@ -89,6 +94,13 @@ onMounted(async () => {
       input: { activePointers: 2 },
       audio: { noAudio: true },
     });
+    resizeObserver = new ResizeObserver(() => {
+      if (!game || !host.value?.clientWidth || !host.value.clientHeight) return;
+      const height = worldHeight();
+      if (Math.abs(game.scale.height - height) > 0.1)
+        game.scale.setGameSize(420, height);
+    });
+    resizeObserver.observe(host.value);
     loading.value = false;
   } catch (err) {
     error.value = true;
@@ -100,6 +112,7 @@ onBeforeUnmount(() => {
   disposed = true;
   clearTimeout(timer);
   document.removeEventListener("visibilitychange", visibility);
+  resizeObserver?.disconnect();
   museumAudio.stop();
   game?.destroy(true);
 });
