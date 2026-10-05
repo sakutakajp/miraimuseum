@@ -4,6 +4,7 @@ export interface GameState {
   distance: number;
   found: DiscoveryId[];
   paused: boolean;
+  endingCaption?: string;
 }
 export interface SceneHooks {
   state: (state: GameState) => void;

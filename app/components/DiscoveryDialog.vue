@@ -8,6 +8,7 @@ onMounted(() => dialog.value?.showModal());
 function outside(event: MouseEvent) {
   if (event.target === dialog.value) dialog.value?.close();
 }
+const { t } = useLanguage();
 </script>
 <template>
   <dialog
@@ -19,7 +20,7 @@ function outside(event: MouseEvent) {
   >
     <button
       class="icon-button dialog-close"
-      aria-label="展示を閉じる"
+      :aria-label="t('展示を閉じる')"
       @click="dialog?.close()"
     >
       <MuseumIcon name="close" />
@@ -27,27 +28,25 @@ function outside(event: MouseEvent) {
     <div class="dialog-art" :style="{ '--exhibit-color': item.color }">
       <span class="art-orbit" /><PixelSprite
         :name="item.sprite"
-        :label="item.name"
+        :label="t(item.name)"
       />
     </div>
     <div class="dialog-content">
-      <span class="eyebrow">{{ item.category }}</span>
-      <h2 id="exhibit-title">{{ item.name }}</h2>
-      <p>{{ item.detail }}</p>
+      <span class="eyebrow"><RubyText :text="item.category" /></span>
+      <h2 id="exhibit-title"><RubyText :text="item.name" /></h2>
+      <p><RubyText :text="item.detail" /></p>
       <div class="fact-stack">
-        <small>発見を重ねると、もっとわかる。</small>
+        <small><RubyText :text="'発見を重ねると、もっとわかる。'" /></small>
         <p
           v-for="(fact, i) in item.facts.slice(0, Math.min(visits, 3))"
           :key="fact"
         >
           <span>0{{ i + 1 }}</span
-          >{{ fact }}
+          ><RubyText :text="fact" />
         </p>
-        <p v-if="visits < 3" class="unread-fact">
-          ？　次の冒険で、新しいひとことに出会おう。
-        </p>
+        <p v-if="visits < 3" class="unread-fact"><RubyText :text="'？　次の冒険で、新しいひとことに出会おう。'" /></p>
       </div>
-      <small class="exhibit-visits">{{ visits }} 回見つけた発見</small>
+      <small class="exhibit-visits"><RubyText :text="`${visits} 回見つけた発見`" /></small>
     </div>
   </dialog>
 </template>

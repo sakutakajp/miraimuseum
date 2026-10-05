@@ -28,6 +28,7 @@ export class VoyageScene extends Phaser.Scene {
   private rocks: Phaser.GameObjects.Image[] = [];
   private elapsed = 0;
   private endTime = 0;
+  private endingCaption = "";
   private lastState = 0;
   private phase: VoyagePhase = "start";
   private stopped = false;
@@ -132,6 +133,7 @@ export class VoyageScene extends Phaser.Scene {
       distance: Math.min(1, this.voyage.x / VOYAGE_LENGTH),
       found: [...this.voyage.found],
       paused: this.stopped,
+      endingCaption: this.endingCaption,
     });
   }
   setPaused(paused: boolean) {
@@ -399,7 +401,8 @@ export class VoyageScene extends Phaser.Scene {
       .setTexture(slide.sprite)
       .setScale(slide.sprite === "whale" ? 6 : 7)
       .setVisible(true);
-    this.endingText.setText(slide.text).setVisible(true);
+    this.endingText.setVisible(false);
+    this.endingCaption = slide.text;
     if (this.endTime >= 8.5 && !this.notified) {
       this.notified = true;
       museumAudio.finish();

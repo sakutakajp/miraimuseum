@@ -1,3 +1,4 @@
+import { expectBaseText } from "./helpers/text";
 import { test, expect } from "@playwright/test";
 import {
   voyageCollectibles,
@@ -47,7 +48,7 @@ for (const worldId of ["space", "ocean"] as const) {
         .tap();
       await expect(page.locator("canvas")).toHaveCount(1);
       await expect(page.locator("canvas")).toBeVisible();
-      await expect(page.locator(".game-location")).toContainText(
+      await expectBaseText(page.locator(".game-location"),
         getWorld(worldId).phases.start!,
       );
       await page.getByRole("button", { name: "一時停止" }).tap();
@@ -91,10 +92,12 @@ for (const worldId of ["space", "ocean"] as const) {
         );
         await page.locator("canvas").tap({ position: { x: 160, y: 240 } });
       }
-      await expect(page.locator(".game-location")).toContainText(
+      await expectBaseText(page.locator(".game-location"),
         getWorld(worldId).phases.encounter!,
         { timeout: 15_000 },
       );
+      await expect(page.locator('.ending-caption')).toBeVisible({ timeout: 40_000 });
+      await expect(page.locator('.ending-caption ruby rt').first()).toBeVisible();
       await expect(
         page.getByRole("heading", { name: "おかえり、冒険家！" }),
       ).toBeVisible({ timeout: 40_000 });
@@ -126,7 +129,7 @@ for (const worldId of ["space", "ocean"] as const) {
         .locator(".gallery-filters")
         .getByRole("button", { name: new RegExp(getWorld(worldId).name) })
         .tap();
-      await expect(page.locator(".gallery-toolbar")).toContainText(
+      await expectBaseText(page.locator(".gallery-toolbar"),
         getWorld(worldId).room,
       );
       await expect(page.locator(".exhibit-card:not(:disabled)")).toHaveCount(6);
@@ -134,7 +137,7 @@ for (const worldId of ["space", "ocean"] as const) {
       await page
         .getByRole("button", { name: exhibit + "の展示を見る", exact: true })
         .tap();
-      await expect(page.getByRole("dialog")).toContainText(
+      await expectBaseText(page.getByRole("dialog"),
         worldId === "space" ? "光も外へ出られない" : "哺乳類",
       );
       await page.getByRole("button", { name: "展示を閉じる" }).tap();

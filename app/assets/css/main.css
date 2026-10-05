@@ -168,7 +168,7 @@ nav {
   font-weight: 850;
   margin: 22px 0 17px;
 }
-.hero h1 > span {
+.hero h1 > span:not(.ruby-text) {
   position: relative;
   white-space: nowrap;
   background: linear-gradient(
@@ -631,7 +631,7 @@ nav {
   font-weight: 850;
   margin: 12px 0;
 }
-.gallery-heading h1 > span {
+.gallery-heading h1 > span:not(.ruby-text) {
   color: #b8a150;
 }
 .gallery-heading p {
@@ -763,7 +763,7 @@ nav {
   justify-content: space-between;
   gap: 5px;
 }
-.exhibit-caption h2 > span {
+.exhibit-caption h2 > span:not(.ruby-text) {
   font-size: 14px;
   color: #929b81;
   white-space: nowrap;
@@ -885,7 +885,7 @@ nav {
   line-height: 1.9;
   margin-top: 12px;
 }
-.fact-stack > p > span {
+.fact-stack > p > span:not(.ruby-text) {
   font: 9px monospace;
   color: #9ca28e;
   margin-right: 10px;
@@ -1639,7 +1639,7 @@ body:has(.is-playing) {
     line-height: 1.7;
     margin: 6px 0;
   }
-  .exhibit-caption h2 > span {
+  .exhibit-caption h2 > span:not(.ruby-text) {
     font-size: 15px;
   }
   .exhibit-caption p {
@@ -1911,7 +1911,7 @@ body:has(.is-playing) {
   --muted: #596b5e;
 }
 .hero h1 { line-height: 1.55; font-weight: 900; }
-.hero h1 > span {
+.hero h1 > span:not(.ruby-text) {
   background: linear-gradient(transparent 66%, #ffc43d 66%, #ffc43d 94%, transparent 94%);
 }
 .primary {
@@ -2007,4 +2007,77 @@ body:has(.is-playing) {
 }
 @media (max-width: 480px) {
   .exhibit-grid, .highlight-grid { grid-template-columns: 1fr; }
+}
+
+.ruby-text { line-height: inherit; }
+.ruby-text ruby { ruby-position: over; ruby-align: center; }
+.ruby-text rt {
+  font-family: inherit;
+  font-size: 0.55em;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+  color: currentColor;
+}
+.hero h1 { line-height: 1.95; }
+.hero h1 > span:not(.ruby-text) { white-space: normal; }
+.button:has(ruby) { padding-top: 18px; padding-bottom: 14px; }
+.world-card h3:has(ruby) { line-height: 1.9; }
+.world-card p:has(ruby), .exhibit-caption p:has(ruby), .highlight-card p:has(ruby) { line-height: 2.2; }
+.game-location > .ruby-text { flex: 1; }
+.game-location:has(ruby) { line-height: 1.9; }
+.discovery-toast p:has(ruby) { line-height: 2.1; }
+.dialog-content > p:has(ruby), .fact-stack > p:has(ruby) { line-height: 2.3; }
+.gallery-filters button:has(ruby) { line-height: 2; }
+@media (max-width: 720px) {
+  .hero h1 { font-size: clamp(27px, 7.5vw, 38px); }
+  .hero-copy > p, .level-selection p { line-height: 2.2; }
+  .world-card.available { min-height: 230px; }
+  .world-card .card-dinosaur { bottom: 70px; }
+  .game-location { flex-wrap: wrap; gap: 4px; }
+  .game-location > .ruby-text { flex-basis: calc(100% - 16px); }
+  .game-location small { margin-left: 12px; }
+  .discovery-toast { top: calc(120px + env(safe-area-inset-top)); }
+  .game-overlay .text-button { line-height: 2.2; }
+  .game-overlay { overflow-y: auto; }
+}
+
+.ending-caption {
+  position: absolute;
+  top: calc(50% + 70px);
+  left: 16px;
+  right: 16px;
+  color: #fff7da;
+  font-size: clamp(18px, 4.5vw, 24px);
+  font-weight: 700;
+  line-height: 2.4;
+  text-align: center;
+  white-space: pre-line;
+  pointer-events: none;
+}
+
+.language-bar { display: flex; justify-content: flex-end; padding-top: 16px; }
+.language-switch { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid #c9cdbc; border-radius: 12px; background: var(--white); }
+.language-switch button { min-height: 40px; padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 700; }
+.language-switch button[aria-pressed="true"] { background: var(--ink); color: var(--white); }
+html[lang="en"] .hero h1 { line-height: 1.35; }
+html[lang="en"] .hero h1 > span:not(.ruby-text) { display: inline; }
+html[lang="en"] .world-card h3 { line-height: 1.4; }
+html[lang="en"] .ruby-text { overflow-wrap: anywhere; }
+html[lang="en"] .game-location { line-height: 1.5; }
+html[lang="en"] .discovery-toast p { line-height: 1.6; }
+html[lang="en"] .ending-caption { line-height: 1.6; }
+@media (max-width: 720px) {
+  .language-switch button { min-height: 44px; }
+  html[lang="en"] .hero-note { white-space: normal; }
+  html[lang="en"] .world-bottomline > span { min-width: 0; }
+  html[lang="en"] .level-buttons .button { flex-wrap: wrap; gap: 6px; }
+  html[lang="en"] .world-card.available { min-height: 240px; }
+  html[lang="en"] .world-card h3 { font-size: 23px; padding-right: 0; }
+  html[lang="en"] .world-card p { max-width: calc(100% - 100px); }
+  html[lang="en"] .gallery-filters { gap: 8px; }
+  html[lang="en"] .gallery-filters button { font-size: 15px; }
+  html[lang="en"] .game-overlay { gap: 12px; }
+  html[lang="en"] .game-overlay .text-button { max-width: 300px; }
+  html[lang="en"] .brand strong { font-size: 16px; letter-spacing: 0; }
 }

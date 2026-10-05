@@ -1,3 +1,4 @@
+import { expectBaseText } from "./helpers/text";
 import { test, expect, type Page } from "@playwright/test";
 import {
   obstacles,
@@ -33,6 +34,8 @@ test("desktop: empty museum, corrupt save recovery and sound preference", async 
   await expect(
     page.getByRole("heading", { name: /世界の「なぜ？」は、/ }),
   ).toBeVisible();
+  await expect(page.locator('.hero h1 ruby rt').first()).toHaveText('せかい');
+  await expect(page.locator('.hero h1 ruby rt').first()).toHaveAttribute('aria-hidden', 'true');
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -144,7 +147,7 @@ test("mobile: play the full expedition, pause, discover all exhibits and restore
   ).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".level-result")).toContainText("Lv. 2");
   await expect(page.locator(".result-count > strong")).toHaveText("6");
-  await expect(page.locator(".result-count b")).toContainText("6 個が初めて");
+  await expectBaseText(page.locator(".result-count b"), "6 個が初めて");
   await page.getByRole("button", { name: "博物館で見てみる" }).tap();
   await expect(page.locator(".exhibit-card:not(:disabled)")).toHaveCount(6);
   await page

@@ -120,42 +120,43 @@ onBeforeUnmount(() => {
   museumAudio.stop();
   game?.destroy(true);
 });
+const { t } = useLanguage();
 </script>
 <template>
   <section class="expedition-layout" :class="'expedition-' + world.id">
     <div class="stage-heading">
       <div>
         <span class="eyebrow">EXPEDITION {{ world.index }}<template v-if="world.id === 'dinosaur'"> · LEVEL {{ level }}</template></span>
-        <h1>{{ world.name }} <small v-if="world.id === 'dinosaur'">Lv. {{ level }}</small></h1>
+        <h1><RubyText :text="world.name" /> <small v-if="world.id === 'dinosaur'">Lv. {{ level }}</small></h1>
       </div>
-      <p>{{ world.subtitle }}<br />まだ知らない世界に会いに行こう。</p>
+      <p><RubyText :text="world.subtitle" /><br /><RubyText :text="'まだ知らない世界に会いに行こう。'" /></p>
     </div>
     <div class="game-frame">
       <div
         ref="host"
         class="game-canvas"
-        :aria-label="
-          world.name + '。タップ、またはスペースキーで' + world.action
-        "
+        :aria-label="t(world.name + '。タップ、またはスペースキーで' + world.action)"
       />
       <div class="game-hud">
         <div class="game-location">
-          <span class="live-dot" />{{ phaseLabel
-          }}<small
+          <span class="live-dot" /><RubyText :text="phaseLabel" /><small
             >{{ state.found.length }} /
-            {{ discoveriesFor(world.id).length }} 発見</small
+            {{ discoveriesFor(world.id).length }} <RubyText text="発見" /></small
           >
         </div>
         <div
           class="game-progress"
           role="progressbar"
-          aria-label="ステージの進み具合"
+          :aria-label="t('ステージの進み具合')"
           :aria-valuenow="Math.round(state.distance * 1000) / 10"
           aria-valuemin="0"
           aria-valuemax="100"
         >
           <span :style="{ width: `${state.distance * 100}%` }" />
         </div>
+      </div>
+      <div v-if="state.endingCaption && !state.paused" class="ending-caption" aria-live="polite">
+        <RubyText :text="state.endingCaption" />
       </div>
       <Transition name="toast"
         ><div
@@ -165,51 +166,47 @@ onBeforeUnmount(() => {
         >
           <PixelSprite v-if="toast.sprite" :name="toast.sprite" />
           <div>
-            <small v-if="toast.sprite">あたらしい発見！</small
-            ><strong>{{ toast.title }}</strong>
-            <p v-if="toast.fact">{{ toast.fact }}</p>
+            <small v-if="toast.sprite"><RubyText :text="'あたらしい発見！'" /></small
+            ><strong><RubyText :text="toast.title" /></strong>
+            <p v-if="toast.fact"><RubyText :text="toast.fact" /></p>
           </div>
         </div></Transition
       >
       <button
         class="game-pause icon-button"
         :disabled="loading || error"
-        aria-label="一時停止"
+        :aria-label="t('一時停止')"
         @click="pause(true)"
       >
         Ⅱ
       </button>
       <div v-if="loading || error" class="game-overlay">
         <PixelSprite name="robot" />
-        <h2>{{ error ? "読み込めませんでした" : "冒険の準備中…" }}</h2>
-        <button v-if="error" class="button primary" @click="emit('leave')">
-          博物館にもどる
-        </button>
+        <h2><RubyText :text="error ? '読み込めませんでした' : '冒険の準備中…'" /></h2>
+        <button v-if="error" class="button primary" @click="emit('leave')"><RubyText :text="'博物館にもどる'" /></button>
       </div>
       <div v-if="state.paused" class="game-overlay pause-overlay">
         <PixelSprite name="robot" /><span class="eyebrow"
           >TAKE A LITTLE BREAK</span
         >
-        <h2>ひとやすみ</h2>
-        <p>発見は、きみを待っているよ。</p>
+        <h2><RubyText text="ひとやすみ" /></h2>
+        <LanguageSwitch />
+        <p><RubyText :text="'発見は、きみを待っているよ。'" /></p>
         <button
           class="button primary"
           @click="
             museumAudio.unlock();
             pause(false);
           "
-        >
-          冒険をつづける <span>→</span></button
+        ><RubyText :text="'冒険をつづける'" /><span>→</span></button
         ><button class="button subtle" @click="emit('sound')">
-          {{ muted ? "音をオンにする" : "音をオフにする" }}</button
-        ><button class="text-button" @click="emit('leave')">
-          博物館にもどる（今回の発見は保存されません）
-        </button>
+          <RubyText :text="muted ? '音をオンにする' : '音をオフにする'" /></button
+        ><button class="text-button" @click="emit('leave')"><RubyText :text="'博物館にもどる（今回の発見は保存されません）'" /></button>
       </div>
     </div>
     <div class="game-footnote">
-      <span>タップ / Space で{{ world.action }}</span
-      ><span>失敗しても、何度でも。</span>
+      <span><RubyText :text="`タップ / Space で${world.action}`" /></span
+      ><span><RubyText :text="'失敗しても、何度でも。'" /></span>
     </div>
   </section>
 </template>

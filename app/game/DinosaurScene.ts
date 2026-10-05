@@ -25,6 +25,7 @@ export class DinosaurScene extends Phaser.Scene {
   private endingSprite!: Phaser.GameObjects.Image;
   private elapsed = 0;
   private endTime = 0;
+  private endingCaption = "";
   private phase: Phase = "present";
   private lastState = 0;
   private notified = false;
@@ -144,6 +145,7 @@ export class DinosaurScene extends Phaser.Scene {
       distance: 0,
       found: [],
       paused: false,
+      endingCaption: this.endingCaption,
     });
   }
   private resizeWorld() {
@@ -168,6 +170,7 @@ export class DinosaurScene extends Phaser.Scene {
       distance: this.expedition.x / STAGE_LENGTH,
       found: [...this.expedition.found],
       paused,
+      endingCaption: this.endingCaption,
     });
   }
   override update(_time: number, delta: number) {
@@ -210,6 +213,7 @@ export class DinosaurScene extends Phaser.Scene {
         distance: Math.min(1, this.expedition.x / STAGE_LENGTH),
         found: [...this.expedition.found],
         paused: false,
+        endingCaption: this.endingCaption,
       });
     }
   }
@@ -380,7 +384,8 @@ export class DinosaurScene extends Phaser.Scene {
       .setTexture(slide.sprite)
       .setScale(slide.sprite === "rex" ? 6 : 7)
       .setAlpha(Math.min(1, (this.endTime % 1.6) * 4));
-    this.endingText.setVisible(true).setText(slide.text);
+    this.endingText.setVisible(false);
+    this.endingCaption = slide.text;
     if (this.endTime >= 8 && !this.endingSoundPlayed) {
       this.endingSoundPlayed = true;
       museumAudio.finish();

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { t } = useLanguage();
 defineProps<{ small?: boolean }>();
 </script>
 <template>
@@ -6,7 +7,7 @@ defineProps<{ small?: boolean }>();
     class="world-illustration"
     viewBox="0 0 480 400"
     role="img"
-    aria-label="恐竜とシダが暮らす、ピクセルアートの小さな世界"
+    :aria-label="t('恐竜とシダが暮らす、ピクセルアートの小さな世界')"
   >
     <defs>
       <linearGradient id="sky" x2="0" y2="1">
