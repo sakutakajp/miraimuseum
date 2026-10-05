@@ -51,7 +51,7 @@ export class Expedition {
   found = new Set<DiscoveryId>();
   readonly settings;
   readonly obstacles;
-  constructor(level = 1) {
+  constructor(level = 1, readonly competitive = false) {
     this.settings = levelSettings(level);
     this.obstacles = obstacles.map((obstacle) => ({
       ...obstacle,
@@ -93,9 +93,10 @@ export class Expedition {
         !this.invulnerable
       ) {
         this.attempts.set(obstacle.x, (this.attempts.get(obstacle.x) ?? 0) + 1);
-        this.x = Math.max(this.x > 1920 ? 1920 : 0, this.x - 130);
+        if (!this.competitive) this.x = Math.max(this.x > 1920 ? 1920 : 0, this.x - 130);
         this.invulnerable = 1.35;
         this.bumps++;
+        if (this.competitive && this.bumps >= 3) this.finished = true;
         result.bump = true;
         break;
       }

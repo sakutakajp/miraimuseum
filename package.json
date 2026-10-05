@@ -12,12 +12,15 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@tresjs/core": "^5.9.2",
     "nuxt": "4.5.2",
     "phaser": "3.90.0",
+    "three": "^0.186.1",
     "vue": "3.5.43"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
+    "@types/three": "^0.186.0",
     "typescript": "5.9.3",
     "vitest": "3.2.4",
     "vue-tsc": "3.2.6"
@@ -26,4 +29,3 @@
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
   }
 }
-

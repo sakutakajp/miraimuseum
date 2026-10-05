@@ -14,6 +14,7 @@ const W = 420,
   PLAYER_X = 106;
 export class DinosaurScene extends Phaser.Scene {
   readonly expedition: Expedition;
+  initialPaused = false;
   private art!: Phaser.GameObjects.Graphics;
   private foreground!: Phaser.GameObjects.Graphics;
   private player!: Phaser.GameObjects.Image;
@@ -32,9 +33,9 @@ export class DinosaurScene extends Phaser.Scene {
   private endingSoundPlayed = false;
   private hasJumped = false;
   private stopped = false;
-  constructor(private hooks: SceneHooks, level = 1) {
+  constructor(private hooks: SceneHooks, level = 1, competitive = false) {
     super("dinosaur");
-    this.expedition = new Expedition(level);
+    this.expedition = new Expedition(level, competitive);
   }
   private get height() {
     return this.scale.height;
@@ -133,7 +134,8 @@ export class DinosaurScene extends Phaser.Scene {
       event.preventDefault();
       if (!event.repeat) this.jump();
     });
-    this.input.keyboard?.on("keydown-ESC", () => this.setPaused(!this.stopped));
+    if (!this.expedition.competitive)
+      this.input.keyboard?.on("keydown-ESC", () => this.setPaused(!this.stopped));
     this.scale.on(Phaser.Scale.Events.RESIZE, this.resizeWorld, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, this.resizeWorld, this);
@@ -147,6 +149,7 @@ export class DinosaurScene extends Phaser.Scene {
       paused: false,
       endingCaption: this.endingCaption,
     });
+    if (this.initialPaused) this.setPaused(true);
   }
   private resizeWorld() {
     this.endingSprite.setY(this.height / 2 - 20);
@@ -190,6 +193,12 @@ export class DinosaurScene extends Phaser.Scene {
     for (const id of result.found) {
       museumAudio.discover();
       this.hooks.discover(id);
+    }
+    if (this.expedition.competitive && this.expedition.finished && !this.notified) {
+      this.notified = true;
+      this.stopped = true;
+      this.hooks.finish([...this.expedition.found]);
+      return;
     }
     const next = phaseAt(this.expedition.x);
     if (next !== this.phase) {
