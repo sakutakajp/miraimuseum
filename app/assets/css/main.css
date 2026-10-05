@@ -1337,7 +1337,7 @@ body:has(.is-playing) {
 }
 @media (max-width: 720px) {
   .museum-app {
-    padding: 0 22px;
+    padding: 0 18px;
   }
   .site-header {
     height: 87px;
@@ -1354,10 +1354,11 @@ body:has(.is-playing) {
     gap: 9px;
   }
   .brand strong {
-    font-size: 15px;
+    font-size: 17px;
+    letter-spacing: 0.04em;
   }
   .brand small {
-    font-size: 7px;
+    font-size: 11px;
   }
   .header-museum {
     gap: 6px;
@@ -1369,15 +1370,15 @@ body:has(.is-playing) {
     width: 18px;
   }
   .header-museum b {
-    font-size: 10px;
+    font-size: 14px;
     padding: 5px 8px;
   }
   nav {
-    gap: 13px;
+    gap: 8px;
   }
   .sound-button {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
   }
   .hero {
     grid-template-columns: 1fr;
@@ -1388,7 +1389,7 @@ body:has(.is-playing) {
     text-align: center;
   }
   .hero-copy > .eyebrow {
-    font-size: 8px;
+    font-size: 12px;
     letter-spacing: 0.1em;
   }
   .hero h1 {
@@ -1397,7 +1398,7 @@ body:has(.is-playing) {
     line-height: 1.75;
   }
   .hero-copy > p {
-    font-size: 12px;
+    font-size: 16px;
   }
   .hero-actions {
     align-items: center;
@@ -1409,7 +1410,10 @@ body:has(.is-playing) {
   }
   .hero-note {
     justify-content: center;
-    font-size: 8px;
+    flex-wrap: wrap;
+    white-space: normal;
+    line-height: 1.7;
+    font-size: 12px;
     margin-top: 21px;
     gap: 6px;
   }
@@ -1428,16 +1432,16 @@ body:has(.is-playing) {
     max-height: 300px;
   }
   .world-topline {
-    font-size: 6px;
+    font-size: 10px;
   }
   .world-badge {
-    font-size: 8px;
+    font-size: 12px;
   }
   .section-title h2 {
     font-size: 18px;
   }
   .section-title .eyebrow {
-    font-size: 8px;
+    font-size: 12px;
   }
   .section-note {
     display: none;
@@ -1452,11 +1456,11 @@ body:has(.is-playing) {
     padding: 23px;
   }
   .world-card-copy {
-    width: 70%;
+    width: 100%;
   }
   .card-index > span {
-    font-size: 7px;
-    margin-left: 15px;
+    font-size: 10px;
+    margin-left: 8px;
   }
   .world-card h3 {
     font-size: 20px;
@@ -1473,11 +1477,11 @@ body:has(.is-playing) {
     min-height: 168px;
   }
   .future h3 {
-    font-size: 15px;
+    font-size: 17px;
     margin-top: 37px;
   }
   .future p {
-    font-size: 9px;
+    font-size: 13px;
   }
   .planet-art {
     transform: rotate(-23deg) scale(0.7);
@@ -1509,26 +1513,26 @@ body:has(.is-playing) {
     width: calc(100% - 57px);
   }
   .museum-invitation h2 {
-    font-size: 12px;
+    font-size: 16px;
     margin: 6px 0;
   }
   .museum-invitation p {
-    font-size: 9px;
+    font-size: 13px;
     line-height: 1.9;
   }
   .museum-invitation .eyebrow {
-    font-size: 7px;
+    font-size: 11px;
   }
   .museum-invitation > .button {
     margin-left: 57px;
     min-height: 36px;
     padding: 9px 13px;
-    font-size: 10px;
+    font-size: 14px;
   }
   .site-footer {
     align-items: flex-start;
     padding: 22px 0 28px;
-    font-size: 8px;
+    font-size: 12px;
   }
   .site-footer > span:last-child {
     max-width: 130px;
@@ -1541,7 +1545,7 @@ body:has(.is-playing) {
     flex-shrink: 0;
   }
   .footer-brand {
-    font-size: 8px;
+    font-size: 12px;
     margin-top: 2px;
   }
   .gallery-heading {
@@ -1553,10 +1557,10 @@ body:has(.is-playing) {
     margin: 10px 0;
   }
   .gallery-heading .eyebrow {
-    font-size: 7px;
+    font-size: 11px;
   }
   .gallery-heading p {
-    font-size: 10px;
+    font-size: 14px;
     line-height: 1.8;
   }
   .collection-counter {
@@ -1568,25 +1572,27 @@ body:has(.is-playing) {
     font-size: 30px;
   }
   .collection-counter strong > span {
-    font-size: 13px;
+    font-size: 16px;
   }
   .collection-counter small {
-    font-size: 6px;
+    font-size: 10px;
     margin-top: 5px;
   }
   .gallery-toolbar {
     padding: 9px 0 15px;
     margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
   .gallery-toolbar > span {
-    font-size: 9px;
+    font-size: 13px;
     gap: 4px;
   }
   .gallery-toolbar svg {
     width: 15px;
   }
   .gallery-toolbar .text-button {
-    font-size: 9px;
+    font-size: 13px;
   }
   .exhibit-grid {
     grid-template-columns: 1fr 1fr;
@@ -1600,14 +1606,14 @@ body:has(.is-playing) {
     max-height: 88px;
   }
   .exhibit-number {
-    font-size: 6px;
+    font-size: 10px;
     left: 10px;
     top: 12px;
   }
   .found-stamp {
     top: 9px;
     right: 8px;
-    font-size: 6px;
+    font-size: 10px;
   }
   .found-stamp svg {
     width: 10px;
@@ -1625,19 +1631,19 @@ body:has(.is-playing) {
     padding: 15px 12px 17px;
   }
   .exhibit-caption .eyebrow {
-    font-size: 6px;
+    font-size: 10px;
     letter-spacing: 0.04em;
   }
   .exhibit-caption h2 {
-    font-size: 11px;
+    font-size: 15px;
     line-height: 1.7;
     margin: 6px 0;
   }
   .exhibit-caption h2 > span {
-    font-size: 11px;
+    font-size: 15px;
   }
   .exhibit-caption p {
-    font-size: 8px;
+    font-size: 12px;
     min-height: 41px;
   }
   .gallery-tip {
@@ -1651,10 +1657,10 @@ body:has(.is-playing) {
     margin-top: 3px;
   }
   .gallery-tip p {
-    font-size: 9px;
+    font-size: 13px;
   }
   .gallery-tip small {
-    font-size: 8px;
+    font-size: 12px;
     line-height: 1.8;
   }
   .is-playing {
@@ -1685,19 +1691,21 @@ body:has(.is-playing) {
   }
   .game-location {
     min-height: 44px;
-    font-size: 10px;
+    font-size: 14px;
     padding: 10px;
+    flex-wrap: wrap;
+    gap: 6px;
     margin-right: 54px;
   }
   .game-location small {
-    font-size: 9px;
+    font-size: 12px;
   }
   .game-pause {
     top: calc(10px + env(safe-area-inset-top));
     right: calc(10px + env(safe-area-inset-right));
     width: 44px;
     height: 44px;
-    font-size: 15px;
+    font-size: 17px;
   }
   .discovery-toast {
     top: calc(86px + env(safe-area-inset-top));
@@ -1707,10 +1715,10 @@ body:has(.is-playing) {
     padding: 10px;
   }
   .discovery-toast strong {
-    font-size: 13px;
+    font-size: 16px;
   }
   .discovery-toast p {
-    font-size: 10px;
+    font-size: 14px;
   }
   .discovery-toast > svg {
     width: 33px;
@@ -1727,12 +1735,12 @@ body:has(.is-playing) {
     font-size: 23px;
   }
   .game-overlay > .button {
-    font-size: 11px;
+    font-size: 15px;
     min-height: 45px;
     padding: 12px 16px;
   }
   .game-overlay .text-button {
-    font-size: 8px;
+    font-size: 12px;
   }
   .results {
     margin: 32px auto 40px;
@@ -1749,7 +1757,7 @@ body:has(.is-playing) {
     width: 26px;
   }
   .results .eyebrow {
-    font-size: 9px;
+    font-size: 13px;
   }
   .highlight-grid {
     gap: 12px;
@@ -1766,15 +1774,15 @@ body:has(.is-playing) {
     max-height: 79px;
   }
   .highlight-card h2 {
-    font-size: 12px;
+    font-size: 16px;
     line-height: 1.8;
     margin: 13px 0 7px;
   }
   .highlight-card p {
-    font-size: 10px;
+    font-size: 14px;
   }
   .highlight-card > div > span {
-    font-size: 5px;
+    font-size: 10px;
     top: 6px;
     left: 6px;
   }
@@ -1785,10 +1793,10 @@ body:has(.is-playing) {
     font-size: 53px;
   }
   .result-count > span {
-    font-size: 11px;
+    font-size: 15px;
   }
   .result-count b {
-    font-size: 8px;
+    font-size: 12px;
   }
   .result-actions {
     flex-direction: column;
@@ -1799,14 +1807,14 @@ body:has(.is-playing) {
     min-width: 240px;
   }
   .results .save-note {
-    font-size: 9px;
+    font-size: 13px;
     line-height: 1.9;
   }
   .result-discoveries > div {
     gap: 7px;
   }
   .result-discoveries > div > span {
-    font-size: 8px;
+    font-size: 12px;
   }
   .dialog-art {
     height: 195px;
@@ -1818,13 +1826,13 @@ body:has(.is-playing) {
     font-size: 20px;
   }
   .dialog-content > p {
-    font-size: 12px;
+    font-size: 16px;
   }
   .fact-stack {
     padding: 15px;
   }
   .fact-stack > p {
-    font-size: 10px;
+    font-size: 14px;
   }
 }
 /* Keep the portrait game visible when a phone is held sideways. */
@@ -1896,3 +1904,107 @@ body:has(.is-playing) {
 .level-buttons button[aria-pressed="true"] { background: #263d34; color: #fff7da; }
 .level-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
 .level-result { font-weight: 700; }
+
+/* A bolder museum palette, with the existing pixel art as the focal point. */
+:root {
+  --yellow: #ffc43d;
+  --muted: #596b5e;
+}
+.hero h1 { line-height: 1.55; font-weight: 900; }
+.hero h1 > span {
+  background: linear-gradient(transparent 66%, #ffc43d 66%, #ffc43d 94%, transparent 94%);
+}
+.primary {
+  border: 2px solid var(--ink);
+  box-shadow: 0 5px 0 var(--ink);
+}
+.primary:hover { background: #ffd469; }
+.primary:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.hero-world {
+  border: 2px solid var(--ink);
+  box-shadow: 6px 8px 0 #ffc43d;
+}
+.world-card.available {
+  border: 2px solid #46674e;
+  background: linear-gradient(135deg, #e1efc9, #bfdb9b);
+  box-shadow: 0 5px 0 #46674e;
+}
+.world-card.world-space {
+  border-color: #666199;
+  background: linear-gradient(135deg, #efe6ff, #d4c1f1);
+  box-shadow: 0 5px 0 #666199;
+}
+.world-card.world-ocean {
+  border-color: #377b83;
+  background: linear-gradient(135deg, #dcf5ef, #a9dcdf);
+  box-shadow: 0 5px 0 #377b83;
+}
+.world-card p { color: #425548; }
+.world-card .round-arrow { background: var(--yellow); border: 1px solid var(--ink); }
+.floating-discovery { background: #ffc43d; border: 2px solid var(--ink); font-weight: 700; }
+.level-selection {
+  background: #edf0e0;
+  border: 2px solid #d2dbc4;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 0 0 36px;
+}
+.level-buttons button[aria-pressed="true"] { box-shadow: 0 4px 0 #ffc43d; }
+@media (max-width: 720px) {
+  .button, .text-button, .gallery-filters button { font-size: 16px; min-height: 48px; }
+  .button { padding: 14px 18px; }
+  .hero-copy > p { color: #526555; line-height: 1.9; }
+  .hero .primary { min-width: 270px; font-size: 17px; }
+  .world-bottomline { font-size: 14px; flex-wrap: wrap; gap: 8px; }
+  .world-bottomline > span:last-child { font-size: 12px; }
+  .world-topline { flex-wrap: wrap; gap: 6px; }
+  .coordinate { font-size: 9px; letter-spacing: 0; }
+  .floating-discovery { font-size: 13px; }
+  .section-title h2, .level-selection h2 { font-size: 23px; }
+  .level-selection { padding: 20px 16px; }
+  .level-selection .eyebrow { font-size: 11px; }
+  .level-selection p { font-size: 15px; }
+  .level-buttons { flex-direction: column; align-items: stretch; }
+  .level-buttons .button { justify-content: flex-start; font-size: 15px; }
+  .world-card h3 { font-size: 24px; }
+  .world-card p { font-size: 15px; line-height: 1.8; max-width: calc(100% - 100px); }
+  .world-card .card-bottom > span:first-child { font-size: 14px; }
+  .world-card .card-bottom { max-width: none; }
+  .world-card .card-dinosaur { width: 96px; right: 12px; bottom: 65px; }
+  .museum-invitation h2 { font-size: 18px; line-height: 1.6; }
+  .museum-invitation p { font-size: 14px; }
+  .museum-invitation > .button { font-size: 16px; min-height: 48px; }
+  .gallery-heading { flex-wrap: wrap; }
+  .gallery-heading h1 { font-size: 28px; }
+  .collection-counter { width: 96px; height: 96px; }
+  .collection-counter small { font-size: 11px; }
+  .exhibit-caption h2 { font-size: 18px; }
+  .exhibit-caption p { font-size: 15px; line-height: 1.9; }
+  .exhibit-caption .eyebrow { font-size: 11px; }
+  .exhibit-number, .found-stamp { font-size: 11px; }
+  .exhibit-number { top: 38px; }
+  .exhibit-art { height: 180px; }
+  .discovery-toast { border: 2px solid var(--ink); box-shadow: 0 4px 0 #263d3426; }
+  .discovery-toast strong { font-size: 17px; }
+  .discovery-toast p { font-size: 14px; line-height: 1.7; }
+  .discovery-toast small { font-size: 11px; }
+  .game-overlay p { font-size: 16px; }
+  .game-overlay > .button { font-size: 16px; min-height: 48px; }
+  .game-overlay .text-button { font-size: 13px; line-height: 1.7; }
+  .game-location small { white-space: nowrap; }
+  .highlight-card h2 { font-size: 18px; }
+  .highlight-card p { font-size: 15px; line-height: 1.9; }
+  .highlight-card > div > span { font-size: 11px; }
+  .result-count > span { font-size: 16px; }
+  .result-count b { font-size: 13px; }
+  .results .save-note { font-size: 14px; }
+  .result-discoveries > div > span { font-size: 13px; }
+  .dialog-content > p, .fact-stack > p { font-size: 16px; line-height: 1.9; }
+  .fact-stack small, .exhibit-visits { font-size: 12px; }
+  .dialog-close { width: 44px; height: 44px; }
+  .gallery-tip p { font-size: 15px; }
+  .gallery-tip small { font-size: 13px; }
+}
+@media (max-width: 480px) {
+  .exhibit-grid, .highlight-grid { grid-template-columns: 1fr; }
+}
