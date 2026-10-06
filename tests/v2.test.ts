@@ -28,6 +28,7 @@ describe("V2 independent game progress", () => {
       best: 1500,
       unlocked: 2,
       stages: { 1: { best: 1500, cleared: true } },
+      discoveries: ['asteroid'],
     });
     expect(p["dinosaur-run"].best).toBe(0);
   });

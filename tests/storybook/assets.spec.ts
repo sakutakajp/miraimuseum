@@ -13,6 +13,21 @@ for (const id of [
   "backgrounds-dinosaur--ancient-forest",
   "backgrounds-dinosaur--illustration",
   "backgrounds-dinosaur--starfield",
+  "star-dive-stage-1--dive",
+  "star-dive-stage-1--first-contact",
+  "star-dive-stage-1--asteroid-field",
+  "star-dive-stage-1--risk",
+  "star-dive-stage-1--inside",
+  "star-dive-stage-1--break-out",
+  "star-dive-stage-1--low-quality",
+  "star-dive-stage-1--reduced-motion",
+  "star-dive-stage-1--shard",
+  "star-dive-stage-1--core",
+  "star-dive-stage-1--gate-core",
+  "star-dive-ui--clear",
+  "star-dive-ui--failure",
+  "star-dive-ui--hud",
+  "star-dive-ui--exhibit",
 ]) {
   test(id, async ({ page }) => {
     const errors: string[] = [];
@@ -20,6 +35,7 @@ for (const id of [
     await page.goto(`/iframe.html?id=${id}&viewMode=story`);
     await expect(page.locator("#storybook-root > div")).toBeVisible();
     if (
+      id.includes("star-dive-stage-1") ||
       id.includes("spaceship") ||
       id.includes("asteroid") ||
       id.includes("frozen-frame") ||
@@ -37,6 +53,13 @@ for (const id of [
     expect(errors).toEqual([]);
     if (id.includes("frozen-frame"))
       await page.screenshot({ path: "/tmp/storybook-impact.png" });
+    if (
+      id === "star-dive-stage-1--inside" ||
+      id === "star-dive-stage-1--dive"
+    ) {
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: `/tmp/storybook-${id}.png` });
+    }
   });
 }
 test("language toolbar applies to real game cards", async ({ page }) => {

@@ -6,6 +6,8 @@ export interface StageResult {
   score: number;
   health: number;
   elapsed: number;
+  stats?: { maxChain: number; near: number };
+  discoveries?: string[];
 }
 export const games = [
   {
@@ -24,17 +26,17 @@ export const games = [
   },
   {
     id: "star-flight" as GameId,
-    title: "スターフライト",
+    title: "MIRAI: STAR DIVE",
     theme: "宇宙",
     style: "シューティング",
     visual: "3D · SPACE",
     icon: "🚀",
     color: "#9b8aff",
     description:
-      "星の海へ出発！宇宙船をドラッグして、敵と隕石をかわそう。射撃は自動。",
+      "小惑星帯をぬけろ。宇宙船をドラッグして、光る結晶をこわしながら、宇宙の奥へ。射撃は自動。",
     control: "ドラッグで移動",
-    duration: "40 SEC",
-    stages: [{ id: 1, title: "星の海" }],
+    duration: "80 SEC",
+    stages: [{ id: 1, title: "小惑星帯をぬけろ" }],
   },
 ];
 export const getGame = (id: GameId) => games.find((g) => g.id === id)!;

@@ -4,7 +4,8 @@ defineProps<{ game: GameId }>();
 const uid = useId().replace(/:/g, "");
 const scatter = (seed: number) => {
   const n = Math.sin(seed) * 43758.5453;
-  return n - Math.floor(n);
+  // SVG attributes must be identical across Node and browser math libraries.
+  return Math.round((n - Math.floor(n)) * 1e6) / 1e6;
 };
 const stars = Array.from({ length: 45 }, (_, i) => ({
   x: scatter(i * 12.9898 + 1) * 480,

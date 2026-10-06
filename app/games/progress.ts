@@ -4,6 +4,7 @@ export interface GameRecord {
   best: number;
   stages: Record<string, { best: number; cleared: boolean }>;
   unlocked: number;
+  discoveries?: string[];
 }
 export type GameProgress = Record<GameId, GameRecord>;
 export function emptyGameProgress(): GameProgress {
@@ -36,6 +37,8 @@ export function parseGameProgress(raw: string | null): GameProgress {
         0,
         ...Object.values(result[game.id].stages).map((s) => s.best),
       );
+      if (game.id === 'star-flight' && Array.isArray(saved.discoveries))
+        result[game.id].discoveries = saved.discoveries.includes('asteroid') ? ['asteroid'] : [];
     }
   } catch {}
   return result;
@@ -50,6 +53,7 @@ export function recordGameResult(
   result: StageResult,
 ): GameProgress {
   const next = parseGameProgress(JSON.stringify(progress));
+  if (result.game === 'star-flight' && !result.cleared) return next;
   const record = next[result.game];
   const old = record.stages[result.stage];
   record.stages[result.stage] = {
@@ -59,5 +63,7 @@ export function recordGameResult(
   record.best = Math.max(record.best, validScore(result.score));
   if (result.cleared)
     record.unlocked = Math.max(record.unlocked, Math.min(5, result.stage + 1));
+  if (result.game === 'star-flight' && result.cleared)
+    record.discoveries = ['asteroid'];
   return next;
 }

@@ -1,10 +1,35 @@
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-05",
   devtools: { enabled: false },
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) =>
+        /^Tres[A-Z]/.test(tag) &&
+        !["TresCanvas", "TresCanvasContext", "TresPortal"].includes(tag),
+    },
+  },
   // Prebundle the lazy game dependency so Vite does not reload the page when
   // the first expedition starts in a fresh development container.
-  vite: { optimizeDeps: { include: ["phaser"] } },
-  css: ["~/assets/css/main.css", "~/assets/css/v2.css"],
+  vite: {
+    optimizeDeps: {
+      include: [
+        "phaser",
+        "three",
+        "@tresjs/core",
+        "three/examples/jsm/environments/RoomEnvironment.js",
+        "three/examples/jsm/postprocessing/EffectComposer.js",
+        "three/examples/jsm/postprocessing/RenderPass.js",
+        "three/examples/jsm/postprocessing/UnrealBloomPass.js",
+        "three/examples/jsm/postprocessing/ShaderPass.js",
+        "three/examples/jsm/postprocessing/OutputPass.js",
+      ],
+    },
+  },
+  css: [
+    "~/assets/css/main.css",
+    "~/assets/css/v2.css",
+    "~/assets/css/star-dive.css",
+  ],
   app: {
     head: {
       htmlAttrs: { lang: "ja" },

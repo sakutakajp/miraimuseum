@@ -15,7 +15,7 @@ test("museum navigation, 2D failure, records and language persistence", async ({
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/?starDiveDebug=1");
   await page.getByRole("button", { name: "English", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "A world of games awaits." }),
@@ -74,9 +74,9 @@ test("3D shooting renders, pauses, moves, clears and returns to shared shell", a
       }),
     ),
   );
-  await page.goto("/");
+  await page.goto("/?starDiveDebug=1");
   await page.getByRole("button", { name: "English", exact: true }).click();
-  await openGame(page, "Star Flight");
+  await openGame(page, "MIRAI: STAR DIVE");
   await expect(page.locator("canvas")).toBeVisible();
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   await expect(
@@ -90,14 +90,15 @@ test("3D shooting renders, pauses, moves, clears and returns to shared shell", a
   await page.mouse.move(389, 843);
   await page.mouse.up();
   await page.screenshot({ path: "/tmp/mvp-space.png" });
+  await expect(page.locator(".dive-debug")).toHaveCount(0);
   await expect(
     page.getByRole("heading", { name: "Stage cleared!" }),
-  ).toBeVisible({ timeout: 60000 });
+  ).toBeVisible({ timeout: 100000 });
   await page
     .getByRole("button", { name: "Return to the museum", exact: true })
     .click();
   await expect(
-    page.locator(".v2-card").filter({ hasText: "Star Flight" }),
+    page.locator(".v2-card").filter({ hasText: "MIRAI: STAR DIVE" }),
   ).toContainText("STAGE 1 / 1");
   expect(errors).toEqual([]);
   expect(
@@ -178,15 +179,12 @@ test("shooting hits show burst particles and score feedback", async ({
   );
   await page.goto("/");
   await page.getByRole("button", { name: "English", exact: true }).click();
-  await openGame(page, "Star Flight");
+  await openGame(page, "MIRAI: STAR DIVE");
   await expect(page.locator("canvas")).toBeVisible();
-  await page.mouse.move(313, 468);
-  await page.mouse.down();
-  await page.mouse.up();
-  await expect(page.locator(".hit-reward")).toContainText(/HIT!|COMBO!/, {
-    timeout: 15000,
+  await expect(page.locator(".dive-event")).toContainText(/\+\d+/, {
+    timeout: 22000,
   });
-  await expect(page.locator(".hit-reward strong")).toHaveText(/\+\d+/);
+  await expect(page.locator(".dive-chain")).toContainText("CHAIN");
   await page.screenshot({ path: "/tmp/shooter-impact.png" });
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   await expect(

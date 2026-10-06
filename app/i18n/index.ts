@@ -3,11 +3,12 @@ import { worlds } from '../data/worlds';
 import { discoveryEnglish } from './discoveries.en';
 import { worldEnglish } from './worlds.en';
 import { v2English } from './v2';
+import { starDiveEnglish } from './star-dive';
 import { uiEnglish } from './messages';
 export type Locale = 'ja' | 'en';
 export const LANGUAGE_KEY = 'mirai-museum:language';
 const normalize = (text: string) => text.replace(/\s+/g, ' ').trim();
-const pairs: [string, string][] = Object.entries({ ...uiEnglish, ...v2English });
+const pairs: [string, string][] = Object.entries({ ...uiEnglish, ...v2English, ...starDiveEnglish });
 for (const item of discoveries) {
   const translated = discoveryEnglish[item.id];
   pairs.push([item.name, translated.name], [item.category, translated.category], [item.detail, translated.detail]);

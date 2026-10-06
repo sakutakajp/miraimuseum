@@ -6,15 +6,21 @@ import {
   parseGameProgress,
   recordGameResult,
 } from "~/games/progress";
+import StarDiveResult from "./components/games/star-dive/StarDiveResult.vue";
+import AsteroidExhibit from "./components/games/star-dive/AsteroidExhibit.vue";
 const { locale, initializeLanguage, t } = useLanguage();
 const view = ref<"home" | "detail" | "stages" | "game" | "result">("home");
 const active = ref<GameId>("dinosaur-run");
 const game = computed(() => getGame(active.value));
 const progress = ref(emptyGameProgress());
 const storageAvailable = ref(true);
+const mounted = ref(false);
 const result = ref<StageResult>();
 const run = ref(0);
 const showDemo = ref(true);
+const attempted = new Set<GameId>();
+const newBest = ref(false);
+const exhibit = ref(false);
 const filter = ref("");
 const axis = ref<"theme" | "style">("theme");
 const recommended = ref(games[0]!);
@@ -31,11 +37,15 @@ function select(id: GameId) {
   navigate("detail");
 }
 function start() {
-  showDemo.value = !progress.value[active.value].stages["1"];
+  showDemo.value =
+    !attempted.has(active.value) && !progress.value[active.value].stages["1"];
+  attempted.add(active.value);
   run.value++;
   navigate("game");
 }
 function finish(value: StageResult) {
+  newBest.value =
+    value.cleared && value.score > progress.value[value.game].best;
   result.value = value;
   progress.value = recordGameResult(progress.value, value);
   try {
@@ -53,6 +63,7 @@ onMounted(() => {
     storageAvailable.value = false;
   }
   recommended.value = games[Math.floor(Date.now() / 86400000) % games.length]!;
+  mounted.value = true;
 });
 useHead(() => ({
   htmlAttrs: { lang: locale.value },
@@ -64,7 +75,11 @@ useHead(() => ({
 }));
 </script>
 <template>
-  <div class="v2-shell" :class="{ playing: view === 'game' }">
+  <div
+    class="v2-shell"
+    :class="{ playing: view === 'game' }"
+    :data-ready="mounted"
+  >
     <header v-if="view !== 'game'" class="v2-header">
       <button
         class="v2-brand"
@@ -144,6 +159,14 @@ useHead(() => ({
           />
         </div>
       </section>
+      <button
+        v-if="progress['star-flight'].discoveries?.includes('asteroid')"
+        class="museum-discovery"
+        @click="exhibit = true"
+      >
+        <span>✦ DISCOVERY · 001</span
+        ><strong><RubyText text="小惑星の展示" /></strong><span>→</span>
+      </button>
     </main>
     <main v-else-if="view === 'detail' || view === 'stages'" class="v2-main">
       <button
@@ -202,13 +225,27 @@ useHead(() => ({
       </section>
     </main>
     <ClientOnly v-else-if="view === 'game'"
-      ><MvpGame
+      ><StarDiveGame
+        v-if="active === 'star-flight'"
+        :key="run"
+        :demo="showDemo"
+        @finish="finish"
+        @leave="navigate('home')" /><MvpGame
+        v-else
         :key="run"
         :game="active"
         :demo="showDemo"
         @finish="finish"
         @leave="navigate('stages')"
     /></ClientOnly>
+    <StarDiveResult
+      v-else-if="view === 'result' && result?.game === 'star-flight'"
+      :result="result"
+      :best="progress['star-flight'].best"
+      :new-best="newBest"
+      @retry="start"
+      @leave="navigate('home')"
+    />
     <main v-else-if="view === 'result' && result" class="v2-main v2-result">
       <div class="result-icon">{{ result.cleared ? "🏆" : "💫" }}</div>
       <span class="eyebrow">{{ game.visual }} · STAGE 1</span>
@@ -243,5 +280,6 @@ useHead(() => ({
       <span>MIRAI MUSEUM · PLAY / EXPLORE / REPEAT</span>
       <p><RubyText text="記録はこのブラウザーに保存されます。" /></p>
     </footer>
+    <AsteroidExhibit v-if="exhibit" @close="exhibit = false" />
   </div>
 </template>
