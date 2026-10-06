@@ -87,25 +87,38 @@ MIRAI MUSEUM（みらい博物館）のトップページを、ゲームへの�
 
 ---
 
-## 4. The protagonist of the site: MIRAI CORE
+## 4. The protagonist of the site: MIRAI CORE = EARTH
 
-トップページ全体をつなぐ一つの3Dオブジェクトを `MIRAI CORE` と呼ぶ。
+トップページ全体をつなぐ唯一の3Dオブジェクトを MIRAI CORE と呼ぶ。MIRAI COREの正体は地球である。
 
-MIRAI COREは固定されたロゴオブジェクトではない。「知識を違う尺度で見た同じ存在」という設定にする。
+この変更の中心原則:
 
-Representation examples:
+> 地球が変わるのではなく、見方が変わる。
 
-1. 未知の黒い標本 / seed
-2. 細胞
-3. アンモナイトまたは化石断片
-4. 惑星 / 小惑星
-5. 結晶・数学的形状
-6. 回路 / 機械構造
-7. 光の点群
+Sceneごとに地球を細胞・結晶・機械など別の物体へmesh morphさせない。同じ地球を一貫して画面に残し、その表面・内部・周辺へ異なる「観測レイヤー」を重ねることで、SPACE / LIFE / MATTER / MACHINEを表現する。
 
-直接mesh morphさせる必要はない。品質優先で、複数モデル間をparticle dissolve / noise dissolve / depth-aware crossfadeで連続的に置換する。
+MIRAI COREは「知識を違う尺度で見た同じ世界」であり、最終的には「私たちが住んでいる世界そのもの」を意味する。
 
-MIRAI COREはセクションごとに別の位置へDOMレイアウト的に瞬間移動させず、1つのThree.js scene内でcamera / object transformを連続補間する。
+### Visual layers
+
+1. EARTH / BASE — 海、大陸、雲、大気。暗闇では輪郭だけが見える。
+2. SPACE — 宇宙から見た地球。大気、雲、夜側、軌道スケール。
+3. LIFE — 植生、生物圏、海洋の微細な粒子、生命ネットワークが地表へ侵入する。
+4. MATTER — 地表が部分的に透過・侵食され、地層、プレート、鉱物、結晶、分子構造の視点が現れる。
+5. MACHINE — 都市光、人工物、通信、軌道、インフラが「人工的な地層」として重なる。
+6. CONNECTED — すべての観測レイヤーが短時間だけ同居し、地球が点群 / 輪郭 / データへ解体されScene 02へ渡る。
+
+### Rules
+
+- 地球のsilhouette、回転軸、camera continuityを全状態で維持する。
+- Blue Marble写真を貼っただけの「普通の地球儀」にしない。
+- LIFEを明るい緑発光、MACHINEを青い通信線だらけにする等、ありがちなscience / DX表現へ逃げない。
+- 地球の存在感はlighting、cloud shell、atmosphere、night side、surface reliefの質で作る。
+- scroll progressは「別モデルへの切替」ではなく観測レイヤーのmix / reveal / mask / shader parameterとして扱う。
+- MIRAI COREは1つのThree.js scene内でcamera / Earth transformを連続補間する。
+- 最後に点群へ解体するまで、地球本体を別オブジェクトへ置換しない。
+
+MIRAI CORE = EARTHとすることで、後続の宇宙、生命、恐竜、数学、機械の展示はすべて「同じ世界の別の見方」として接続される。
 
 ---
 
@@ -135,32 +148,35 @@ MIRAI COREはセクションごとに別の位置へDOMレイアウト的に瞬�
 
 黒に近い空間。ページロード直後はナビゲーションを見せない。
 
-中央より少し下に、直径25〜35vwのMIRAI COREが暗闇から浮かび上がる。完全な球ではなく、化石・細胞・惑星のどれとも断定できない形。
+中央より少し右に巨大なMIRAI CORE = EARTHが暗闇から浮かぶ。最初の1秒では「地球」と断定できない程度に暗くする。見えるのは細い大気のrim、夜側の雲、海面のわずかなspecularだけ。
+
+スクロールとともに光が回り込み、雲と大陸の情報が少しずつ現れ、ユーザーが「あ、地球だった」と気づく構成にする。
 
 上部左:
 
-`MIRAI MUSEUM / みらい博物館`
+MIRAI MUSEUM / みらい博物館
 
 中央または下部:
 
-`EXPLORE THE WORLD OF KNOWLEDGE.`
+EXPLORE THE WORLD OF KNOWLEDGE.
 
 その下に非常に小さく:
 
-`SCROLL TO ENTER`
+SCROLL TO ENTER
 
 #### Motion
 
 - 初期ロード 0.0–0.5s: 黒
-- 0.5–1.4s: COREのrim lightだけ出現
+- 0.5–1.4s: 地球のatmosphere rimとcloud edgeだけ出現
 - 0.9–1.8s: ブランド名をフェードではなくmask reveal
-- pointer / touch dragにCOREが最大3〜5度だけ遅れて追従
-- idle時はほぼ分からない速度で自転
-- スクロール開始時、UIではなくカメラが奥へ進む
+- pointer / touchに地球が最大2〜3度だけ遅れて反応
+- idle時は実際の惑星らしい非常に遅い自転
+- スクロール開始時、cameraとkey lightが動き、地球であることが判明する
+- Scene 01へ入る瞬間も地球は同じ位置・回転状態から連続する
 
 #### Sound
 
-初期状態はmute。音ONボタンだけ右上に小さく置く。ONにすると非常に低いmuseum room tone + object resonance。
+初期状態はmute。音ONボタンだけ右上に小さく置く。ONにすると非常に低いmuseum room tone + atmospheric resonance。
 
 自動再生音声は行わない。
 
@@ -168,43 +184,59 @@ MIRAI COREはセクションごとに別の位置へDOMレイアウト的に瞬�
 
 ### Scene 01 — SCALE SHIFT / 100–360vh
 
-「同じものも、尺度を変えると別の学問になる」を体験させる。
+テーマ:
 
-Three sceneはsticky 100dvh。スクロール距離をカメラシーケンスとして利用する。
+> 地球が変わるのではなく、見方が変わる。
+
+Three sceneはsticky 100dvh。スクロール距離を1つの地球に対する観測レイヤーの変化として利用する。
 
 #### Sequence
 
-0–25%: COREへ急激ではなく滑らかに接近。表面が惑星の地形に見える。  
-25–45%: さらに近づくと地形が細胞膜のような構造に置換。  
-45–65%: 細胞構造が結晶 / 数学的格子へdissolve。  
-65–85%: 格子が回路 / robot jointの形へ。  
-85–100%: すべてが数千の点へ分解。
+0–20% / SPACE  
+暗闇から地球が十分に判別できる状態へ。大気、雲、海、夜側の都市光をrestrainedに見せる。宇宙から見た惑星として成立させる。
+
+20–40% / LIFE  
+地球本体はそのまま。地表に植生・生物圏の反応が広がり、海には微細な粒子、陸には生命ネットワークのような有機的パターンが短く現れる。地球が巨大な生命体にも見える瞬間を作る。
+
+40–60% / MATTER  
+LIFEレイヤーが沈み、地表の一部がmask / dissolveで透過・侵食される。地層、プレート、鉱物、結晶格子、分子レベルのmotifが「地球を構成する物質」として侵入する。教科書的な断面図にはしない。
+
+60–82% / MACHINE  
+夜側の都市光、軌道上の人工物、通信、海底ケーブルやインフラを抽象化した細い構造が重なる。青いnetwork lineを世界中へ張る典型的なDX地球儀にはしない。「人間が地球に人工的な地層を追加した」ように見せる。
+
+82–100% / CONNECTED  
+SPACE / LIFE / MATTER / MACHINEの特徴が短時間だけ同時に見える。地球のsilhouetteを最後まで保った後、表面が点群・輪郭線・微細なfragmentへ分解し、Bone WhiteのScene 02へ渡す。
 
 #### Copy
 
 各状態に長文を出さない。
 
-`SPACE`  
-`LIFE`  
-`MATTER`  
-`MACHINE`
+SPACE  
+LIFE  
+MATTER  
+MACHINE
 
-だけを展示ラベルのように一瞬表示。
+だけを展示分類ラベルとして表示。
 
-最後に点群が画面全体へ広がりScene 02の文字を形作る。
+補助ラベルを使う場合も、ATMOSPHERE / BIOSPHERE / LITHOSPHERE / TECHNOSPHERE程度に抑える。
 
 #### Implementation
 
 - Scroll progressは1箇所のExperienceDirectorから0–1で管理
+- Earth objectはScene 00〜01で同一instanceを維持
+- 観測レイヤーはmaterial mix、texture mask、secondary shell、line/particle layerで表現
 - object animationとDOM animationは同じprogress / clockを参照
 - scroll listener内で直接大量更新しない
 - rAF内でlerp / damp
-- scroll velocityから一時的なparticle stretchを与える
-- `prefers-reduced-motion`ではスクロール位置ごとに離散状態へcrossfade
+- scroll velocityはlayer revealへごく小さなenergy responseを与える程度
+- prefers-reduced-motionではSPACE / LIFE / MATTER / MACHINEを離散的なcrossfadeで見せる
+- 最後のdissolveまでEarth geometryのidentityを失わせない
 
 ---
 
 ### Scene 02 — EVERYTHING IS CONNECTED / 360–520vh
+
+Scene 01の答え。
 
 白〜アイボリーへ大胆に反転する。
 
@@ -213,17 +245,18 @@ Three sceneはsticky 100dvh。スクロール距離をカメラシーケンス�
 > すべての学問は、  
 > つながっている。
 
-スクロールに合わせて文字が1文字ずつ「見える」のではなく、黒→各展示テーマの色へ短く通過して最終的に黒へ落ち着く。
+補助コピー:
 
-背後にはScene 01で分解した点群が、文字・図・小さな標本の輪郭を断続的に作る。
+> 宇宙も、生命も、数も、機械も。  
+> 見方を変えれば、同じ世界の一部になる。
 
-小さな補助コピー:
+Scene 01で地球から離れたpoint / contour / fragmentが背景へ残る。それらはgenericな原子軌道だけを描くのではなく、軌道、細胞cluster、結晶格子、networkなど「複数の見方」を短く横断してから静かになる。
 
-> 星を知ることは、物質を知ること。  
-> 生命を知ることは、時間を知ること。  
-> 機械を知ることは、人間を知ること。
+重要なのは、Scene 02で新しい概念を追加することではなく、SPACE / LIFE / MATTER / MACHINEが最初から同じ地球に存在していたと理解させること。
 
-この3行以上は説明しない。
+文字は1文字ずつ派手に出さず、line mask / clipで静かにresolveする。
+
+Scene 03へ入る時、残ったpoint fieldは各Exhibition Portalへ吸い寄せられる余地を残す。
 
 ---
 
