@@ -12,6 +12,8 @@
 
 North Starは「インターネット上に存在する、まだ誰も見たことがない博物館」。ブランドステートメントは **EVERYTHING IS CONNECTED. / すべての学問は、つながっている。**
 
+LPの中心オブジェクト **MIRAI COREの正体は地球** とする。原則は「地球が変わるのではなく、見方が変わる」。同じ地球に対してスクロールとともに **SPACE → LIFE → MATTER → MACHINE → CONNECTED** の観測レイヤーを重ね、最後に点群・輪郭へ解体して「すべての学問は、つながっている。」へ着地する。細胞・結晶・機械など別オブジェクトへのmesh morphは採用しない。
+
 実装・デザイン判断では次の仕様を一次資料とする。
 
 - [Landing Page Experience Specification](docs/landing-page-experience.md) — 全体の体験、アートディレクション、Scene 00〜08、性能・アクセシビリティ方針
