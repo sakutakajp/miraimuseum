@@ -354,8 +354,9 @@
   max-width: 800px;
   right: calc(11% - 3% * var(--core-growth));
   top: calc(20% - 15% * var(--core-growth));
-  opacity: calc((1 - var(--bone)) * var(--core-reveal));
-  transform: rotate(-8deg);
+  opacity: calc(
+    (1 - var(--bone)) * var(--core-reveal) * (1 - var(--earth-dissolve, 0))
+  );
 }
 .landing-static-core svg {
   width: 100%;
@@ -369,14 +370,35 @@
   color: #9b988e;
   opacity: calc(var(--bone) * 0.3);
 }
-.landing[data-core-state="life"] .landing-static-core {
-  filter: sepia(0.15) hue-rotate(40deg);
+.landing-earth-threshold-shadow {
+  opacity: calc(0.94 * (1 - var(--earth-light, 0)));
 }
-.landing[data-core-state="matter"] .landing-static-core {
-  filter: contrast(1.2) brightness(1.3);
+.landing-earth-clouds {
+  opacity: calc(0.18 + var(--earth-light, 0) * 0.82);
 }
-.landing[data-core-state="machine"] .landing-static-core {
-  filter: contrast(1.4);
+.landing-earth-life {
+  opacity: var(--earth-life, 0);
+}
+.landing-earth-matter {
+  opacity: var(--earth-matter, 0);
+}
+.landing-earth-machine {
+  opacity: calc(var(--earth-machine, 0) * 0.8);
+}
+.landing-earth-figure-orbit {
+  opacity: var(--figure-orbit, 1);
+}
+.landing-earth-figure-life {
+  opacity: var(--figure-life, 0);
+}
+.landing-earth-figure-crystal {
+  opacity: var(--figure-crystal, 0);
+}
+.landing-earth-figure-network {
+  opacity: var(--figure-network, 0);
+}
+.landing-earth-figure-contour {
+  opacity: var(--figure-contour, 0);
 }
 .landing-sr-only {
   position: absolute;

@@ -10,6 +10,7 @@ import {
   smoothstep,
 } from "./math";
 import { QualityManager } from "./QualityManager";
+import { earthObservation, earthPhase, figureWeights, FIGURES } from "./earth";
 import type { LandingRuntimeState, LandingVisual } from "./types";
 
 /** The sole animation clock. Scroll handlers store inputs; they never render. */
@@ -28,6 +29,8 @@ export class ExperienceDirector {
   private disposed = false;
   private media = window.matchMedia("(prefers-reduced-motion: reduce)");
   private semantic = "";
+  private earth = earthObservation(0);
+  private figures = figureWeights(0);
   constructor(
     private root: HTMLElement,
     private onSemantic: (state: LandingRuntimeState) => void,
@@ -212,6 +215,20 @@ export class ExperienceDirector {
     css.setProperty("--pointer-x", String(s.pointerX));
     css.setProperty("--pointer-y", String(s.pointerY));
     css.setProperty("--bone", String(s.bone));
+    const earth = earthObservation(s.scrollVh, s.reducedMotion, this.earth);
+    css.setProperty("--earth-light", String(earth.light));
+    css.setProperty("--earth-life", String(earth.life));
+    css.setProperty("--earth-matter", String(earth.matter));
+    css.setProperty("--earth-machine", String(earth.machine));
+    css.setProperty("--earth-dissolve", String(earth.dissolve));
+    const figures = figureWeights(s.scrollVh, this.figures);
+    for (const figure of FIGURES)
+      css.setProperty(`--figure-${figure}`, String(figures[figure]));
+    this.root.dataset.earthPhase = earthPhase(s.scrollVh);
+    this.root.dataset.earthDissolve = String(earth.dissolve);
+    this.root.dataset.connectedForm = FIGURES.reduce((a, b) =>
+      figures[a] >= figures[b] ? a : b,
+    );
     // Readable controls even when native scrolling stops halfway through the
     // inversion. The color mode is derived from the same gallery transition.
     css.setProperty("--ink-tone", s.bone < 0.475 ? "0" : "1");

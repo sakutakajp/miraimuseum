@@ -8,6 +8,101 @@ import {
   preserveProgressOnResize,
 } from "../app/experiences/landing/math";
 import { QualityManager } from "../app/experiences/landing/QualityManager";
+import {
+  earthObservation,
+  figureWeights,
+} from "../app/experiences/landing/earth";
+
+const scaleVh = (progress: number) => 1 + 2.6 * progress;
+
+describe("Earth observation choreography", () => {
+  it("retains an intact Earth through the four observations and their connected overlap", () => {
+    for (const progress of [0, 0.1, 0.28, 0.48, 0.7, 0.83, 0.86]) {
+      expect(earthObservation(scaleVh(progress)).dissolve).toBe(0);
+    }
+    const connected = earthObservation(scaleVh(0.85));
+    for (const layer of ["life", "matter", "machine", "connected"] as const) {
+      expect(connected[layer]).toBeGreaterThan(0);
+    }
+    expect(connected.light).toBeGreaterThan(earthObservation(0).light);
+    expect(earthObservation(scaleVh(0.95)).dissolve).toBeGreaterThan(0);
+    expect(earthObservation(3.6).dissolve).toBe(1);
+  });
+
+  it("reveals distinct surface observations without changing the globe into another object", () => {
+    expect(earthObservation(scaleVh(0.28)).life).toBeGreaterThan(
+      earthObservation(scaleVh(0.1)).life,
+    );
+    expect(earthObservation(scaleVh(0.48)).matter).toBeGreaterThan(
+      earthObservation(scaleVh(0.28)).matter,
+    );
+    expect(earthObservation(scaleVh(0.7)).machine).toBeGreaterThan(
+      earthObservation(scaleVh(0.48)).machine,
+    );
+  });
+
+  it("clamps all layer weights and remains deterministic when reversing or skipping scroll", () => {
+    const positions = [NaN, -8, 0, 0.5, 1, 1.9, 2.6, 3.2, 3.5, 3.6, 5.2, 20];
+    const snapshots = positions.map((vh) => earthObservation(vh));
+    for (const [index, vh] of positions.entries()) {
+      for (const value of Object.values(snapshots[index]!)) {
+        expect(Number.isFinite(value)).toBe(true);
+        expect(value).toBeGreaterThanOrEqual(0);
+        expect(value).toBeLessThanOrEqual(1);
+      }
+      expect(earthObservation(vh)).toEqual(snapshots[index]);
+    }
+    for (let index = positions.length - 1; index >= 0; index--) {
+      expect(earthObservation(positions[index]!)).toEqual(snapshots[index]);
+    }
+  });
+
+  it("preserves delayed breakup and connected layers with reduced motion", () => {
+    const connected = earthObservation(scaleVh(0.85), true);
+    expect(connected.dissolve).toBe(0);
+    expect(connected.connected).toBeGreaterThan(0);
+    expect(connected.life).toBeGreaterThan(0);
+    expect(connected.matter).toBeGreaterThan(0);
+    expect(connected.machine).toBeGreaterThan(0);
+    expect(earthObservation(3.6, true).dissolve).toBe(1);
+  });
+
+  it("gives the same particles several connected structures with bounded continuous blends", () => {
+    const forms = new Set<string>();
+    const snapshots = new Map<number, ReturnType<typeof figureWeights>>();
+    let previous = figureWeights(3.6);
+    for (let step = 0; step <= 160; step++) {
+      const vh = 3.6 + step / 100;
+      const weights = figureWeights(vh);
+      snapshots.set(vh, weights);
+      expect(
+        Object.values(weights).reduce((sum, value) => sum + value, 0),
+      ).toBeCloseTo(1);
+      const dominant = Object.entries(weights).reduce((best, entry) =>
+        entry[1] > best[1] ? entry : best,
+      );
+      forms.add(dominant[0]);
+      for (const key of Object.keys(weights) as (keyof typeof weights)[]) {
+        expect(weights[key]).toBeGreaterThanOrEqual(0);
+        expect(weights[key]).toBeLessThanOrEqual(1);
+        expect(Math.abs(weights[key] - previous[key])).toBeLessThan(0.3);
+      }
+      expect(figureWeights(vh)).toEqual(weights);
+      previous = weights;
+    }
+    expect([...forms].sort()).toEqual([
+      "contour",
+      "crystal",
+      "life",
+      "network",
+      "orbit",
+    ]);
+    for (const [vh, weights] of [...snapshots].reverse()) {
+      expect(figureWeights(vh)).toEqual(weights);
+    }
+  });
+});
+
 describe("landing timeline", () => {
   it("settles on exact scene boundaries in both scroll directions", () => {
     for (const target of [1, 3.6, 5.2]) {

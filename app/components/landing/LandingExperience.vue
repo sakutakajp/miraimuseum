@@ -12,7 +12,7 @@ const canvas = ref<HTMLCanvasElement>();
 const scene = ref<LandingScene>("threshold");
 const coreState = ref<CoreState>("");
 const noScriptMarkup =
-  '<div class="landing-nojs"><p>すべての学問は、つながっている。</p><p>宇宙も、生命も、数も、機械も。</p><a href="/museum">博物館へ →</a></div>';
+  '<div class="landing-nojs"><p>すべての学問は、つながっている。</p><p>宇宙も、生命も、数も、機械も。<br>見方を変えれば、同じ世界の一部になる。</p><a href="/museum">博物館へ →</a></div>';
 let director: ExperienceDirector | undefined;
 let disposed = false;
 onMounted(async () => {

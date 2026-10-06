@@ -7,7 +7,8 @@ import {
   WebGLRenderer,
 } from "three";
 import { CAMERA, PALETTE } from "../config";
-import { clamp, mix, smoothstep } from "../math";
+import { earthObservation } from "../earth";
+import { mix, smoothstep } from "../math";
 import type { LandingRuntimeState, LandingVisual } from "../types";
 import { MiraiCore } from "./MiraiCore";
 import { MiraiParticles } from "./MiraiParticles";
@@ -25,6 +26,7 @@ export class MuseumWorld implements LandingVisual {
   private background = new Color(PALETTE.obsidian);
   private disposed = false;
   private shaderFailed = false;
+  private observation = earthObservation(0);
   constructor(
     private canvas: HTMLCanvasElement,
     state: LandingRuntimeState,
@@ -46,12 +48,30 @@ export class MuseumWorld implements LandingVisual {
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.12;
-    this.renderer.debug.onShaderError = () => {
+    this.renderer.debug.onShaderError = (gl, program, vertex, fragment) => {
       this.shaderFailed = true;
+      if (import.meta.dev)
+        console.error(
+          "MIRAI Earth shader",
+          gl.getProgramInfoLog(program),
+          gl.getShaderInfoLog(vertex),
+          gl.getShaderInfoLog(fragment),
+        );
     };
     this.scene.background = this.background;
-    this.core = new MiraiCore(state.quality);
-    this.particles = new MiraiParticles();
+    this.core = new MiraiCore(
+      state.quality,
+      () => {
+        if (!this.disposed) this.fail();
+      },
+      () => {
+        if (!this.disposed)
+          canvas.closest<HTMLElement>(".landing")!.dataset.earthReady = "true";
+      },
+    );
+    canvas.closest<HTMLElement>(".landing")!.dataset.earthObject =
+      this.core.mesh.uuid;
+    this.particles = new MiraiParticles(this.core.textures);
     this.specimen.add(this.core.mesh, this.particles.points);
     this.scene.add(this.specimen);
     canvas.addEventListener("webglcontextlost", this.contextLost);
@@ -80,14 +100,12 @@ export class MuseumWorld implements LandingVisual {
   }
   update(s: LandingRuntimeState) {
     if (this.disposed) return;
-    const scale = clamp((s.scrollVh - 1) / 2.6);
-    const morph =
-      1 +
-      smoothstep(0.12, 0.23, scale) +
-      smoothstep(0.32, 0.43, scale) +
-      smoothstep(0.52, 0.64, scale);
-    const dissolve = smoothstep(0.78, 0.99, scale);
-    const settle = smoothstep(3.52, 4.92, s.scrollVh);
+    const dissolve = earthObservation(
+      s.scrollVh,
+      s.reducedMotion,
+      this.observation,
+    ).dissolve;
+    const settle = smoothstep(3.52, 3.96, s.scrollVh);
     const portrait =
       s.viewportWidth < 760 && s.viewportHeight > s.viewportWidth;
     const preset = portrait ? CAMERA.mobile : CAMERA.desktop;
@@ -97,7 +115,7 @@ export class MuseumWorld implements LandingVisual {
       mix(preset.thresholdY, preset.scaleY, center) * (1 - settle),
       0,
     );
-    this.core.update(s, morph, dissolve);
+    this.core.update(s, dissolve);
     // The final latent figure is stable in the gallery coordinate system.
     const rotation = this.core.mesh.rotation;
     this.particles.points.rotation.set(
@@ -105,7 +123,7 @@ export class MuseumWorld implements LandingVisual {
       rotation.y * (1 - settle),
       rotation.z * (1 - settle),
     );
-    this.particles.update(s, morph, dissolve, settle);
+    this.particles.update(s, dissolve, settle);
     this.camera.update(s);
     // Match CSS color-mix in display space, then convert to Three's working space.
     this.background.setRGB(

@@ -5,7 +5,7 @@ Scene 00–02 are implemented from `landing-page-scenes-00-02.md`. Scene 03 and 
 ## Routes
 
 - `/`: Threshold → Scale Shift → Everything Is Connected.
-- `/museum`: the existing museum, Dinosaur Dash, STAR DIVE, saved progress, language selection and discoveries. No game runtime or storage format was changed.
+- `/museum`: the existing museum, DEEP TIME, STAR DIVE, saved progress and language selection. This landing update does not change game runtime or storage formats.
 
 The opening keeps an always-available museum link and a quiet entry link at the end of Scene 02. Museum assets are not prefetched from the opening.
 
@@ -15,20 +15,26 @@ The opening keeps an always-available museum link and a quiet entry link at the 
 
 The timeline follows 0–100 / 100–360 / 360–520 viewport-height units of **scroll travel**. The track includes the sticky viewport, so its document height is 620 viewport units. The same canvas, camera, specimen and particle field stay mounted across all three scenes. Camera composition has separate portrait presets. Browser chrome/viewport height changes preserve normalized scroll position.
 
-CORE uses a procedural displaced icosphere, restrained grazing light, mineral microtexture, membrane response, crystal lattice and ordered machine bands. Its point shell shares the displacement function and dissolves along a coherent noise threshold. The resulting particles settle into a latent orbital figure behind the Scene 02 statement. The canvas background, particle palette and DOM color mode share one black-to-bone transition value. No external models, textures, videos or post-processing chain are required.
+MIRAI CORE is now one persistent Earth: **the planet stays the same; the observation changes**. Its sphere, geographic coordinates, silhouette and object identity remain stable from Threshold through SPACE / LIFE / MATTER / MACHINE. Threshold begins almost black, revealing a thin atmosphere, cloud fragments and restrained ocean reflection before scroll introduces the continents, ocean and terminator. LIFE adds muted vegetation and ocean filaments; MATTER adds localized strata and mineral seams inside the surface; MACHINE adds warm city light at actual locations and a single incomplete orbital trace. No cell, crystal or machine replaces the planet.
+
+`earth.ts` owns pure, reversible observational weights. Scene 01 retains the specification's four label ranges. A short CONNECTED interval shows all observations together; dissolution remains zero until 87% of Scene 01. Only then do surface fragments and sampled points leave the Earth. The point field and its fine line segments inherit the same sphere coordinates, coherent breakup threshold and geographic colors. Scene 02 briefly suggests orbit, membrane/cell, crystal, sparse network and geographic contour through five precomputed target families. Its headline and supporting copy, typography, margins and DOM reveal timing are retained. The canvas background, particle palette and DOM color mode still share the original black-to-bone transition value.
+
+Four local WebP textures total about 1.2 MiB. NASA Blue Marble geography and Earth at Night supply the day surface and city locations; Natural Earth supplies the land mask. The small cloud texture and illustrative relief/vegetation channels are authored derivatives, not live weather or scientific elevation data. Source revisions, checksums, licensing and texture contracts are documented in [the asset notes](../public/landing-earth/README.md). The offline script `scripts/build-landing-earth-assets.py` regenerates them; build/runtime require neither Python nor external requests. There are no external models, videos or post-processing chains.
 
 `QualityManager` starts from device characteristics, caps DPR, measures sustained frame intervals after warm-up, reduces resolution before detail, and only moves downward during a visit. WebGL initialization/import/shader failure, context loss or sustained poor performance switch to the static visual treatment without an error panel. Geometries, materials, renderer, audio and listeners are disposed when entering the museum.
 
-Reduced motion disables pointer parallax, idle rotation, pulsing and camera travel; native scroll, copy order, material states and the gallery inversion remain. Canvas and decoration are hidden from assistive technology. Semantic blocks remain in DOM order without live announcements. The optional soundscape begins muted and creates its AudioContext only after a user gesture; both animation and audio pause when hidden.
+Reduced motion disables pointer parallax, idle rotation, cloud drift, particle drift and camera travel; native scroll, copy order, observational cross-state changes and the gallery inversion remain. Quality tiers reduce resolution, sampling and surface embellishments while retaining Earth geography and all observations. The static treatment uses an orthographically projected SVG Earth with the same layers and varied Scene 02 contours, rather than a stone or atomic icon. Canvas and decoration are hidden from assistive technology. Semantic blocks remain in DOM order without live announcements. The optional soundscape begins muted and creates its AudioContext only after a user gesture; both animation and audio pause when hidden.
 
 ## Verification
 
 - `npm run typecheck`
-- `npm test` — timeline boundaries, damping, viewport preservation and downward-only quality policy, plus existing game tests.
+- `npm test` — timeline boundaries, damping, viewport preservation, downward-only quality policy, intact Earth/connected-before-breakup and normalized reversible figure weights, plus existing game tests.
 - `npm run build`
-- `npx playwright test` — landing semantics, native/reverse scrolling, mobile/reduced motion, fallback, no-JavaScript entry, context loss/visibility, and existing game flows.
+- `npx playwright test` — landing semantics, stable Earth UUID and canvas through observations, connected-before-breakup, five figure families, native/reverse scrolling, mobile/reduced motion, fallback, no-JavaScript entry, context loss/visibility, and existing game flows.
 - `npm run test:star-dive` — existing runtime, score persistence, retry and renderer recovery.
 
 Visual review uses 1440 × 900, 1280 × 800, 390 × 844 and 430 × 932 browser viewports, including forward/reverse transitions and static treatment. Physical iPhone Safari/GPU performance still requires a device check; Chromium viewport emulation does not substitute for that measurement.
+
+Earth update verification: typecheck and production build passed; all 84 unit tests and 12 production Playwright cases passed. Visual review covered all observations and five connected structures, portrait composition, low quality, reduced motion and SVG fallback, with no page errors. Under concurrent software-GPU tests, the atmospheric shell initially delayed boundary settling; rendering only its outer rim, reducing its geometry and skipping unused breakup calculations resolved the failure without changing timeline thresholds or test timeouts.
 
 All art-direction presets live under `app/experiences/landing`, and all landing styling is namespaced in `landing.css`. The legacy museum/game CSS remains intact.
