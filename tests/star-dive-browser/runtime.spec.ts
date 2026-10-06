@@ -16,7 +16,7 @@ test("section visuals, pause/visibility, clear persistence and exhibit", async (
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/?starDiveDebug=1");
+  await page.goto("/museum?starDiveDebug=1");
   await expect(page.locator(".v2-shell[data-ready=true]")).toBeVisible();
   await page.getByRole("button", { name: "English", exact: true }).click();
   await start(page);
@@ -120,7 +120,7 @@ test("failure keeps BEST unchanged, retries quickly, and safely handles context 
       }),
     );
   });
-  await page.goto("/?starDiveDebug=1");
+  await page.goto("/museum?starDiveDebug=1");
   await expect(page.locator(".v2-shell[data-ready=true]")).toBeVisible();
   await start(page);
   await page.getByRole("button", { name: "Debug fail", exact: true }).click();
@@ -167,7 +167,7 @@ test("unavailable WebGL2 shows a recoverable museum error", async ({
       return original.apply(this, args);
     } as typeof original;
   });
-  await page.goto("/?starDiveDebug=1");
+  await page.goto("/museum?starDiveDebug=1");
   await expect(page.locator(".v2-shell[data-ready=true]")).toBeVisible();
   await page
     .locator(".v2-card")

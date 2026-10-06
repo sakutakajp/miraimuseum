@@ -22,6 +22,10 @@ North Starは「インターネット上に存在する、まだ誰も見たこ�
 
 ## 現在の実装と次のMVP
 
+ランディング Phase 1（Scene 00〜02）を実装済み。`/` でMIRAI COREのThreshold → Scale Shift → Everything Is Connectedを体験できる。単一のThree.js Canvas、スクロール連動、モバイル専用構図、reduced-motion、段階的な品質低下、WebGL/static fallbackを備える。[実装・検証メモ](docs/landing-page-phase1.md) を参照。
+
+既存の博物館とゲームは `/museum` で利用でき、ランディングの「博物館へ」から入館する。
+
 V2 MVPとして、共通のゲーム一覧・詳細・ステージ選択と、恐竜／宇宙のStage 1を実装済み。
 
 - 今日のおすすめ（日付ごとに交互に選出）、テーマ／あそびかたによる絞り込み

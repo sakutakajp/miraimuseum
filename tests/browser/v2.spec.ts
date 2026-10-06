@@ -15,7 +15,7 @@ test("museum navigation, 2D failure, records and language persistence", async ({
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/?starDiveDebug=1");
+  await page.goto("/museum?starDiveDebug=1");
   await page.getByRole("button", { name: "English", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "A world of games awaits." }),
@@ -74,7 +74,7 @@ test("3D shooting renders, pauses, moves, clears and returns to shared shell", a
       }),
     ),
   );
-  await page.goto("/?starDiveDebug=1");
+  await page.goto("/museum?starDiveDebug=1");
   await page.getByRole("button", { name: "English", exact: true }).click();
   await openGame(page, "MIRAI: STAR DIVE");
   await expect(page.locator("canvas")).toBeVisible();
@@ -111,7 +111,7 @@ test("3D shooting renders, pauses, moves, clears and returns to shared shell", a
 test("dinosaur clear with keyboard jumps and responsive Japanese museum", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/museum");
   for (const width of [320, 1280, 390]) {
     await page.setViewportSize({ width, height: 844 });
     expect(
@@ -177,7 +177,7 @@ test("shooting hits show burst particles and score feedback", async ({
       }),
     ),
   );
-  await page.goto("/");
+  await page.goto("/museum");
   await page.getByRole("button", { name: "English", exact: true }).click();
   await openGame(page, "MIRAI: STAR DIVE");
   await expect(page.locator("canvas")).toBeVisible();
