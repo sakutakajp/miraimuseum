@@ -13,28 +13,40 @@ const land =
           <circle cx="250" cy="250" r="209" />
         </clipPath>
         <clipPath :id="`${id}-land`"><path :d="land" /></clipPath>
-        <radialGradient :id="`${id}-ocean`" cx="28%" cy="22%" r="83%">
-          <stop stop-color="#263945" />
-          <stop offset=".46" stop-color="#14232e" />
-          <stop offset="1" stop-color="#070c13" />
-        </radialGradient>
-        <radialGradient :id="`${id}-shade`" cx="26%" cy="22%" r="84%">
-          <stop stop-color="#020408" stop-opacity="0" />
-          <stop offset=".36" stop-color="#020408" stop-opacity=".17" />
-          <stop offset=".71" stop-color="#020408" stop-opacity=".72" />
-          <stop offset="1" stop-color="#020408" stop-opacity=".98" />
-        </radialGradient>
-        <radialGradient :id="`${id}-glint`" cx="26%" cy="34%" r="29%">
-          <stop stop-color="#c4c9bc" stop-opacity=".28" />
-          <stop offset=".34" stop-color="#b8c6c4" stop-opacity=".06" />
-          <stop offset="1" stop-color="#c4c9bc" stop-opacity="0" />
-        </radialGradient>
-        <linearGradient :id="`${id}-atmosphere`" x1="0" y1="0" x2="1" y2="1">
-          <stop stop-color="#ccd7d9" stop-opacity=".12" />
-          <stop offset=".3" stop-color="#ccd7d9" stop-opacity=".7" />
-          <stop offset=".59" stop-color="#657b89" stop-opacity=".12" />
-          <stop offset="1" stop-color="#314b5d" stop-opacity="0" />
-        </linearGradient>
+        <g :id="`${id}-cloud-bodies`" fill="none" stroke-linecap="round">
+          <path
+            d="M79 157C101 144 116 147 132 161S159 177 176 175M166 98C192 85 218 86 239 94S276 111 304 103M219 345C206 355 193 354 183 359S163 375 172 383M346 315C362 330 379 326 393 333S422 346 430 363"
+            stroke-width="4.5"
+            opacity=".17"
+          />
+          <path
+            d="M82 155C101 145 116 149 134 165S158 174 173 173M169 96C192 86 211 87 229 92M244 99C260 107 280 110 295 105M213 351C197 358 184 355 173 367S167 379 179 382M350 319C364 330 380 327 395 337M407 341C419 346 428 356 430 366"
+            stroke-width="1.8"
+            opacity=".43"
+          />
+          <path
+            d="M113 258C127 248 144 256 146 270C148 284 134 292 123 286C110 279 114 263 126 261C137 259 140 272 133 277M382 154C395 171 422 178 439 194M191 424C228 433 252 428 274 435"
+            stroke-width="1.3"
+            opacity=".25"
+          />
+        </g>
+        <g :id="`${id}-cloud-filaments`" fill="none" stroke-linecap="round">
+          <path
+            d="M77 152C94 142 111 145 122 152M87 158l8-3m7-1 7 2m12 5 8 6m7 3 9 3M84 162C104 152 114 158 126 167M114 163l6 5m8 3 7 3m8 2 13 1M135 164l5 4m7 2 8 3m7 1 9-1M78 165l5-2m9-3 6-1M162 94C188 81 214 83 234 90M171 101C191 91 208 91 223 95M181 89l8-2m7-1 10 1m9 1 7 2M224 96l9 4m8 3 13 4m8 1 11 1m7-1 12-3M233 91C256 102 278 108 302 99M253 114l10 2m8 0 14-1m7-2 8-3M296 106l10-4m6-3 8-5M316 88l8-4"
+            stroke-width=".65"
+            opacity=".54"
+          />
+          <path
+            d="M204 347l7-3m-12 9-7 2m-7 0-8 4m-5 4-5 6M217 354C202 363 190 358 179 367C171 374 174 380 181 381M218 363l-7 4m-8 0-8 1m-5 3-5 5M198 353l-6 2m-7 4-7 6m-6 8 2 5m5 3 7-1M187 384l9-3m6-4 6-3M342 315l8 7m7 4 8 2m7-1 9 1m7 3 7 4M356 316C368 327 383 320 398 329M398 337l8 5m8 3 7 8m3 5 4 7M353 329l8 4m9 1 7-1m7 1 6 3M417 333l8 7m5 8 4 9"
+            stroke-width=".6"
+            opacity=".48"
+          />
+          <path
+            d="M103 258C109 248 125 246 134 251M111 268C110 280 119 292 131 291M121 258C132 252 144 265 140 273C136 284 122 281 122 272C122 266 131 265 133 269M138 282l-5 4m-15 0-5-5M120 241l7-1m8 2 6 3M373 149l7 7m7 11 8 5m8 3 9 2m6 5 7 7M381 160C393 178 414 181 428 195M392 427l9-3m-221-3 13 4m8 3 15 2m9-1 14 1m8-1 13 2m9 1 12 3"
+            stroke-width=".55"
+            opacity=".4"
+          />
+        </g>
         <filter
           :id="`${id}-surface-grain`"
           x="0"
@@ -50,6 +62,9 @@ const land =
             result="grain"
           />
           <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncA type="linear" slope=".16" />
+          </feComponentTransfer>
           <feComposite in2="SourceGraphic" operator="in" />
           <feBlend in="SourceGraphic" mode="soft-light" />
         </filter>
@@ -68,42 +83,26 @@ const land =
         </pattern>
       </defs>
       <g class="landing-earth-surface" :clip-path="`url(#${id}-sphere)`">
-        <circle cx="250" cy="250" r="209" :fill="`url(#${id}-ocean)`" />
+        <circle cx="250" cy="250" r="209" fill="#26336f" />
         <path
           class="landing-earth-land"
           :d="land"
-          fill="#67705b"
+          fill="#586c46"
           :filter="`url(#${id}-surface-grain)`"
         />
         <g :clip-path="`url(#${id}-land)`" opacity=".46">
           <path
             d="M235 267C270 246 309 231 346 252L355 302L306 311L253 298Z"
-            fill="#9d8c6b"
+            fill="#a39370"
           />
-          <path d="M343 168L433 166L461 227L409 246L354 218Z" fill="#8b8069" />
-          <path d="M252 299L320 291L331 348L297 399L277 373Z" fill="#485e4d" />
+          <path d="M343 168L433 166L461 227L409 246L354 218Z" fill="#8f8663" />
+          <path d="M252 299L320 291L331 348L297 399L277 373Z" fill="#3f5c3d" />
         </g>
-        <g
-          class="landing-earth-clouds"
-          fill="none"
-          stroke="#c5cdc6"
-          stroke-linecap="round"
-        >
-          <path
-            d="M85 153C120 141 135 161 152 172S178 169 195 173M93 166C120 156 137 171 151 176M157 95C193 79 229 78 252 89S302 106 326 95M159 104C189 89 233 90 252 99M216 341C196 358 172 352 160 366S157 385 179 389M232 351C210 370 189 363 177 377M339 309C355 328 389 315 409 329S433 350 432 367M350 321C376 338 400 327 419 347M382 152C395 172 427 179 444 199"
-            stroke-width="6"
-            opacity=".2"
-          />
-          <path
-            d="M75 155C114 137 138 164 167 171M158 98C203 77 239 81 265 96S302 103 320 94M210 344C182 363 165 358 158 374S168 385 183 386M345 314C371 336 404 314 431 349"
-            stroke-width="2.2"
-            opacity=".42"
-          />
-          <path
-            d="M101 250C135 238 151 256 151 272C151 289 131 295 119 284C108 274 117 260 128 264"
-            stroke-width="2"
-            opacity=".23"
-          />
+        <g class="landing-earth-clouds">
+          <g stroke="#e4e6ee">
+            <use :href="`#${id}-cloud-bodies`" />
+            <use :href="`#${id}-cloud-filaments`" />
+          </g>
         </g>
         <g class="landing-earth-life">
           <g :clip-path="`url(#${id}-land)`">
@@ -162,14 +161,12 @@ const land =
             <path d="M278 161h4v4h-4Zm-24-11h3v3h-3Zm136 88h3v3h-3Z" />
           </g>
         </g>
-        <circle cx="250" cy="250" r="209" :fill="`url(#${id}-glint)`" />
-        <circle cx="250" cy="250" r="209" :fill="`url(#${id}-shade)`" />
         <circle
           class="landing-earth-threshold-shadow"
           cx="250"
           cy="250"
           r="209"
-          fill="#030509"
+          fill="#000000"
         />
       </g>
       <circle
@@ -178,8 +175,9 @@ const land =
         cy="250"
         r="209.7"
         fill="none"
-        :stroke="`url(#${id}-atmosphere)`"
-        stroke-width="1.3"
+        stroke="#53608e"
+        opacity=".2"
+        stroke-width="1.15"
       />
       <g
         class="landing-earth-machine"

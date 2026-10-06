@@ -77,7 +77,7 @@ export class MiraiCore {
       new IcosahedronGeometry(1, 10),
       atmosphereMaterial(),
     );
-    this.atmosphere.scale.setScalar(1.014);
+    this.atmosphere.scale.setScalar(1.009);
     this.atmosphere.renderOrder = 1;
     this.mesh.add(this.atmosphere);
 
@@ -128,20 +128,17 @@ export class MiraiCore {
     const reveal = s.reducedMotion ? 1 : smoothstep(0.3, 0.85, s.elapsed);
     u.uTime!.value = s.reducedMotion ? 0 : s.elapsed;
     u.uDissolve!.value = dissolve;
-    u.uLight!.value = earth.light;
+    u.uVisibility!.value = earth.light;
     u.uLayers!.value.set(
       earth.life,
       earth.matter,
       earth.machine,
       earth.connected,
     );
-    u.uRimStrength!.value = 0.34 + earth.light * 0.12;
     u.uReveal!.value = reveal;
-    u.uPointer!.value.set(s.pointerX, s.pointerY);
-    u.uVelocity!.value = s.reducedMotion ? 0 : s.scrollVelocity;
     const a = this.atmosphere.material.uniforms;
     a.uReveal!.value = reveal;
-    a.uLight!.value = earth.light;
+    a.uVisibility!.value = earth.light;
     a.uDissolve!.value = dissolve;
     this.mesh.rotation.y =
       -1.65 + (s.reducedMotion ? 0 : s.elapsed * 0.009 + s.pointerX * 0.035);

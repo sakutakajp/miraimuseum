@@ -2,7 +2,8 @@
 
 These textures are bundled locally; the landing page makes no runtime request
 to NASA, a tile server, or a third-party CDN. Geography is the same across all
-observation layers. Lighting, visibility, and overlays belong to the renderer.
+observation layers. Visibility and overlays belong to the renderer; the Earth
+uses unlit colors without filmic tone mapping.
 
 ## Sources and rights
 
@@ -38,7 +39,7 @@ declares its datasets public domain. Credit: Natural Earth contributors / NACIS.
 **Relief / vegetation channels and clouds:** original MIRAI MUSEUM authored
 derivatives. Relief is an illustrative field derived from the NASA day image's
 land color and the Natural Earth coastline. It is **not a scientific elevation
-model**. Cloud coverage is deterministic procedural cirrus/jet-belt artwork,
+model**. Clouds are deterministic procedural cumulus/front/cirrus artwork,
 **not a satellite cloud observation or current weather**. These fields support
 the art direction without adding large terrain/weather assets.
 
@@ -55,20 +56,29 @@ All maps are ordinary equirectangular maps, no mirrored longitude:
   `v = asin(y) / π + 0.5` for a normalized sphere-local vector.
 - Horizontal wrap is `RepeatWrapping`; vertical wrap is `ClampToEdgeWrapping`.
 
-| Local path | Dimensions | Channels | Three.js color space |
-| --- | --- | --- | --- |
-| `/landing-earth/day.webp` | 2048 × 1024 | RGB NASA day albedo | `SRGBColorSpace` |
-| `/landing-earth/night.webp` | 2048 × 1024 | RGB warm city-light emission, black background | `SRGBColorSpace` |
-| `/landing-earth/relief.webp` | 2048 × 1024 | R: illustrative relief; G: vegetation confidence; B: actual coastline land mask | `NoColorSpace` |
-| `/landing-earth/clouds.webp` | 1024 × 512 | Grayscale cloud coverage, 0–1 | `NoColorSpace` |
+| Local path                   | Dimensions  | Channels                                                                                   | Three.js color space |
+| ---------------------------- | ----------- | ------------------------------------------------------------------------------------------ | -------------------- |
+| `/landing-earth/day.webp`    | 2048 × 1024 | RGB NASA day albedo                                                                        | `SRGBColorSpace`     |
+| `/landing-earth/night.webp`  | 2048 × 1024 | RGB warm city-light emission, black background                                             | `SRGBColorSpace`     |
+| `/landing-earth/relief.webp` | 2048 × 1024 | R: illustrative relief; G: vegetation confidence; B: actual coastline land mask            | `NoColorSpace`       |
+| `/landing-earth/clouds.webp` | 2048 × 1024 | R: lower-cloud coverage; G: relative optical height; B: thin high-altitude cirrus coverage | `NoColorSpace`       |
 
 Relief/vegetation are zero in the ocean. Antialiased coastline pixels may be
-between zero and one. Use the **B channel** for ocean specular masking; use G
+between zero and one. Use the **B channel** to separate land from ocean; use G
 only as a subdued vegetation overlay. Keep relief internal to the surface:
-it must not distort the recognizable Earth silhouette. Cloud coverage uses
-no alpha channel; sample R. Cloud seams are periodic, with restrained pole
-coverage. The texture samples alone do not define the opening exposure:
-the Threshold stays almost black through authored directional light and rim.
+it must not distort the recognizable Earth silhouette. Clouds use three
+packed linear fields, with no alpha channel. R and B drive the lower and
+upper cloud layers; G retains density-correlated relative height as authoring
+data. The unlit renderer does not use it for cloud shading. G is an artistic
+relative height, not a physical altitude.
+Local vortices bend broken cloud fronts, while anisotropic high-frequency
+noise supplies fine cirrus fibers. The baked flow is deterministic and adds no
+runtime simulation. Cloud seams are periodic, with restrained pole coverage.
+The packed 2048 × 1024 map is WebP quality 92 (about 351 KiB), keeping the fine
+cloud structure without the 1.5 MB lossless authoring image. The texture
+samples alone do not define the opening exposure:
+the Threshold stays almost black through a uniform brightness fade. The full
+palette is shown without a directional lamp, specular glint or cast shadow.
 
 ## Reproduction
 

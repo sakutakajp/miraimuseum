@@ -374,7 +374,7 @@
   opacity: calc(0.94 * (1 - var(--earth-light, 0)));
 }
 .landing-earth-clouds {
-  opacity: calc(0.18 + var(--earth-light, 0) * 0.82);
+  opacity: 1;
 }
 .landing-earth-life {
   opacity: var(--earth-life, 0);
