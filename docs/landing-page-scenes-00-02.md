@@ -203,58 +203,110 @@ DOM transforms should prefer these properties and CSS transforms/opacity over re
 
 ---
 
-## 7. MIRAI CORE: Phase 1 visual construction
+## 7. MIRAI CORE: Earth as the persistent object
 
-MIRAI CORE is the visual anchor of the entire future landing page. Do not implement Scene 00 with a disposable hero object.
+MIRAI CORE is Earth.
 
-For Phase 1, build a procedural CORE that is art-directable without external 3D assets:
+This replaces the earlier ambiguous procedural orb direction. The visual concept is no longer that one mysterious object morphs into unrelated forms. The new rule is:
 
-- high-enough-resolution icosphere as the base volume
-- custom shader displacement driven by coherent 3D noise
-- controlled Fresnel/rim response
-- restrained internal glow
-- a second shell or point layer used only during transitions
-- instanced/points particle field for dissolution
+> The Earth does not change. The way we see it changes.
 
-The goal is mineral / celestial / biological ambiguity. It should not look like a glossy SaaS orb, generic wireframe globe, or neon plasma ball.
+Keep one recognizable Earth silhouette, rotation axis, and spatial identity through Scene 00 and Scene 01. SPACE, LIFE, MATTER, and MACHINE are observation layers applied to the same world.
 
-### Material parameters
+This decision is a conceptual constraint, not just an asset swap.
 
-The material interface should support:
+### Earth construction
 
-    uTime
-    uMorph
-    uDissolve
-    uNoiseScale
-    uNoiseStrength
-    uRimStrength
-    uColorA
-    uColorB
-    uPointer
-    uVelocity
+Build the Earth as a small set of coordinated render layers:
 
-Do not make scroll velocity produce large wobble. It may contribute a very small transient energy response.
+- base Earth sphere: restrained ocean / continent response
+- cloud shell: independently slow rotating, low-contrast
+- atmosphere shell: thin Fresnel / scattering rim
+- night-side light layer: subtle, not a glowing city-map billboard
+- observation layer shell(s): LIFE / MATTER / MACHINE masks and graphics
+- point / contour representation used only near CONNECTED dissolution
+
+The first frame should be dark enough that the visitor initially reads a mysterious spherical exhibit. Scroll/light reveals that it is Earth.
+
+Do not use a bright stock Blue Marble look.
 
 ### State vocabulary
 
-The same CORE moves through these visual states:
+| State | What remains constant | What changes |
+|---|---|---|
+| Threshold | Earth silhouette | only atmosphere rim, cloud edges, small specular clues |
+| SPACE | Earth | atmosphere, ocean, clouds, night side become legible |
+| LIFE | Earth | biosphere / vegetation / organic surface patterns invade the surface |
+| MATTER | Earth | local surface masks reveal geology, plates, mineral/crystal structures |
+| MACHINE | Earth | city light, orbital/infrastructure/communication abstractions form an artificial layer |
+| CONNECTED | Earth until the final beat | all layers briefly coexist, then the sphere dissolves into points/contours |
 
-| State | Read | Surface behavior | Color tendency |
-|---|---|---|---|
-| Void | object emerging from darkness | almost no displacement | black / cold white |
-| Planet | macro/cosmic | slow broad terrain noise | graphite / mineral blue |
-| Life | membrane/cell | soft low-frequency pulse | bone / muted green |
-| Matter | crystal/lattice | faceted, sharper response | clear white / amber hint |
-| Machine | engineered system | ordered bands and fine lines | graphite / controlled cyan |
-| Points | knowledge becoming data | surface breaks into particles | white / theme accents |
+### Required shader / material controls
 
-These are perceptual states, not six separate loaded scenes.
+The exact shader architecture may change, but the visual system needs equivalent controls for:
 
-### Transition strategy
+    uTime
+    uObservationProgress
+    uLifeMix
+    uMatterMix
+    uMachineMix
+    uDissolve
+    uNightMix
+    uAtmosphereStrength
+    uPointer
+    uVelocity
 
-Prefer parameter morphs and particle-shell reveals. If two geometries are necessary, keep both in the same scene and cross-dissolve using a noise threshold so the swap has no obvious opacity fade.
+If textures are used, load only the resolutions justified by the current quality tier.
 
-Avoid visible model popping.
+### LIFE
+
+LIFE must not be a neon-green Earth.
+
+Prefer:
+
+- muted biosphere response
+- organic branching / cell-like microstructure close to the surface
+- subtle ocean particle activity
+- a short moment where the planet can be perceived as one living system
+
+### MATTER
+
+MATTER must not replace Earth with a crystal.
+
+Prefer:
+
+- localized surface erosion / masks
+- geological bands or plate boundaries
+- mineral/crystal lattice invading only parts of the surface
+- transition from planetary scale toward material scale while the globe silhouette remains
+
+Do not make a literal schoolbook cross-section unless a later exhibition specifically requires one.
+
+### MACHINE
+
+MACHINE must not become a generic blue network globe.
+
+Prefer:
+
+- night-side human light
+- sparse orbital traces
+- infrastructure and communication as a fine artificial layer
+- an impression that civilization has added another geological layer to Earth
+
+Avoid dozens of glowing arcs joining capitals.
+
+### CONNECTED / dissolve
+
+Only after SPACE, LIFE, MATTER, and MACHINE have all been experienced may Earth begin to lose its physical surface.
+
+Dissolution should:
+
+1. preserve the sphere silhouette for the first half of the transition;
+2. detach points/contours from the surface coherently;
+3. allow fragments to carry hints of all four observation layers;
+4. prepare the Bone White Scene 02 composition.
+
+Do not replace the Earth with another hero mesh before this point.
 
 ---
 
@@ -301,142 +353,159 @@ Range: 0–100vh.
 
 Do not add a paragraph explaining the museum here.
 
-### Initial load choreography
+### Visual premise
 
-Use elapsed time for the initial reveal, then blend control into scroll.
+The visitor is already looking at Earth, but should not identify it immediately.
+
+The composition keeps the current premium dark opening: a huge sphere sits in darkness to the right of the title. Only a narrow atmosphere rim, cloud edge, and tiny ocean/specular clues are visible.
+
+The reveal should create a delayed recognition:
+
+> mysterious exhibit → sphere → Earth
+
+Do not make the first frame a conventional bright blue planet.
+
+### Initial load choreography
 
 | Time | Visual |
 |---|---|
-| 0.0–0.3s | near-black field, no hard loader flash |
-| 0.3–0.8s | a narrow CORE rim becomes visible |
-| 0.65–1.15s | MIRAI MUSEUM resolves with slight tracking motion |
+| 0.0–0.3s | near-black field |
+| 0.3–0.8s | narrow atmosphere rim appears |
+| 0.65–1.15s | MIRAI MUSEUM resolves |
 | 0.9–1.4s | Japanese name and English line appear |
 | 1.25–1.8s | SCROLL TO ENTER appears |
-| 1.8s+ | idle breathing state |
-
-The loader, if needed, must visually belong to the opening. Never display a generic spinner.
+| 1.8s+ | barely visible Earth rotation / cloud drift |
 
 ### Scroll choreography
 
-Scene progress 0.0–0.35:
+0.00–0.35:
 
-- CORE stays mostly stable.
-- title remains fully readable.
-- camera advances imperceptibly.
+- Earth remains extremely dark.
+- title stays fully readable.
+- atmosphere and cloud shell provide the main evidence of form.
 
 0.35–0.70:
 
-- SCROLL TO ENTER fades first.
-- brand copy moves no more than 24px equivalent.
-- CORE surface noise reveals more structure.
-- light shifts from pure edge light toward mineral relief.
+- SCROLL TO ENTER leaves first.
+- key light moves enough to reveal hints of ocean and continent.
+- Earth identity becomes readable without becoming bright.
 
-0.70–1.0:
+0.70–1.00:
 
-- brand copy exits with a mask/clip reveal, not a global fade.
-- camera moves into the CORE.
-- black space becomes surface texture.
-- Scene 01 starts before Scene 00 feels fully gone.
+- brand copy exits through mask/clip.
+- camera/light transition flows directly into SPACE.
+- same Earth instance, same rotation, no scene swap.
 
 ### Pointer / touch
 
-Desktop pointer may affect CORE rotation and light vector by a small amount only:
+Desktop pointer may influence Earth/light by only a small amount:
 
-- maximum visual rotation: roughly 2–3°
-- no cursor-following blob
-- no magnetic text
+- maximum visual rotation response roughly 2–3°
+- never make Earth behave like a draggable product model
+- no cursor-following glow blob
 
-On touch, use the latest touch position only while the user is actively touching. Never block vertical scroll.
+Touch must never block vertical scroll.
 
 ### Sound
 
 Sound is opt-in.
 
-Show a small sound control after the first visual has stabilized. Do not trigger audio playback before a user gesture.
-
 If enabled:
 
 - quiet room tone
-- very low CORE resonance
+- extremely low atmospheric / planetary resonance
 - no voiceover
 
-The page must lose no meaning while muted.
+The page loses no meaning while muted.
 
 ---
 
 ## 10. Scene 01 — Scale Shift
 
 Range: 100–360vh.  
-Behavior: sticky 100dvh visual stage while the document advances.
+Behavior: sticky 100dvh visual stage.
 
-This is the technical centerpiece of Phase 1.
+This is Phase 1's conceptual and technical centerpiece.
 
-The user should feel that one object has become different ways of seeing reality, not that a carousel is switching slides.
+The visitor does not watch Earth turn into other objects. The visitor watches the same Earth become legible through four different disciplines.
 
 ### Progress map
 
-| Scene progress | State | Small label | Primary action |
+| Progress | View | Label | Primary visual change |
 |---|---|---|---|
-| 0.00–0.18 | Planet | SPACE | travel along a dark mineral surface |
-| 0.18–0.38 | Life | LIFE | relief softens into membrane-like motion |
-| 0.38–0.58 | Matter | MATTER | form sharpens into crystal/lattice |
-| 0.58–0.79 | Machine | MACHINE | ordered structure appears |
-| 0.79–1.00 | Points | — | surface dissolves into point field |
+| 0.00–0.20 | Earth / cosmic | SPACE | atmosphere, clouds, ocean, night side become legible |
+| 0.20–0.40 | Biosphere | LIFE | organic / ecological layer spreads across the same surface |
+| 0.40–0.60 | Geology / material | MATTER | geological and mineral structures invade localized regions |
+| 0.60–0.82 | Civilization | MACHINE | human light, orbit and infrastructure form an artificial layer |
+| 0.82–1.00 | Synthesis | CONNECTED | all layers coexist briefly; Earth dissolves into points/contours |
 
-Allow a small overlap around each boundary. There should be no exact instant that reads as a slide cut.
+There must be overlap. Never make the sequence feel like four slides or texture swaps.
 
 ### Labels
 
-SPACE / LIFE / MATTER / MACHINE are museum classification markers, not section headlines.
+SPACE / LIFE / MATTER / MACHINE are classification marks.
 
-- small uppercase mono
-- subtle numbering may be added later
-- never center them like presentation slides
-- position should remain calm while the CORE changes
+Optional secondary vocabulary:
 
-### Planet
+    ATMOSPHERE
+    BIOSPHERE
+    LITHOSPHERE
+    TECHNOSPHERE
 
-- large-scale, slow displacement
-- directional grazing light
-- camera close enough to make the sphere sometimes read as terrain
-- star background extremely restrained
+Use sparingly. The visitor should look at Earth, not read a diagram.
 
-### Life
+### SPACE
 
-- decrease hard specular response
-- introduce subtle pulse in displacement, not whole-object scaling
-- use muted organic color, never bright toxic green
-- particulate micro-motion may gather toward the CORE
+- retain the dark premium look
+- make atmosphere thin and physically plausible in scale
+- clouds move independently and slowly
+- restrained night-side city light is allowed
+- stars stay secondary to Earth
 
-### Matter
+### LIFE
 
-- sharpen normals/facets or blend toward a faceted response
-- introduce a controlled lattice motif
-- use glints sparsely; no full-screen bloom
+- preserve the underlying continents/ocean
+- bring in muted biosphere color and organic microstructure
+- allow ocean micro-particles or subtle biological activity
+- do not pulse the whole planet like a heart
+- no bright green glow
 
-### Machine
+### MATTER
 
-- transition from irregular lattice to ordered bands/paths
-- use fine emissive lines at low intensity
-- visual reference is precision instrument, not cyberpunk interface
+- keep globe silhouette unchanged
+- reveal geology through localized masks
+- plate / strata / mineral patterns may cross scale
+- crystal lattice is an overlay/interpretation, not a replacement sphere
+- avoid literal textbook cutaway
 
-### Points
+### MACHINE
 
-- particles inherit positions/colors from the CORE before moving away
-- reveal breakup with coherent noise rather than random alpha
-- particle field must already prepare the composition used in Scene 02
+- build from human night-side activity into finer infrastructure
+- use sparse orbital information only when it helps composition
+- present technology as a layer humanity added to Earth
+- no generic globe covered in blue arcs
+
+### CONNECTED
+
+- SPACE / LIFE / MATTER / MACHINE briefly coexist
+- do not turn this into visual clutter; use controlled masking and depth
+- Earth stays recognizable at the start of the dissolve
+- points/contours detach coherently from its surface
+- final fragments already adopt the composition needed by Scene 02
 
 ### Interaction response
 
-Scroll velocity may temporarily:
+Scroll velocity may add only restrained energy:
 
-- increase particle drift by at most a restrained multiplier
-- add a tiny camera lag
-- add a short energy response to the CORE
+- very small layer lag
+- slight point drift near CONNECTED
+- tiny camera lag
 
-When the user stops scrolling, settle smoothly within roughly 500–900ms.
+Scroll velocity must not distort the Earth itself into a rubber object.
 
-Fast scrolling must not cause flicker between material states.
+When scroll stops, settle within roughly 500–900ms.
+
+Fast scroll and reverse scroll must produce coherent layer ordering with no flicker.
 
 ---
 
@@ -444,56 +513,60 @@ Fast scrolling must not cause flicker between material states.
 
 Range: 360–520vh.
 
-Scene 02 is the emotional resolution of the opening. It needs more silence than motion.
+Scene 02 is the answer to Scene 01.
 
 ### Required headline
 
     すべての学問は、
     つながっている。
 
-English brand statement may appear as a restrained secondary line:
+Secondary line:
 
     EVERYTHING IS CONNECTED.
 
-Supporting copy should be no more than two short lines. Recommended:
+Supporting copy:
 
     宇宙も、生命も、数も、機械も。
     見方を変えれば、同じ世界の一部になる。
 
-Copy can be refined later without changing the scene architecture.
+The meaning should now be literal: the visitor has just seen those views coexist on one Earth.
 
 ### Background transition
 
-At Scene 02 entry, shift from Obsidian Black to Bone White / ivory.
+At entry, shift decisively from Obsidian Black to Bone White / ivory.
 
-Do not animate the CSS background independently from the Three scene. The canvas clear color, fog/background treatment, particle color, and DOM color mode must derive from the same normalized transition value.
+Canvas, DOM color mode, particles, and residual Earth fragments use one normalized transition value.
 
 Target:
 
-- 0.00–0.14: decisive black → bone transition
+- 0.00–0.14: black → bone
 - 0.10–0.34: headline first line resolves
 - 0.25–0.52: second line resolves
 - 0.38–0.65: supporting copy arrives
-- 0.55–0.85: particles settle into a quiet constellation / latent figure
-- 0.85–1.00: hold; prepare handoff to future Scene 03
-
-The background change should feel architectural, like entering another gallery, not like a theme toggle.
+- 0.55–0.85: Earth fragments settle into a quiet multi-disciplinary field
+- 0.85–1.00: hold
 
 ### Typography behavior
 
-- use clipping/masking or line reveal
-- keep letter opacity close to solid during the reveal
-- avoid each-character stagger
-- avoid scale-from-90%-to-100% landing-page animation
-- large headline should retain generous empty space
+- clipping / line reveal
+- no character-by-character gimmick
+- no generic scale-up landing animation
+- generous negative space
 
-### Point field
+### Residual field
 
-Scene 01's CORE particles become the background grammar for Scene 02.
+The background is made from the fragments of Earth, not a new decorative atom icon.
 
-They may briefly suggest multiple forms — orbit, cell cluster, lattice, network — but must never become a literal educational infographic.
+Fragments may briefly suggest:
 
-At the end of Scene 02, leave the point field in a reusable state so Scene 03 can later attract it toward exhibition portals.
+- orbital geometry
+- cell clustering
+- geological / crystal structure
+- network / infrastructure
+
+Do not reduce the final graphic to a single generic atomic orbit symbol. The point is plurality of viewpoints.
+
+At the end, keep enough of the point/contour field alive that future Scene 03 portals can attract it.
 
 ---
 
