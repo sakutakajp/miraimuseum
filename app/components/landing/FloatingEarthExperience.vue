@@ -48,7 +48,7 @@ onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
     <div class="earth-home__space">
       <h1 class="earth-home__sr">MIRAI MUSEUM — 世界に、触れる。</h1>
       <button ref="control" class="earth-home__globe" data-testid="earth-control" :disabled="!ready" :aria-label="ready ? '地球を回す' : '青い海と白い雲に包まれた地球'" :aria-describedby="ready ? 'earth-instructions' : undefined">
-        <img class="earth-home__fallback" src="/floating-earth/earth.svg" alt="" width="1024" height="1024" fetchpriority="high" draggable="false" />
+        <img class="earth-home__fallback" src="/floating-earth/earth-photo.webp" alt="" width="1024" height="1024" fetchpriority="high" draggable="false" />
         <canvas ref="canvas" class="earth-home__canvas" aria-hidden="true" />
       </button>
     </div>
@@ -59,6 +59,7 @@ onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
         <span aria-hidden="true">タップで回す <i>·</i> ドラッグで動かす</span>
         <span class="earth-home__sr">タップ、Enter、Spaceで回転。ドラッグ、矢印キーで向きを変更。Homeで元の向きに戻ります。</span>
       </p>
+    <a class="earth-home__credit" href="/floating-earth/CREDITS.txt">Earth imagery credits</a>
     </footer>
   </main>
 </template>
@@ -127,6 +128,7 @@ onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
 .earth-home__instructions { margin-top: 10px; font-size: 12px; font-weight: 400; line-height: 1.6; letter-spacing: .04em; color: #a1abc0; visibility: hidden; }
 .earth-home__instructions--ready { visibility: visible; }
 .earth-home__instructions i { font-style: normal; margin: 0 9px; opacity: .6; }
+.earth-home__credit { display: inline-block; margin-top: 8px; color: #8892a6; font-size: 10px; text-decoration: none; }
 .earth-home__sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .earth-home a:focus-visible, .earth-home__globe:focus-visible { outline: 2px solid #62dfff; outline-offset: 6px; }
 @media (max-width: 600px) {

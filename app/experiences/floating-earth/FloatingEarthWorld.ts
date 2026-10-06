@@ -12,7 +12,7 @@ import {
 } from "three";
 import { QualityManager } from "../landing/QualityManager";
 import { EarthInteraction } from "./interaction";
-import { loadLowPolyEarth } from "./model";
+import { loadPhotographicEarth, disposeEarthObjects } from "./model";
 
 /** One scene, one canvas and one clock; the museum's game runtimes are independent. */
 export class FloatingEarthWorld {
@@ -27,7 +27,7 @@ export class FloatingEarthWorld {
   private quality = new QualityManager({
     mobile: window.matchMedia("(pointer: coarse)").matches,
     cores: navigator.hardwareConcurrency,
-    // A low-poly globe remains interactive on small devices with reduced motion.
+    // The photographic globe remains interactive on small devices with reduced motion.
     reducedMotion: false,
   });
   private observer: ResizeObserver;
@@ -48,7 +48,7 @@ export class FloatingEarthWorld {
   ) {
     const world = new FloatingEarthWorld(canvas, control, root, fallback);
     try {
-      const earth = await loadLowPolyEarth(signal);
+      const earth = await loadPhotographicEarth(signal);
       if (world.disposed) {
         FloatingEarthWorld.disposeObjects(earth);
         throw new Error("Earth rendering ended while loading");
@@ -89,7 +89,7 @@ export class FloatingEarthWorld {
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.debug.onShaderError = () => { this.shaderFailed = true; };
     this.camera.position.z = 5;
-    this.pose.rotation.set(30 * Math.PI / 180, 100 * Math.PI / 180, 0, "XYZ");
+    this.pose.rotation.set(12 * Math.PI / 180, 100 * Math.PI / 180, 0, "XYZ");
     this.rotation.rotation.order = "YXZ";
     this.rotation.add(this.pose);
     this.floating.add(this.rotation, this.createHalo());
@@ -293,11 +293,6 @@ export class FloatingEarthWorld {
   }
 
   private static disposeObjects(group: Group | Scene) {
-    group.traverse((object) => {
-      if (!(object instanceof Mesh)) return;
-      object.geometry.dispose();
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      materials.forEach((material) => material.dispose());
-    });
+    disposeEarthObjects(group);
   }
 }

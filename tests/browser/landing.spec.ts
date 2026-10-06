@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const homepage = (page: Page) => page.getByTestId("floating-earth-experience");
 const earthControl = (page: Page) => page.getByTestId("earth-control");
 const fallback = (page: Page) =>
-  page.locator('img[src="/floating-earth/earth.svg"]');
+  page.locator('img[src="/floating-earth/earth-photo.webp"]');
 
 async function orientation(root: Locator, axis: "yaw" | "pitch") {
   const value = await root.getAttribute(`data-earth-${axis}`);
@@ -251,7 +251,7 @@ test("model download failure retains the Earth fallback and museum entry", async
   const errors: string[] = [];
   let requested = false;
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.route("**/floating-earth/model.json", async (route) => {
+  await page.route("**/floating-earth/earth-vivid.glb", async (route) => {
     requested = true;
     await route.abort();
   });
@@ -316,7 +316,7 @@ test("context loss during model loading cannot revive a disposed Earth renderer"
   let modelHeld = false;
   let releaseModel!: () => void;
   const held = new Promise<void>((resolve) => { releaseModel = resolve; });
-  await page.route("**/floating-earth/model.json", async (route) => {
+  await page.route("**/floating-earth/earth-vivid.glb", async (route) => {
     const response = await route.fetch();
     await response.body();
     modelHeld = true;
@@ -336,7 +336,7 @@ test("context loss during model loading cannot revive a disposed Earth renderer"
     });
   });
   await expect(root).toHaveAttribute("data-renderer", "static");
-  const modelResponse = page.waitForResponse("**/floating-earth/model.json");
+  const modelResponse = page.waitForResponse("**/floating-earth/earth-vivid.glb");
   releaseModel();
   await (await modelResponse).finished();
   // Let fetch/json, model construction and the create() continuation finish.

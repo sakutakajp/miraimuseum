@@ -1,0 +1,7 @@
+Earth-Vivid-Rotating.glb: generated for MIRAI MUSEUM, October 2026.
+Earth Clouds texture: Solar System Scope / INOVE.
+https://www.solarsystemscope.com/textures/
+Licensed under CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Changes: resized to 4096x2048, cloud opacity and contrast adjusted, embedded in GLB.
+Surface and specular source: Three.js examples/planets (NASA-derived Earth imagery).
+Web rendering adds directional lighting, cloud-layer shadow sampling and blue atmospheric scattering approximation.
