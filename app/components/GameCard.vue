@@ -11,7 +11,10 @@ defineEmits<{ select: [] }>();
     @click="$emit('select')"
   >
     <div class="card-art">
-      {{ game.icon }}<span>{{ game.visual }}</span>
+      <GameArtwork :game="game.id" /><small class="card-duration">{{
+        game.duration
+      }}</small
+      ><span>{{ game.visual }}</span>
     </div>
     <div class="card-info">
       <small
@@ -24,7 +27,11 @@ defineEmits<{ select: [] }>();
         {{ game.stages.length }}
         <span>BEST {{ record.best.toLocaleString() }}</span>
       </p>
-      <strong><RubyText text="ゲームを見る" /> →</strong>
+      <strong
+        ><RubyText text="ゲームを見る" /><span aria-hidden="true"
+          >→</span
+        ></strong
+      >
     </div>
   </button>
 </template>

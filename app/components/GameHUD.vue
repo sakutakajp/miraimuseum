@@ -6,7 +6,8 @@ const { t } = useLanguage();
 <template>
   <div class="mvp-hud">
     <strong>{{ "♥".repeat(health) }}{{ "♡".repeat(3 - health) }}</strong
-    ><span>SCORE {{ score.toLocaleString() }}</span
+    ><span class="hud-score"
+      ><small>SCORE</small><b>{{ score.toLocaleString() }}</b></span
     ><button :aria-label="t('一時停止')" @click="$emit('pause')">II</button
     ><progress :value="distance" max="1" />
   </div>

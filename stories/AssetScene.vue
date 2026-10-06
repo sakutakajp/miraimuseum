@@ -33,7 +33,13 @@ const impact = computed(() => ({
 </script>
 <template>
   <TresPerspectiveCamera
-    :position="mode === 'background' ? [0, 3, 14] : [0, 2, 7]"
+    :position="
+      mode === 'background'
+        ? [0, 3, 14]
+        : mode === 'impact'
+          ? [0, 2, 7]
+          : [2.7, 2.5, 5.5]
+    "
     :look-at="mode === 'background' ? [0, 0, -12] : [0, 0, 0]"
   />
   <SpaceBackdrop />

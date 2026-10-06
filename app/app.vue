@@ -96,9 +96,11 @@ useHead(() => ({
           <p><RubyText :text="recommended.description" /></p>
           <span class="button primary"><RubyText text="ゲームを見る" /> →</span>
         </div>
-        <span class="feature-art"
-          >{{ recommended.icon }}<small>{{ recommended.visual }}</small></span
-        >
+        <div class="feature-art">
+          <GameArtwork :game="recommended.id" /><small>{{
+            recommended.visual
+          }}</small>
+        </div>
       </button>
       <section class="v2-browse">
         <div class="v2-tabs">
@@ -152,7 +154,7 @@ useHead(() => ({
       </button>
       <section class="v2-detail" :style="{ '--accent': game.color }">
         <div class="detail-art">
-          {{ game.icon }}<span>{{ game.visual }}</span>
+          <GameArtwork :game="game.id" /><span>{{ game.visual }}</span>
         </div>
         <div>
           <span class="eyebrow"

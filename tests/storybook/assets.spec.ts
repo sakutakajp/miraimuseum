@@ -1,6 +1,9 @@
 import { test, expect } from "@playwright/test";
 for (const id of [
   "ui-gamecard--dinosaur",
+  "ui-gamecard--space",
+  "backgrounds-gameartwork--space",
+  "backgrounds-gameartwork--dinosaur",
   "ui-gamehud--last-life",
   "characters-pixelsprite--explorer",
   "characters-spaceship--damaged",
