@@ -758,3 +758,124 @@ Review at:
 
 For each:
 
+- reload at top
+- slow scroll through every transition
+- fast flick/trackpad scroll through Scene 01
+- reverse scroll back to Scene 00
+- resize/rotate where applicable
+- enable reduced motion
+- simulate WebGL failure/static fallback
+- background the tab and return
+
+Reject the implementation if any transition only works in the forward direction.
+
+---
+
+## 22. Art-direction rejection list
+
+Do not ship the Phase 1 opening if it reads as:
+
+- a generic glowing sphere on a black SaaS website
+- a particle demo with text layered on top
+- a Three.js portfolio clone
+- a cyberpunk HUD
+- a children's science site
+- a sequence of full-screen fade-in sections
+- a scroll-jacked cinematic that fights the browser
+
+The strongest test is whether a still frame looks composed and whether motion gives the object new meaning.
+
+---
+
+## 23. Implementation sequence
+
+### Step A — Foundation
+
+- add Three/Tres dependencies
+- create landing folder structure
+- SSR DOM skeleton for the three scenes
+- make current application entry coexist with the landing experience
+
+### Step B — Director
+
+- normalized progress model
+- one rAF loop
+- input snapshots
+- damping
+- reduced-motion branch
+- tests for mapping logic
+
+### Step C — CORE
+
+- single persistent Three/Tres canvas
+- procedural geometry/material
+- camera presets
+- pointer response
+- static fallback
+
+### Step D — Scene choreography
+
+- Scene 00 time + scroll choreography
+- Scene 01 five visual states and transitions
+- Scene 02 shared color transition and typography
+
+### Step E — Quality
+
+- QualityManager
+- visibility pause
+- mobile tuning
+- performance profiling
+
+### Step F — Verification
+
+- unit/type tests
+- Playwright semantic tests
+- manual desktop/mobile visual pass
+- verify existing game flows
+
+Do not start Scene 03 until Scene 00–02 pass the manual quality gate.
+
+---
+
+## 24. Code quality rules for Codex
+
+- Keep shader/math constants named and grouped.
+- Keep art-direction configuration separate from runtime mechanics.
+- Prefer pure functions for progress mapping.
+- Avoid watchers for frame-by-frame work.
+- Avoid adding global event listeners without cleanup.
+- Dispose Three geometries, materials, render targets, and listeners on unmount.
+- Handle devicePixelRatio changes and resize.
+- Preserve existing public behavior outside the landing page.
+- Do not refactor unrelated game code.
+- Do not add placeholder stock imagery.
+- Do not use emoji as interface icons.
+
+---
+
+## 25. Phase 1 acceptance checklist
+
+### Experience
+
+- [ ] The first frame feels like an intentional museum threshold.
+- [ ] MIRAI CORE remains recognizably the same entity across all three scenes.
+- [ ] Scene 01 communicates SPACE → LIFE → MATTER → MACHINE → POINTS without slide cuts.
+- [ ] Scene 02 lands the thesis “すべての学問は、つながっている。” with visual calm.
+- [ ] Reverse scroll is as coherent as forward scroll.
+
+### Engineering
+
+- [ ] One persistent canvas; no canvas remount between scenes.
+- [ ] One animation loop.
+- [ ] No per-frame Vue rerender dependency.
+- [ ] WebGL/static fallback works.
+- [ ] Reduced motion works.
+- [ ] Quality tiers work and only downgrade during a visit.
+- [ ] Mobile layout works at 390px width with no horizontal overflow.
+- [ ] Existing game routes/features still work.
+- [ ] Typecheck and tests pass.
+
+### Quality gate before Scene 03
+
+The team should be willing to keep a visitor on only these first 520vh and still call the experience complete enough to show. If the opening still feels like “the intro before the real site,” Phase 1 is not finished.
+
