@@ -16,6 +16,7 @@ North Starは「インターネット上に存在する、まだ誰も見たこ�
 
 - [Landing Page Experience Specification](docs/landing-page-experience.md) — 全体の体験、アートディレクション、Scene 00〜08、性能・アクセシビリティ方針
 - [Landing Page Scenes 00–02 Implementation Specification](docs/landing-page-scenes-00-02.md) — 最初の520vhを実装するPhase 1仕様
+- [DEEP TIME Stage 1 詳細実装仕様](docs/dinosaur-stage1.md) — 恐竜2Dランナーを高難度シネマティック・リズムアクションへ再設計する一次仕様
 - [STAR DIVE Stage 1 詳細実装仕様](docs/star-dive-stage1.md) — Featured Exhibitにもなる宇宙3Dゲームの実装仕様
 
 ゲーム操作についての「子どもでも直感的に理解できる」「スマートフォン縦画面を第一級にする」という要件は維持する。ただし、それを幼児向けの色・イラスト・カードUIに結び付けない。
@@ -220,36 +221,28 @@ MVPではログインを設けず、ブラウザーの端末保存を使う。�
 
 ## 8. 最初のゲームA: 恐竜 × 2D横スクロール
 
-最初の作品の1つ。
+Stage 1は旧プロトタイプの延長ではなく、**MIRAI: DEEP TIME — CRETACEOUS // LAST DAY** として全面的に再設計する。
 
-### 基本ルール
+実装時は、このREADMEの一般方針や旧プロトタイプ挙動より **[DEEP TIME Stage 1 詳細実装仕様](docs/dinosaur-stage1.md)** を優先する。
 
-- 2D横スクロールアクション。
-- キャラクターは自動で右へ進む。
-- タップでジャンプ。
-- 全5ステージ構想。
-- 各ステージ30秒〜1分程度を基本とする。
-- Stage 1から順番に解放する。
-- ステージごとに環境、登場する恐竜、ギミックを変える。
-- 後半ほど難しくする。
+### Stage 1の基本
 
-### ライフとクリア
+- Phaser 3による2D横スクロールアクション。
+- 自動前進 + タップ / Space / ↑ の1入力ジャンプ。
+- 一撃死。衝突後の巻き戻し、無敵時間、3回失敗後の自動救済は廃止する。
+- 死亡から約900ms以内の高速リトライを目標とする。
+- 150 BPM / 48小節 / 約76.8秒を、CALM → HERD → PREDATOR → FLASH → FALLOUT → BOUNDARYの6 sectionで構成する。
+- 音楽、障害物、恐竜、カメラ、VFXを共通StageClockで同期する。
+- ゲームプレイは1/240秒のfixed timestepを基準とし、描画フレームレートで難易度が変わらない決定論的挙動を目指す。
+- 旧ピクセルアートを最終表現にせず、Editorial Paleontology × Motion Graphicsのアートディレクションへ刷新する。
+- プレイ中のDiscovery Toastは廃止し、知識はタイポグラフィや地層表現として世界へ埋め込む。詳しい展示はクリア後にOPEN EXHIBITから開く。
 
-- ライフは3。
-- 障害物や恐竜などに3回ぶつかるとステージ失敗。
-- ゴールに到達すればステージクリア。
-- クリア後に次ステージを解放する。
+### Stage 1の記録
 
-### スコア
-
-次の要素を組み合わせてスコア化する。
-
-- アイテム取得
-- 障害物をうまく飛び越える
-- 残りライフ
-- クリアタイム
-
-子どもはゴールを目指し、大人や慣れたプレイヤーはノーミスや高得点を狙える二層の遊びにする。
+- 失敗runではBEST到達率を主要記録にする。
+- clear時にSYNC精度を含む最大100,000のRUN SCOREとRankを確定する。
+- best progress、best clear score、best sync、best rank、clear statusを端末保存する。
+- 機能数より、jump feel、death/retry、音楽同期、camera、T. rex演出、K–Pg境界endingの完成度を優先する。
 
 ### 5ステージの方向性
 
