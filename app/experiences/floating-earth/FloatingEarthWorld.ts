@@ -126,9 +126,10 @@ export class FloatingEarthWorld {
       fragmentShader: `varying vec2 vUv; uniform vec3 blue; uniform vec3 cyan;
         void main() {
           float r = length(vUv - 0.5) * 2.5;
-          float edge = exp(-pow((r - 1.012) * 125.0, 2.0));
-          float glow = exp(-max(r - 1.008, 0.0) * 39.0) * 0.35;
-          float outer = 1.0 - smoothstep(1.06, 1.19, r);
+          // Broaden the atmospheric light and fade it before the canvas boundary.
+          float edge = exp(-pow((r - 1.012) * 90.0, 2.0));
+          float glow = exp(-max(r - 1.008, 0.0) * 26.0) * 0.44;
+          float outer = 1.0 - smoothstep(1.05, 1.105, r);
           gl_FragColor = vec4(mix(blue, cyan, edge), (edge * 0.88 + glow) * outer);
           #include <colorspace_fragment>
         }`,
