@@ -12,18 +12,21 @@
 
 North Starは「インターネット上に存在する、まだ誰も見たことがない博物館」。ブランドステートメントは **EVERYTHING IS CONNECTED. / すべての学問は、つながっている。**
 
-実装・デザイン判断では次の仕様を一次資料とする。
+現在のトップページは、参照画像の鮮やかなローポリ地球を黒い空間に浮かべ、直接触って回せる構成とする。長いスクロールによるScene切替はトップページでは使用しない。
 
-- [Landing Page Experience Specification](docs/landing-page-experience.md) — 全体の体験、アートディレクション、Scene 00〜08、性能・アクセシビリティ方針
-- [Landing Page Scenes 00–02 Implementation Specification](docs/landing-page-scenes-00-02.md) — 最初の520vhを実装するPhase 1仕様
+実装・デザイン判断では次の資料を参照する。
+
+- [Floating Earth ホーム実装メモ](docs/floating-earth.md) — 現在のトップページ、操作、モバイル、fallbackと検証
 - [DEEP TIME Stage 1 詳細実装仕様](docs/dinosaur-stage1.md) — 恐竜2Dランナーを高難度シネマティック・リズムアクションへ再設計する一次仕様
-- [STAR DIVE Stage 1 詳細実装仕様](docs/star-dive-stage1.md) — Featured Exhibitにもなる宇宙3Dゲームの実装仕様
+- [STAR DIVE Stage 1 詳細実装仕様](docs/star-dive-stage1.md) — 宇宙3Dゲームの実装仕様
+
+[Landing Page Experience Specification](docs/landing-page-experience.md)、[Scenes 00–02仕様](docs/landing-page-scenes-00-02.md)、[Phase 1実装メモ](docs/landing-page-phase1.md) は以前のスクロール体験の設計記録として保持する。現在のホームを旧Scene構成に戻すための仕様ではない。
 
 ゲーム操作についての「子どもでも直感的に理解できる」「スマートフォン縦画面を第一級にする」という要件は維持する。ただし、それを幼児向けの色・イラスト・カードUIに結び付けない。
 
 ## 現在の実装と次のMVP
 
-ランディング Phase 1（Scene 00〜02）を実装済み。`/` でMIRAI COREのThreshold → Scale Shift → Everything Is Connectedを体験できる。COREは同じ地球を維持し、SPACE / LIFE / MATTER / MACHINEの観測レイヤーが重なった後に、点・輪郭へ分解する。「地球が変わるのではなく、見方が変わる」を表現する。単一のThree.js Canvas、スクロール連動、モバイル専用構図、reduced-motion、段階的な品質低下、WebGL/static fallbackを備える。[実装・検証メモ](docs/landing-page-phase1.md) を参照。
+`/` は黒い空間に浮かぶローポリ地球のホーム。青い海、緑と黄土色の大陸、立体的な白い雲、青い大気のrimを単一のThree.js Canvasで描く。タップ／クリックで回転、指／マウスのドラッグで向きを変更できる。キーボード、モバイル縦横画面、reduced-motion、段階的な描画品質調整、WebGL/static fallbackに対応する。[実装メモ](docs/floating-earth.md) を参照。
 
 既存の博物館とゲームは `/museum` で利用でき、ランディングの「博物館へ」から入館する。
 
@@ -97,7 +100,7 @@ Docker Desktop（LinuxはDocker Engine）、VS CodeのDev Containers拡張、ホ
     npm run preview
     npm run test:e2e
 
-単体テストでスコア、保存、ステージ解放、両ゲームのクリア／失敗を検証する。ブラウザーテストはスマートフォン縦画面で博物館の選択導線、2D／3Dゲーム、一時停止、結果、保存を検証する。旧画面用のブラウザーテストは `tests/legacy-browser` に保管し、通常実行の対象から外している。
+単体テストでスコア、保存、ステージ解放、両ゲームのクリア／失敗を検証する。ブラウザーテストは地球ホームのタップ・ドラッグ・キーボード、モバイル縦横画面、reduced-motion、WebGL障害時とJavaScript無効時の導線を確認し、博物館の選択導線、2D／3Dゲーム、一時停止、結果、保存も検証する。旧画面用のブラウザーテストは `tests/legacy-browser` に保管し、通常実行の対象から外している。
 
 ## 1. V2コンセプト
 
@@ -136,9 +139,9 @@ MVPでは博物館内をキャラクターで歩き回らない。ゲーム一�
 
 将来は博物館内を歩き、展示に入る方式へ発展させられる。
 
-### トップ画面
+### 博物館トップ画面（`/museum`）
 
-トップには「今日のおすすめ」を1作品、大きく表示する。
+博物館トップには「今日のおすすめ」を1作品、大きく表示する。
 
 その下から2つの軸でゲームを探せる。
 
@@ -229,7 +232,9 @@ MVPではログインを設けず、ブラウザーの端末保存を使う。�
 
 ### みらい博物館本体
 
-トップページと博物館ブランドシェルの一次仕様は **[Landing Page Experience Specification](docs/landing-page-experience.md)** とする。基本アートディレクションは「Quiet Museum / Impossible Exhibits」。静かな美術館・自然史博物館の質感を土台に、現実では同じ空間に存在しない展示が侵入する。旧方針の「明るくカラフルで、少し未来感」は共通スタイルとしては採用しない。
+トップページは **[Floating Earth ホーム実装メモ](docs/floating-earth.md)** を参照する。黒い背景と最小限のナビゲーションに、鮮やかなローポリ地球を大きく浮かべる。参照画像の青い海、緑の大陸、白い雲の色と形を優先する。
+
+以前の「Quiet Museum / Impossible Exhibits」によるスクロール型ランディングの仕様は設計記録として保持する。ゲーム部分までホームの見た目へ統一しない。
 
 ### 各ゲーム
 

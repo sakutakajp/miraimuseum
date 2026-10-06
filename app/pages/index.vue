@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import LandingExperience from "~/components/landing/LandingExperience.vue";
+import FloatingEarthExperience from "~/components/landing/FloatingEarthExperience.vue";
 useHead({
   htmlAttrs: { lang: "ja" },
-  title: "MIRAI MUSEUM — Everything Is Connected.",
+  title: "MIRAI MUSEUM — 世界に、触れる。",
   meta: [
     {
       name: "description",
       content:
-        "すべての学問は、つながっている。宇宙も、生命も、数も、機械も。見方を変えれば、同じ世界の一部になる。みらい博物館へようこそ。",
+        "浮かぶ地球に触れて、世界を回そう。恐竜と宇宙の冒険が待つ、みらい博物館。",
     },
-    { name: "theme-color", content: "#08090b" },
+    { name: "theme-color", content: "#000000" },
   ],
 });
 </script>
-<template><LandingExperience /></template>
+<template><FloatingEarthExperience /></template>
