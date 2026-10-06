@@ -29,6 +29,7 @@ export default defineNuxtConfig({
     "~/assets/css/main.css",
     "~/assets/css/v2.css",
     "~/assets/css/star-dive.css",
+    "~/assets/css/deep-time.css",
     "~/assets/css/landing.css",
   ],
   app: {

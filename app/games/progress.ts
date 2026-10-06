@@ -53,7 +53,7 @@ export function recordGameResult(
   result: StageResult,
 ): GameProgress {
   const next = parseGameProgress(JSON.stringify(progress));
-  if (result.game === 'star-flight' && !result.cleared) return next;
+  if (!result.cleared) return next;
   const record = next[result.game];
   const old = record.stages[result.stage];
   record.stages[result.stage] = {

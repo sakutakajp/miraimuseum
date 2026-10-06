@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { games } from "~/games/catalog";
 import type { GameRecord } from "~/games/progress";
-defineProps<{ game: (typeof games)[number]; record: GameRecord }>();
+defineProps<{
+  game: (typeof games)[number];
+  record: GameRecord;
+  bestProgress?: number;
+}>();
 defineEmits<{ select: [] }>();
 </script>
 <template>
@@ -25,7 +29,16 @@ defineEmits<{ select: [] }>();
         STAGE
         {{ Object.values(record.stages).filter((s) => s.cleared).length }} /
         {{ game.stages.length }}
-        <span>BEST {{ record.best.toLocaleString() }}</span>
+        <span
+          >BEST
+          {{
+            game.id === "dinosaur-run" &&
+            !record.stages[1]?.cleared &&
+            bestProgress !== undefined
+              ? Math.floor(bestProgress * 100) + "%"
+              : record.best.toLocaleString()
+          }}</span
+        >
       </p>
       <strong
         ><RubyText text="ゲームを見る" /><span aria-hidden="true"

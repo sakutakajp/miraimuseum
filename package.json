@@ -14,7 +14,8 @@
     "storybook": "storybook dev -p 6006 --host 0.0.0.0 --no-open --disable-telemetry",
     "build-storybook": "storybook build --disable-telemetry",
     "preview-storybook": "vite preview --outDir storybook-static --host 0.0.0.0 --port 6006 --strictPort",
-    "test:storybook": "npm run build-storybook && playwright test --config playwright.storybook.config.ts"
+    "test:storybook": "npm run build-storybook && playwright test --config playwright.storybook.config.ts",
+    "test:deep-time": "playwright test --config playwright.deep-time.config.ts"
   },
   "dependencies": {
     "@tresjs/core": "^5.9.2",

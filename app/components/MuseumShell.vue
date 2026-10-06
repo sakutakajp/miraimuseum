@@ -1,18 +1,39 @@
 <script setup lang="ts">
+import DeepTimeGame from "./games/deep-time/DeepTimeGame.client.vue";
 import { games, getGame, type GameId, type StageResult } from "~/games/catalog";
 import {
   GAME_SAVE_KEY,
   emptyGameProgress,
   parseGameProgress,
   recordGameResult,
+  type GameProgress,
 } from "~/games/progress";
 import StarDiveResult from "./games/star-dive/StarDiveResult.vue";
+import type { ClearResult, DeepTimeRecord } from "~/game/dinosaur/types";
+import {
+  DEEP_TIME_SAVE_KEY,
+  emptyRecord,
+  parseRecord,
+} from "~/game/dinosaur/systems/records";
 import AsteroidExhibit from "./games/star-dive/AsteroidExhibit.vue";
 const { locale, initializeLanguage, t } = useLanguage();
 const view = ref<"home" | "detail" | "stages" | "game" | "result">("home");
 const active = ref<GameId>("dinosaur-run");
 const game = computed(() => getGame(active.value));
 const progress = ref(emptyGameProgress());
+const deepTimeRecord = ref(emptyRecord());
+// Prototype scores remain stored; the new level's completion comes from its own record.
+const displayProgress = computed<GameProgress>(() => {
+  const saved = deepTimeRecord.value;
+  const dinosaur: GameProgress["dinosaur-run"] = {
+    best: saved.bestClearScore,
+    stages: {},
+    unlocked: saved.cleared ? 2 : 1,
+  };
+  if (saved.cleared)
+    dinosaur.stages["1"] = { best: saved.bestClearScore, cleared: true };
+  return { ...progress.value, "dinosaur-run": dinosaur };
+});
 const storageAvailable = ref(true);
 const mounted = ref(false);
 const result = ref<StageResult>();
@@ -43,6 +64,24 @@ function start() {
   run.value++;
   navigate("game");
 }
+function deepTimeCleared(value: ClearResult) {
+  progress.value = recordGameResult(progress.value, {
+    game: "dinosaur-run",
+    stage: 1,
+    cleared: true,
+    score: value.score,
+    health: 1,
+    elapsed: 76.8,
+  });
+  try {
+    localStorage.setItem(GAME_SAVE_KEY, JSON.stringify(progress.value));
+  } catch {
+    storageAvailable.value = false;
+  }
+}
+function deepTimeBest(value: DeepTimeRecord) {
+  deepTimeRecord.value = value;
+}
 function finish(value: StageResult) {
   newBest.value =
     value.cleared && value.score > progress.value[value.game].best;
@@ -59,6 +98,9 @@ onMounted(() => {
   initializeLanguage();
   try {
     progress.value = parseGameProgress(localStorage.getItem(GAME_SAVE_KEY));
+    deepTimeRecord.value = parseRecord(
+      localStorage.getItem(DEEP_TIME_SAVE_KEY),
+    );
   } catch {
     storageAvailable.value = false;
   }
@@ -158,7 +200,12 @@ useHead(() => ({
             v-for="item in listed"
             :key="item.id"
             :game="item"
-            :record="progress[item.id]"
+            :record="displayProgress[item.id]"
+            :best-progress="
+              item.id === 'dinosaur-run'
+                ? deepTimeRecord.bestProgress
+                : undefined
+            "
             @select="select(item.id)"
           />
         </div>
@@ -191,8 +238,17 @@ useHead(() => ({
           <p><RubyText :text="game.description" /></p>
           <div class="v2-stats">
             <span>{{ game.duration }}</span
-            ><span>♥ × 3</span
-            ><span>BEST {{ progress[game.id].best.toLocaleString() }}</span>
+            ><span>{{
+              game.id === "dinosaur-run" ? "ONE HIT / FAST RETRY" : "♥ × 3"
+            }}</span
+            ><span
+              >BEST
+              {{
+                game.id === "dinosaur-run" && !deepTimeRecord.cleared
+                  ? Math.floor(deepTimeRecord.bestProgress * 100) + "%"
+                  : displayProgress[game.id].best.toLocaleString()
+              }}</span
+            >
           </div>
           <p><RubyText :text="game.control" /></p>
           <button
@@ -210,20 +266,26 @@ useHead(() => ({
           v-for="stage in game.stages"
           :key="stage.id"
           class="stage-choice"
-          :disabled="stage.id > progress[game.id].unlocked"
+          :disabled="stage.id > displayProgress[game.id].unlocked"
           @click="start"
         >
           <span
             >STAGE {{ stage.id }}
-            <span v-if="progress[game.id].stages[stage.id]?.cleared"
+            <span v-if="displayProgress[game.id].stages[stage.id]?.cleared"
               >✓</span
             ></span
           ><strong><RubyText :text="stage.title" /></strong
           ><span
-            >BEST {{ progress[game.id].stages[stage.id]?.best || 0 }} →</span
+            >BEST
+            {{
+              game.id === "dinosaur-run" && !deepTimeRecord.cleared
+                ? Math.floor(deepTimeRecord.bestProgress * 100) + "%"
+                : displayProgress[game.id].stages[stage.id]?.best || 0
+            }}
+            →</span
           >
         </button>
-        <p class="v2-muted">
+        <p v-if="game.id === 'star-flight'" class="v2-muted">
           <RubyText text="次のステージは、これから登場！" />
         </p>
       </section>
@@ -234,12 +296,11 @@ useHead(() => ({
         :key="run"
         :demo="showDemo"
         @finish="finish"
-        @leave="navigate('home')" /><MvpGame
+        @leave="navigate('home')" /><DeepTimeGame
         v-else
         :key="run"
-        :game="active"
-        :demo="showDemo"
-        @finish="finish"
+        @record="deepTimeBest"
+        @cleared="deepTimeCleared"
         @leave="navigate('stages')"
     /></ClientOnly>
     <StarDiveResult

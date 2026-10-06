@@ -30,10 +30,11 @@ North Starは「インターネット上に存在する、まだ誰も見たこ�
 V2 MVPとして、共通のゲーム一覧・詳細・ステージ選択と、恐竜／宇宙のStage 1を実装済み。
 
 - 今日のおすすめ（日付ごとに交互に選出）、テーマ／あそびかたによる絞り込み
-- 恐竜ダッシュ: Phaserの2D横スクロール。約43秒、タップジャンプ、3ライフ
+- MIRAI: DEEP TIME: Phaserの2Dリズムランナー。76.8秒 / 150 BPM / 48小節、1入力ジャンプ、一撃死、約760msの自動リトライ
 - MIRAI: STAR DIVE: Three.js + TresJSの3Dシューティング。80秒 / 144 BPM / 6場面、相対ドラッグ移動、自動射撃、3シールド、CHAIN / NEAR / RISK
 - 小惑星ゲートから発光結晶の内部へ突入し、MIRAI BURSTで突破。クリア時に小惑星の発見と展示を解放
-- 初回の操作デモ、一時停止、クリア／失敗、リトライ（STAR DIVEは導入を短縮）
+- DEEP TIMEはSTARTタイトルカードから6場面を走り、K–Pg境界の地層へ着地。失敗runはBEST到達率、clear時はSYNC / RUN SCORE / Rankを保存
+- 一時停止、mute、非表示時の停止。STAR DIVEは初回の操作デモを表示し、リトライ時に導入を短縮
 - ステージ別BEST、ゲーム全体BEST、クリア、順次解放の端末保存（STAR DIVEはクリア時だけBESTを更新）
 - 日本語／英語切替と日本語のルビ
 
@@ -48,11 +49,11 @@ Node.jsは22.19以上の22系、24.11以上の24系、または26以上を使う
 
 恐竜はタップ／クリック／Space／↑でジャンプ。宇宙は指のドラッグ、PCではマウスドラッグまたは矢印キー／WASDで移動。ⅡボタンまたはEscで一時停止でき、ページが非表示になると自動で一時停止する。
 
-STAR DIVEの起動・描画・保存・検証の詳細は [実装メモ](docs/star-dive-implementation.md) を参照。
+DEEP TIMEの物理・レベル・音源・描画・検証は [Stage 1実装メモ](docs/deep-time-implementation.md)、STAR DIVEは [実装メモ](docs/star-dive-implementation.md) を参照。
 
 ゲーム登録は `app/games/catalog.ts`、共通結果は `StageResult`、保存処理は `app/games/progress.ts`。新しい作品は登録情報とゲーム固有の起動処理を追加して接続する。
 
-記録は `mirai-museum:v2` に保存する。旧仕様の発見保存 `mirai-museum:v1` は保持し、V2のスコアには変換しない。言語設定は引き継ぐ。
+記録は `mirai-museum:v2` に保存する。旧仕様の発見保存 `mirai-museum:v1` は保持し、V2のスコアには変換しない。言語設定は引き継ぐ。DEEP TIME固有の到達率・SYNC・Rank・試行統計は `mirai-museum:deep-time:v1` に保存し、clear scoreを共通V2記録にも渡す。
 
 ### UI・アセットをStorybookで確認する
 
@@ -64,9 +65,10 @@ http://localhost:6006 を開く。Dev Containerでもポート6006を転送す�
 - **Characters**: 主人公・ロボット・恐竜のドット絵、3D宇宙船と被弾状態
 - **Objects**: ドット絵一覧、3Dの敵・隕石・アイテム、爆発・火花・被弾演出
 - **STAR DIVE**: 実際の6場面、SHARD / CORE / GATE CORE、3段階の画質、reduced motion、HUD、クリア／失敗結果、小惑星展示
-- **Backgrounds**: 恐竜の現在／太古の森／追跡場面、カード用イラスト、星雲・惑星を含む3Dの星空
+- **Backgrounds / Dinosaur**: DEEP TIMEのCALM / HERD / PREDATOR / FLASH / FALLOUT / BOUNDARY、時刻指定、画質、reduced motion。実際の描画・物理・レベルデータを使用
+- カード用イラスト、星雲・惑星を含む3Dの星空
 
-上部の言語メニューで日本語／英語を切り替え、Controlsでスプライト、座標、背景の進行位置を変更できる。3D演出は `animate` でループ再生を切り替え、オフにすると `age` で任意の時点（0〜0.64秒）を静止確認できる。恐竜背景はPhaserの実シーンを一時停止して表示する。
+上部の言語メニューで日本語／英語を切り替え、Controlsでスプライト、座標、背景の進行位置を変更できる。3D演出は `animate` でループ再生を切り替え、オフにすると `age` で任意の時点（0〜0.64秒）を静止確認できる。DEEP TIMEの背景は本番と同じ描画クラス・レベルを使い、指定した秒数で静止確認できる。旧ドット絵のCharacter / Objectsは過去のプロトタイプ資産として残している。
 
 ゲームカードと3Dアセットは本番ゲームとStorybookで同じVueコンポーネントを使用する。新しいストーリーは `stories/*.stories.ts` に追加する。
 

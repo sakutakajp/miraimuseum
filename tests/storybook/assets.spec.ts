@@ -11,6 +11,13 @@ for (const id of [
   "objects-space--asteroid",
   "objects-impact--frozen-frame",
   "backgrounds-dinosaur--ancient-forest",
+  "backgrounds-dinosaur--present",
+  "backgrounds-dinosaur--chase",
+  "backgrounds-dinosaur--flash",
+  "backgrounds-dinosaur--fallout",
+  "backgrounds-dinosaur--boundary",
+  "backgrounds-dinosaur--low-quality",
+  "backgrounds-dinosaur--reduced-motion",
   "backgrounds-dinosaur--illustration",
   "backgrounds-dinosaur--starfield",
   "star-dive-stage-1--dive",
@@ -39,7 +46,7 @@ for (const id of [
       id.includes("spaceship") ||
       id.includes("asteroid") ||
       id.includes("frozen-frame") ||
-      id.includes("ancient-forest") ||
+      (id.startsWith("backgrounds-dinosaur") && !id.endsWith("illustration")) ||
       id.includes("starfield")
     )
       await expect(page.locator("canvas")).toBeVisible();
@@ -67,6 +74,6 @@ test("language toolbar applies to real game cards", async ({ page }) => {
     "/iframe.html?id=ui-gamecard--dinosaur&viewMode=story&globals=locale:en",
   );
   await expect(
-    page.getByRole("heading", { name: "Dinosaur Dash" }),
+    page.getByRole("heading", { name: "MIRAI: DEEP TIME" }),
   ).toBeVisible();
 });

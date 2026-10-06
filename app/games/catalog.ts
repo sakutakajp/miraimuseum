@@ -12,17 +12,17 @@ export interface StageResult {
 export const games = [
   {
     id: "dinosaur-run" as GameId,
-    title: "恐竜ダッシュ",
+    title: "MIRAI: DEEP TIME",
     theme: "恐竜",
     style: "アクション",
-    visual: "2D · PIXEL",
+    visual: "2D · RHYTHM",
     icon: "🦖",
-    color: "#ffb347",
+    color: "#b7a68a",
     description:
-      "恐竜の世界を走りぬけよう！タップでジャンプして、岩をこえよう。",
+      "6600万年前。恐竜時代、最後の日を走る。1入力、76.8秒のシネマティック・リズムアクション。",
     control: "タップでジャンプ",
-    duration: "45 SEC",
-    stages: [{ id: 1, title: "太古の森" }],
+    duration: "76.8 SEC",
+    stages: [{ id: 1, title: "CRETACEOUS // LAST DAY" }],
   },
   {
     id: "star-flight" as GameId,

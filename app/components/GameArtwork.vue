@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DeepTimeArtwork from "./games/deep-time/DeepTimeArtwork.vue";
 import type { GameId } from "~/games/catalog";
 defineProps<{ game: GameId }>();
 const uid = useId().replace(/:/g, "");
@@ -15,7 +16,7 @@ const stars = Array.from({ length: 45 }, (_, i) => ({
 </script>
 <template>
   <div class="game-artwork" :class="game" aria-hidden="true">
-    <WorldIllustration
+    <DeepTimeArtwork
       v-if="game === 'dinosaur-run'"
       preserveAspectRatio="xMidYMid slice"
     />
