@@ -1,4 +1,3 @@
-1476 dinosaur-stage1.md
 # MIRAI: DEEP TIME — Stage 1 "CRETACEOUS // LAST DAY" 実装仕様
 
 Version: 1.0  
@@ -1199,3 +1198,279 @@ Collision:
 
 - visual inset rules
 - obstacle pass/fail boundaries
+
+LevelRuntime:
+
+- section boundary
+- beat trigger fires once
+- reverse/reset does not duplicate
+- speed cue
+
+ScoreSystem:
+
+- sync accuracy
+- rank threshold
+- max 100000
+
+### Determinism test
+
+同じinput sequenceを:
+
+- 60Hz render simulation
+- 120Hz render simulation
+- irregular render delta simulation
+
+で流し、fixed worldの最終stateが一致すること。
+
+これは重要なacceptance test。
+
+### Browser
+
+- pointer jump
+- keyboard jump
+- death → retry
+- best percentage
+- pause/resume
+- hidden tab pause
+- clear → result
+- localStorage BEST
+- 390px no overflow
+
+pixel-perfect VFX snapshotをCIの中心にしない。
+
+---
+
+## 37. Debug tools
+
+development only:
+
+- hitbox overlay
+- current beat/bar
+- fixed step count
+- FPS / frame time
+- active spatial sections
+- quality tier
+- jump buffer / coyote state
+- trigger log
+- seek to section
+- invulnerable preview mode
+
+seek / invulnerableはQA用。通常プレイには出さない。
+
+---
+
+## 38. Implementation order
+
+### Phase A — Core feel
+
+- folder split
+- FixedStepWorld
+- input buffer
+- coyote time
+- death/reset
+- placeholder geometry
+
+この段階でjumpが気持ちよくないなら先へ進まない。
+
+### Phase B — Level runtime
+
+- StageClock
+- level data
+- trigger system
+- section progression
+- speed changes
+- deterministic tests
+
+### Phase C — Visual language
+
+- non-pixel player placeholder
+- layers
+- terrain
+- palette
+- typography
+- camera
+
+### Phase D — Dinosaur choreography
+
+- herd
+- T. rex
+- dust
+- depth crossing
+
+### Phase E — Impact
+
+- FLASH
+- FALLOUT
+- BOUNDARY
+- final geological reveal
+
+### Phase F — Audio
+
+- production music integration
+- SFX
+- audio-clock sync
+
+実装時に仮音源しかない場合、仮音源でtimelineを完成させてよい。ただし仮oscillatorを「完成」と扱わない。
+
+### Phase G — UI / score
+
+- UIScene
+- progress
+- NEW BEST
+- result
+- exhibition handoff
+
+### Phase H — Polish
+
+- mobile profiling
+- reduced effects
+- pooling
+- memory
+- retry latency
+- manual art direction pass
+
+---
+
+## 39. Manual QA
+
+端末/viewport:
+
+- iPhone級 390 × 844
+- large phone 430 × 932
+- desktop 1440 × 900
+- laptop 1280 × 800
+
+必ず確認:
+
+- first attempt
+- 10回以上連続death/retry
+- section 05での連続retry
+- clear
+- pause midair
+- background tab → resume
+- mute on/off
+- reduced motion/effects
+- resize
+- slow device quality tier
+
+10回リトライ後に音・particle・listenerが増殖していないこと。
+
+---
+
+## 40. Art-direction rejection list
+
+以下に見える場合は未完成:
+
+- 子ども向け教育ゲーム
+- 既存pixel prototypeの高解像度版
+- Geometry Dash clone
+- ネオン系リズムゲーム
+- 背景動画の上をcharacterが走るだけ
+- particleを大量に置いただけ
+- T. rexが背景spriteとして揺れるだけ
+- 毎回Popupで知識を説明するゲーム
+- camera shakeで迫力を作るゲーム
+- BGMが後付けされたrunner
+
+理想:
+
+> 一枚のeditorial motion posterの中を、自分の入力で76.8秒走り抜ける。
+
+---
+
+## 41. Stage 1 acceptance criteria
+
+### Gameplay
+
+- [ ] 1入力だけで最後まで成立する
+- [ ] collisionは難しいが公平
+- [ ] 失敗から900ms以内を目安に再挑戦できる
+- [ ] 60Hz / 120Hz / irregular renderでdeterministic result
+- [ ] FALLOUTが最難関
+- [ ] BOUNDARYでは難度を下げて余韻を作る
+
+### Presentation
+
+- [ ] CALM → HERD → PREDATOR → FLASH → FALLOUT → BOUNDARYが連続した1作品に見える
+- [ ] Triceratops / T. rexに奥行きがある
+- [ ] Impact OrangeがFLASH以前に使われすぎていない
+- [ ] 6層以上のdepth grammarが成立する
+- [ ] Typographyが世界の一部として存在する
+- [ ] K–Pg boundary endingが説明なしでも強い
+
+### Audio
+
+- [ ] StageClockとmusic gridが一致
+- [ ] death/retryでaudio syncが壊れない
+- [ ] section changeが音からも分かる
+- [ ] production music未完成の場合は明確にTODO扱い
+
+### Engineering
+
+- [ ] DinosaurRunSceneとDinosaurUISceneが分離
+- [ ] fixed-step authority
+- [ ] level data-driven
+- [ ] spatial activation / pooling
+- [ ] no per-frame Vue rerender requirement
+- [ ] mobile 60fps target
+- [ ] quality degradationがphysicsへ影響しない
+- [ ] existing museum / STAR DIVE interfacesを壊さない
+
+---
+
+## 42. Codexへの実装指示
+
+実装開始時に必ず読む:
+
+- README.md
+- docs/dinosaur-stage1.md
+- docs/star-dive-stage1.md
+- docs/landing-page-experience.md
+- 現在の app/game/DinosaurScene.ts
+- app/game/expedition.ts
+- app/components/GameStage.client.vue
+
+優先順位:
+
+1. docs/dinosaur-stage1.md
+2. 現在の共通museum architecture
+3. READMEの一般方針
+4. 旧Dinosaur prototype挙動
+
+旧実装を守ることより、本仕様の完成度を優先する。
+
+ただしmuseum shell、他ゲーム、保存データを不必要に破壊しない。
+
+大規模に一度で書き換える場合も、最低限:
+
+- core physics
+- deterministic tests
+- level runtime
+- scene integration
+
+の順に検証可能な状態を作る。
+
+Stage 2以降へ進む前にStage 1の品質ゲートを通す。
+
+---
+
+## 43. Final quality gate
+
+このStageの評価基準は機能数ではない。
+
+次の問いにYESと言えなければ未完成:
+
+> 最初の10秒だけ見ても、既存のWeb教育ゲームとは明確に違うか？
+
+> 20回失敗しても、すぐもう一度押したくなるか？
+
+> 音を聞くと次の障害物を身体で思い出せるか？
+
+> T. rexが出る瞬間を誰かに見せたくなるか？
+
+> 最後のK–Pg境界の一本線が、プレイ後に記憶へ残るか？
+
+そして最終的なNorth Star:
+
+> 「Phaserでここまでできるのか」ではなく、「これは一本の完成したゲームだ」と感じること。
+
