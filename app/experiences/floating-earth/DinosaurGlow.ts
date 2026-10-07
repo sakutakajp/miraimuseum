@@ -85,7 +85,7 @@ export class DinosaurBloom {
     vertexShader: fullscreenVertex,
     fragmentShader: `varying vec2 vUv; uniform sampler2D sharp; uniform sampler2D soft;
       void main() {
-        vec3 light = texture2D(sharp, vUv).rgb * 0.85 + texture2D(soft, vUv).rgb * 2.8;
+        vec3 light = texture2D(sharp, vUv).rgb * 0.65 + texture2D(soft, vUv).rgb * 2.0;
         gl_FragColor = vec4(light, 1.0);
         #include <colorspace_fragment>
       }`,
