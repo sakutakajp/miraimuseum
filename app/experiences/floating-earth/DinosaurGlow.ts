@@ -26,15 +26,12 @@ export class DinosaurBloom {
   private size = new Vector2();
   private black = new MeshBasicMaterial({ color: 0x000000, toneMapped: false });
   private rim = new ShaderMaterial({
-    name: "Dinosaur surface rim mask",
-    uniforms: { appearance: { value: 0 } },
+    name: "Dinosaur silhouette mask",
     blending: NoBlending, depthTest: true, depthWrite: true, toneMapped: false,
     vertexShader: `
       #include <common>
       #include <morphtarget_pars_vertex>
       #include <skinning_pars_vertex>
-      varying vec3 rimNormal;
-      varying vec3 rimView;
       void main() {
         #include <morphinstance_vertex>
         #include <beginnormal_vertex>
@@ -44,19 +41,13 @@ export class DinosaurBloom {
         #include <begin_vertex>
         #include <morphtarget_vertex>
         #include <skinning_vertex>
-        rimNormal = normalize(normalMatrix * objectNormal);
         vec4 viewPosition = modelViewMatrix * vec4(transformed, 1.0);
-        rimView = -viewPosition.xyz;
         gl_Position = projectionMatrix * viewPosition;
       }`,
     fragmentShader: `
-      uniform float appearance;
-      varying vec3 rimNormal;
-      varying vec3 rimView;
       void main() {
-        vec3 viewDirection = isOrthographic ? vec3(0.0, 0.0, 1.0) : normalize(rimView);
-        float edge = pow(1.0 - abs(dot(normalize(rimNormal), viewDirection)), 3.0);
-        gl_FragColor = vec4(vec3(smoothstep(0.08, 0.85, edge) * appearance), 1.0);
+        // Solid coverage, independent of reveal opacity, protects all skin pixels.
+        gl_FragColor = vec4(1.0);
       }`,
   });
   private blur = new ShaderMaterial({
@@ -81,12 +72,21 @@ export class DinosaurBloom {
   private composite = new ShaderMaterial({
     transparent: true, blending: AdditiveBlending,
     depthTest: false, depthWrite: false, toneMapped: false,
-    uniforms: { sharp: { value: this.mask.texture }, soft: { value: this.blurred.texture } },
+    uniforms: {
+      silhouette: { value: this.mask.texture }, soft: { value: this.blurred.texture },
+      appearance: { value: 0 },
+    },
     vertexShader: fullscreenVertex,
-    fragmentShader: `varying vec2 vUv; uniform sampler2D sharp; uniform sampler2D soft;
+    fragmentShader: `varying vec2 vUv;
+      uniform sampler2D silhouette;
+      uniform sampler2D soft;
+      uniform float appearance;
       void main() {
-        vec3 light = texture2D(sharp, vUv).rgb * 0.325 + texture2D(soft, vUv).rgb * 1.0;
-        gl_FragColor = vec4(light, 1.0);
+        float outside = 1.0 - clamp(texture2D(silhouette, vUv).r, 0.0, 1.0);
+        vec3 light = texture2D(soft, vUv).rgb;
+        // Add light only outside the actual silhouette. Apply coverage in alpha
+        // so color-space conversion cannot brighten partially covered skin edges.
+        gl_FragColor = vec4(light, outside * appearance);
         #include <colorspace_fragment>
       }`,
   });
@@ -108,13 +108,13 @@ export class DinosaurBloom {
     // Native-resolution sampling keeps thin silhouette edges stable on phones.
     const width = this.size.x;
     const height = this.size.y;
-    // Keep the light's sharp core at native resolution with multisample AA.
+    // Keep the silhouette cutout at native resolution with multisample AA.
     if (this.mask.width !== this.size.x || this.mask.height !== this.size.y) {
       this.mask.setSize(this.size.x, this.size.y);
       this.horizontal.setSize(this.size.x, height);
       this.blurred.setSize(width, height);
     }
-    this.rim.uniforms.appearance!.value = appearance;
+    this.composite.uniforms.appearance!.value = appearance;
     const target = renderer.getRenderTarget();
     const autoClear = renderer.autoClear;
     const clearColor = renderer.getClearColor(new Color());
