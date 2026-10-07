@@ -31,8 +31,10 @@ export function disposeEarthObjects(group: THREE.Object3D) {
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
   const textures = new Set<THREE.Texture>();
+  const skeletons = new Set<THREE.Skeleton>();
   group.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) return;
+    if (object instanceof THREE.SkinnedMesh) skeletons.add(object.skeleton);
     geometries.add(object.geometry);
     for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
       materials.add(material);
@@ -46,6 +48,7 @@ export function disposeEarthObjects(group: THREE.Object3D) {
   });
   geometries.forEach((geometry) => geometry.dispose());
   materials.forEach((material) => material.dispose());
+  skeletons.forEach((skeleton) => skeleton.dispose());
   textures.forEach((texture) => {
     const image = texture.source.data;
     texture.dispose();

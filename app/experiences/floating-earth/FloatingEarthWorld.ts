@@ -1,6 +1,8 @@
 import {
   Color,
   Group,
+  DirectionalLight,
+  HemisphereLight,
   Mesh,
   NoToneMapping,
   OrthographicCamera,
@@ -13,6 +15,7 @@ import {
 import { QualityManager } from "../landing/QualityManager";
 import { EarthInteraction } from "./interaction";
 import { loadPhotographicEarth, disposeEarthObjects } from "./model";
+import { DinosaurReveal } from "./DinosaurReveal";
 
 /** One scene, one canvas and one clock; the museum's game runtimes are independent. */
 export class FloatingEarthWorld {
@@ -22,6 +25,8 @@ export class FloatingEarthWorld {
   private floating = new Group();
   private rotation = new Group();
   private pose = new Group();
+  private entityLayer = new Group();
+  private dinosaur?: DinosaurReveal;
   private interaction = new EarthInteraction();
   private motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   private quality = new QualityManager({
@@ -64,6 +69,7 @@ export class FloatingEarthWorld {
       if (world.disposed) throw new Error("Earth rendering unavailable");
       world.root.dataset.earthReady = "true";
       world.root.dataset.earthObject = earth.uuid;
+      world.beginDinosaurReveal();
       world.requestFrame();
       return world;
     } catch (error) {
@@ -92,9 +98,15 @@ export class FloatingEarthWorld {
     this.camera.position.z = 5;
     this.pose.rotation.set(12 * Math.PI / 180, 100 * Math.PI / 180, 0, "XYZ");
     this.rotation.rotation.order = "YXZ";
+    this.pose.name = "EarthRoot";
+    this.entityLayer.name = "EntityLayer";
+    this.pose.add(this.entityLayer);
     this.rotation.add(this.pose);
     this.floating.add(this.rotation, this.createHalo());
     this.scene.add(this.floating);
+    const sunlight = new DirectionalLight("#e9f1f5", 2.2);
+    sunlight.position.set(-0.38, 0.4, 0.84);
+    this.scene.add(sunlight, new HemisphereLight("#bddce6", "#294754", 1.3));
     this.observer = new ResizeObserver(this.resize);
     this.observer.observe(control);
     this.canvas.addEventListener("webglcontextlost", this.contextLost);
@@ -112,6 +124,14 @@ export class FloatingEarthWorld {
     this.motion.addEventListener("change", this.motionChange);
     this.motionChange();
     this.visibilityChange();
+  }
+
+  private beginDinosaurReveal() {
+    this.dinosaur = new DinosaurReveal();
+    this.entityLayer.add(this.dinosaur.object3D);
+    void this.dinosaur.load().catch(() => {
+      // Optional asset loading cannot turn the Earth into a static fallback.
+    });
   }
 
   private createHalo() {
@@ -187,6 +207,7 @@ export class FloatingEarthWorld {
     this.elapsed += delta;
     this.autoYaw = (this.autoYaw + delta * 0.035) % (Math.PI * 2);
     this.interaction.update(delta);
+    this.dinosaur?.update(Math.min(rawDelta, 0.25), this.motion.matches, this.renderer.getPixelRatio());
     if (!this.motion.matches) this.floating.position.y = Math.sin(this.elapsed * 0.85) * 0.022;
     if (this.quality.sample(rawDelta)) {
       if (this.quality.tier === "static") { this.fail(); return; }
@@ -201,6 +222,10 @@ export class FloatingEarthWorld {
     this.rotation.rotation.set(this.interaction.pitch, yaw, 0, "YXZ");
     this.root.dataset.earthYaw = yaw.toFixed(5);
     this.root.dataset.earthPitch = this.interaction.pitch.toFixed(5);
+    if (this.dinosaur) {
+      this.root.dataset.dinosaurState = this.dinosaur.state;
+      this.root.dataset.dinosaurSource = this.dinosaur.source;
+    }
     this.renderer.render(this.scene, this.camera);
     if (this.shaderFailed) this.fail();
   }
@@ -302,6 +327,7 @@ export class FloatingEarthWorld {
     this.control.removeEventListener("keydown", this.keyDown);
     this.control.removeEventListener("blur", this.cancelInput);
     this.root.removeEventListener("wheel", this.wheel);
+    this.dinosaur?.dispose();
     FloatingEarthWorld.disposeObjects(this.scene);
     this.renderer.dispose();
   }
