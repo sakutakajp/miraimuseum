@@ -9,18 +9,21 @@ export class QualityManager {
   private elapsed = 0;
   private warmed = 0;
   private lastPixelRatio = Infinity;
+  private minimumTier: "low" | "static";
   constructor(device: {
     mobile: boolean;
     cores?: number;
     reducedMotion: boolean;
+    minimumTier?: "low" | "static";
   }) {
+    this.minimumTier = device.minimumTier ?? "static";
     this.tier =
       device.cores && device.cores <= 2
         ? "low"
         : device.mobile
           ? "medium"
           : "high";
-    if (device.reducedMotion && device.cores && device.cores <= 2)
+    if (device.reducedMotion && device.cores && device.cores <= 2 && this.minimumTier === "static")
       this.tier = "static";
   }
   sample(delta: number) {
@@ -41,7 +44,9 @@ export class QualityManager {
       // Reduce fill-rate before reducing geometry/particles. Never upgrade this visit.
       if (this.resolutionScale === 1) this.resolutionScale = 0.8;
       else {
-        this.tier = TIERS[Math.min(TIERS.indexOf(this.tier) + 1, 3)]!;
+        const next = TIERS[Math.min(TIERS.indexOf(this.tier) + 1, TIERS.indexOf(this.minimumTier))]!;
+        if (next === this.tier) return false;
+        this.tier = next;
         this.resolutionScale = 1;
       }
       return true;

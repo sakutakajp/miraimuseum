@@ -60,6 +60,7 @@ export class FloatingEarthWorld {
     cores: navigator.hardwareConcurrency,
     // The photographic globe remains interactive on small devices with reduced motion.
     reducedMotion: false,
+    minimumTier: "low",
   });
   private observer: ResizeObserver;
   private frame = 0;

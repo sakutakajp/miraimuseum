@@ -113,6 +113,7 @@ onBeforeUnmount(() => {
 .earth-home {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 100svh;
   height: 100dvh;
@@ -143,12 +144,14 @@ onBeforeUnmount(() => {
 .earth-home__loading span { width: 14px; height: 14px; border: 1px solid #ffffff30; border-top-color: #a5deff; border-radius: 50%; animation: earth-loading 1s linear infinite; }
 @keyframes earth-loading { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .earth-home__loading span { animation: none; } }
-.earth-home__space { position: relative; display: grid; place-items: center; min-height: 0; }
+.earth-home__space { position: relative; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; min-width: 0; min-height: 0; }
 .earth-home__globe {
   position: relative;
   display: block;
   flex-shrink: 0;
-  width: min(96vw, calc(100dvh - 150px), 1040px);
+  width: min(115.2vw, calc((100dvh - 150px) * 1.2), 1248px);
+  /* The camera's framing margin keeps the enlarged objects inside the viewport. */
+  max-width: calc((100dvh - 32px) * 1.04);
   height: auto;
   aspect-ratio: 1;
   padding: 0;
@@ -163,12 +166,12 @@ onBeforeUnmount(() => {
 .earth-home__globe:disabled { cursor: default; touch-action: auto; }
 .earth-home[data-dragging="true"] .earth-home__globe { cursor: grabbing; }
 .earth-home__canvas, .earth-home__fallback { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.earth-home__fallback { filter: drop-shadow(0 0 18px #168eff80) drop-shadow(0 0 34px #087bff50); }
+.earth-home__fallback { border-radius: 50%; }
 .earth-home__canvas { opacity: 0; }
 .earth-home[data-renderer="webgl"] .earth-home__canvas { opacity: 1; }
 .earth-home[data-renderer="webgl"] .earth-home__fallback { opacity: 0; }
 .earth-home__footer { position: relative; z-index: 1; padding: 12px 20px max(30px, env(safe-area-inset-bottom)); text-align: center; }
-.earth-home__instructions { min-height: 1.6em; margin: 10px 0; font-family: "DotGothic16", monospace; font-size: 12px; font-weight: 400; line-height: 1.6; letter-spacing: .04em; color: #a1abc0; visibility: hidden; }
+.earth-home__instructions { min-height: 1.6em; margin: 10px 0; font-family: "DotGothic16", monospace; font-size: 14px; font-weight: 400; line-height: 1.6; letter-spacing: .04em; color: #a1abc0; visibility: hidden; }
 .earth-home__instructions--ready { visibility: visible; }
 .earth-home__tip { display: inline-block; }
 .earth-tip-enter-active, .earth-tip-leave-active { transition: opacity .2s ease; }
@@ -180,12 +183,11 @@ onBeforeUnmount(() => {
   .earth-home__header { gap: 12px; padding: max(18px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 8px max(20px, env(safe-area-inset-left)); }
 
   .earth-home__footer { padding-bottom: max(40px, env(safe-area-inset-bottom)); }
-  .earth-home__instructions { font-size: 12px; }
 }
 @media (max-height: 500px) and (orientation: landscape) {
   .earth-home__header { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: 0; }
-  .earth-home__globe { width: min(60vw, calc(100dvh - 112px)); }
+  .earth-home__globe { width: min(72vw, calc((100dvh - 112px) * 1.2)); max-width: calc(100dvh - 16px); }
   .earth-home__footer { padding: 2px 20px max(8px, env(safe-area-inset-bottom)); }
-  .earth-home__instructions { margin-top: 2px; font-size: 11px; }
+  .earth-home__instructions { margin-top: 2px; font-size: 12px; }
 }
 </style>

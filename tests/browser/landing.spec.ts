@@ -65,6 +65,35 @@ test("mobile WebGL failure ends loading and keeps the direct game link available
   await expect(page.locator(".deep-time-host")).toHaveAttribute("data-loaded", "true", { timeout: 30000 });
 });
 
+test("sustained slow frames lower quality while preserving the interactive Earth", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    const request = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = callback => request(time => callback(time * 30));
+  });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const root = page.getByTestId("floating-earth-experience");
+  await expect(root).toHaveAttribute("data-quality", "low", { timeout: 30000 });
+  await page.evaluate(() => new Promise<void>(resolve => {
+    let remaining = 80;
+    const frame = () => {
+      if (--remaining === 0) resolve();
+      else requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }));
+  await expect(root).toHaveAttribute("data-renderer", "webgl");
+  await expect(root).toHaveAttribute("data-earth-ready", "true");
+  await expect(page.getByTestId("earth-control")).toBeEnabled();
+  const before = Number(await root.getAttribute("data-earth-yaw"));
+  await page.mouse.move(195, 400);
+  await page.mouse.wheel(0, 140);
+  await expect.poll(async () => Number(await root.getAttribute("data-earth-yaw"))).toBeGreaterThan(before + 0.2);
+  await page.getByTestId("earth-control").focus();
+  await page.keyboard.press("Home");
+  await expect(page.getByTestId("dinosaur-control")).toBeVisible();
+});
+
 test("museum pages have been removed", async ({ page }) => {
   for (const path of ["/museum", "/museum/games", "/museum/dinosaur-run"]) {
     const response = await page.goto(path);

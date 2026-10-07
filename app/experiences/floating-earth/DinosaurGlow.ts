@@ -74,19 +74,20 @@ export class DinosaurBloom {
     depthTest: false, depthWrite: false, toneMapped: false,
     uniforms: {
       silhouette: { value: this.mask.texture }, soft: { value: this.blurred.texture },
-      appearance: { value: 0 },
+      appearance: { value: 0 }, strength: { value: 0.5 },
     },
     vertexShader: fullscreenVertex,
     fragmentShader: `varying vec2 vUv;
       uniform sampler2D silhouette;
       uniform sampler2D soft;
       uniform float appearance;
+      uniform float strength;
       void main() {
         float outside = 1.0 - clamp(texture2D(silhouette, vUv).r, 0.0, 1.0);
         vec3 light = texture2D(soft, vUv).rgb;
         // Add light only outside the actual silhouette. Apply coverage in alpha
         // so color-space conversion cannot brighten partially covered skin edges.
-        gl_FragColor = vec4(light, outside * appearance);
+        gl_FragColor = vec4(light, outside * appearance * strength);
         #include <colorspace_fragment>
       }`,
   });

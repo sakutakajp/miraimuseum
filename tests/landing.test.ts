@@ -229,4 +229,24 @@ describe("landing quality policy", () => {
     for (let frame = 0; frame < 120; frame++) manager.sample(0.5);
     expect(manager.tier).toBe("static");
   });
+  it.each([1 / 30, 0.5])("keeps an interactive experience running at minimum quality during sustained %ss frames", delta => {
+    const manager = new QualityManager({
+      mobile: true,
+      cores: 4,
+      reducedMotion: false,
+      minimumTier: "low",
+    });
+    let previous = manager.pixelRatio(3);
+    for (let second = 0; second < 90; second++) {
+      frames(manager, 1, delta);
+      const next = manager.pixelRatio(3);
+      expect(next).toBeLessThanOrEqual(previous);
+      previous = next;
+    }
+    expect(manager.tier).toBe("low");
+    expect(previous).toBe(0.8);
+    expect(manager.sample(delta)).toBe(false);
+    manager.fallback();
+    expect(manager.tier).toBe("static");
+  });
 });
