@@ -1,4 +1,5 @@
 import {
+  AmbientLight,
   Color,
   Group,
   DirectionalLight,
@@ -106,7 +107,7 @@ export class FloatingEarthWorld {
     this.scene.add(this.floating);
     const sunlight = new DirectionalLight("#e9f1f5", 2.2);
     sunlight.position.set(-0.38, 0.4, 0.84);
-    this.scene.add(sunlight, new HemisphereLight("#bddce6", "#294754", 1.3));
+    this.scene.add(sunlight, new HemisphereLight("#bddce6", "#294754", 1.3), new AmbientLight("#ffffff", 2.4));
     this.observer = new ResizeObserver(this.resize);
     this.observer.observe(control);
     this.canvas.addEventListener("webglcontextlost", this.contextLost);

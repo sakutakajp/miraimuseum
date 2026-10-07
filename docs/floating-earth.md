@@ -49,6 +49,8 @@ floating → rotation → EarthRoot (pose)
 
 `DinosaurGlow.ts` が二層の柔らかい白い輪郭光を追加する。本体のemissiveと表面へのrim light加算は使わず、元のテクスチャと通常の照明を維持する。発光shellは元meshのgeometryとrigを共有し、出現のopacityに追従する。出現後も輪郭の白い発光を維持し、地球の青い大気発光は維持する。shellはraycastから除外し、リソースの破棄はモデル本体とまとめて行う。
 
+濃い茶色の皮膚が影で沈みすぎないよう、白いAmbientLight（intensity 2.4）を補助光として加える。既存のDirectionalLightで立体感を残し、本体のemissiveは0を維持する。地球の独自shaderと輪郭shellはscene lightingを参照しないため、補助光はそれらの発光色や明るさを変えない。
+
 `DinosaurModel.ts` は `/floating-earth/dinosaur.glb` を読み、足元を原点に正規化する。添付されたMeshyモデルを軽量化して使用（約1.46MB、24,790 triangle、JPEG 1024px、42-bone rig維持、animation clipなし。decoder不要）。読み込みはEarth readinessを待たせない。404や破損時は今回の明示的な依頼に従い、静かなマット素材のtemporary placeholderで出現演出を維持する。モデル読み込み失敗は地球の失敗扱いにしない。既存のWebGL static fallbackを維持する。
 
 将来は `DinosaurEntityRoot` の下にAnimationMixerを追加し、球面anchorの位置・姿勢を更新する。選択処理はrootのmeshをraycastし、地球dragの判定と統合する。今回のGLBにWalk clipはないため、歩行にはclip付きassetか別アニメーションが必要になる。
