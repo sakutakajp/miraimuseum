@@ -21,6 +21,7 @@ export interface DinosaurModel {
   source: "glb" | "placeholder";
   materials: MeshStandardMaterial[];
   glow: DinosaurGlow;
+  bounds: Box3;
 }
 
 function revealMaterial(material: Material): MeshStandardMaterial {
@@ -77,7 +78,7 @@ function normalizeModel(scene: Group, source: DinosaurModel["source"]): Dinosaur
   });
   visual.updateMatrixWorld(true);
   const glow = new DinosaurGlow(scene);
-  return { object3D: visual, source, materials: [...materials], glow };
+  return { object3D: visual, source, materials: [...materials], glow, bounds: new Box3().setFromObject(visual, true) };
 }
 
 function createPlaceholder(): Group {

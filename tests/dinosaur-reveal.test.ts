@@ -1,13 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  Box3, BoxGeometry, Euler, Group, Mesh, MeshStandardMaterial,
-  Points, Quaternion, Vector3,
+  Box2, Box3, BoxGeometry, Euler, Group, Mesh, MeshStandardMaterial,
+  OrthographicCamera, Points, Quaternion, Raycaster, SphereGeometry, Vector3,
 } from "three";
 import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
-import { DINOSAUR, placeOnSphere } from "../app/experiences/floating-earth/entities";
+import { DINOSAUR, EARTH_VIEW_EXTENT, placeOnSphere } from "../app/experiences/floating-earth/entities";
 import { loadDinosaurModel } from "../app/experiences/floating-earth/DinosaurModel";
 import { DinosaurReveal, revealAt } from "../app/experiences/floating-earth/DinosaurReveal";
 import { disposeEarthObjects } from "../app/experiences/floating-earth/model";
+import { hitsVisibleEntity, projectBounds } from "../app/experiences/floating-earth/selection";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -85,6 +86,8 @@ describe("surface entity placement", () => {
     const effectsBefore = reveal.effectRoot.getWorldPosition(new Vector3());
     expect(entityBefore.distanceTo(effectsBefore)).toBeLessThan(1e-10);
     expect(entityBefore.z).toBeGreaterThan(0);
+    reveal.updateVisibility(new Vector3(0, 0, -1));
+    expect(reveal.object3D.visible).toBe(true);
     earthRotation.rotation.y = Math.PI;
     earthRotation.updateMatrixWorld(true);
     const entityAfter = reveal.entityRoot.getWorldPosition(new Vector3());
@@ -94,6 +97,8 @@ describe("surface entity placement", () => {
     expect(entityAfter.distanceTo(effectsAfter)).toBeLessThan(1e-10);
     expect(entityAfter.length()).toBeCloseTo(1 + DINOSAUR.surfaceOffset, 10);
     expect(entityAfter.z).toBeLessThan(0);
+    reveal.updateVisibility(new Vector3(0, 0, -1));
+    expect(reveal.object3D.visible).toBe(false);
     reveal.dispose();
   });
 
@@ -109,6 +114,56 @@ describe("surface entity placement", () => {
     expect(reveal.isFrontFacing(cameraForward)).toBe(false);
     reveal.dispose();
     expect(() => reveal.isFrontFacing(cameraForward)).not.toThrow();
+  });
+
+  it("keeps the complete resized silhouette inside the canvas through every rotation", () => {
+    const camera = new OrthographicCamera(-EARTH_VIEW_EXTENT, EARTH_VIEW_EXTENT, EARTH_VIEW_EXTENT, -EARTH_VIEW_EXTENT, 0.1, 20);
+    camera.position.z = 5;
+    camera.updateMatrixWorld(true);
+    const rotation = new Group(), anchor = new Group();
+    placeOnSphere(anchor, DINOSAUR.normal, 1, DINOSAUR.surfaceOffset);
+    rotation.add(anchor);
+    const d = DINOSAUR.size;
+    const local = new Box3(new Vector3(-d / 2, 0, -d / 2), new Vector3(d / 2, d, d / 2));
+    const projected = new Box2();
+    for (let yaw = 0; yaw < Math.PI * 2; yaw += Math.PI / 24) {
+      for (const pitch of [-0.9, -0.45, 0, 0.45, 0.9]) {
+        rotation.rotation.set(pitch, yaw, 0, "YXZ");
+        rotation.position.y = 0.022;
+        rotation.updateMatrixWorld(true);
+        projectBounds(local.clone().applyMatrix4(anchor.matrixWorld), camera, projected);
+        expect(Math.max(Math.abs(projected.min.x), Math.abs(projected.max.x), Math.abs(projected.min.y), Math.abs(projected.max.y))).toBeLessThan(1);
+      }
+    }
+  });
+});
+
+describe("dinosaur selection", () => {
+  it("selects real geometry in front of Earth, ignores the aura, and rejects occluded or hidden geometry", () => {
+    const earth = new Group();
+    earth.add(new Mesh(new SphereGeometry(1, 24, 16), new MeshStandardMaterial()));
+    earth.add(new Mesh(new SphereGeometry(1.12, 24, 16), new MeshStandardMaterial({ transparent: true })));
+    const entity = new Group();
+    const model = new Mesh(new BoxGeometry(0.12, 0.12, 0.12), new MeshStandardMaterial());
+    const aura = new Mesh(new SphereGeometry(0.3), new MeshStandardMaterial({ transparent: true }));
+    aura.raycast = () => {};
+    entity.add(model, aura);
+    const ray = new Raycaster(new Vector3(0, 0, 5), new Vector3(0, 0, -1));
+    entity.position.z = 1.1;
+    earth.updateMatrixWorld(true);
+    entity.updateMatrixWorld(true);
+    expect(hitsVisibleEntity(ray, entity, earth)).toBe(true);
+    const miss = new Raycaster(new Vector3(0.15, 0, 5), new Vector3(0, 0, -1));
+    expect(hitsVisibleEntity(miss, entity, earth)).toBe(false);
+    entity.position.z = -1.1;
+    entity.updateMatrixWorld(true);
+    expect(hitsVisibleEntity(ray, entity, earth)).toBe(false);
+    entity.position.z = 1.1;
+    entity.visible = false;
+    entity.updateMatrixWorld(true);
+    expect(hitsVisibleEntity(ray, entity, earth)).toBe(false);
+    disposeEarthObjects(earth);
+    disposeEarthObjects(entity);
   });
 });
 
@@ -160,6 +215,29 @@ describe("optional dinosaur asset", () => {
     reveal.dispose();
   });
 
+  it("raises a white light column before the dinosaur, then lets the column fade away", async () => {
+    missingAsset();
+    const reveal = new DinosaurReveal();
+    await reveal.load();
+    const column = reveal.effectRoot.getObjectByName("DinosaurLightColumn") as Mesh;
+    reveal.update(1.45, false, 1);
+    expect(reveal.visible).toBe(false);
+    expect(column.visible).toBe(true);
+    const height = column.scale.y;
+    expect(height).toBeGreaterThan(0);
+    expect(height).toBeLessThan(1);
+    reveal.update(0.4, false, 1);
+    expect(column.scale.y).toBeGreaterThan(height);
+    expect(reveal.visible).toBe(false);
+    reveal.update(0.4, false, 1);
+    expect(column.scale.y).toBe(1);
+    expect(reveal.visible).toBe(true);
+    reveal.update(1.3, false, 1);
+    expect(column.visible).toBe(false);
+    expect(reveal.effectRoot.visible).toBe(true);
+    reveal.dispose();
+  });
+
   it("avoids particle sparkle, scaling and rising in reduced motion", async () => {
     missingAsset();
     const reveal = new DinosaurReveal();
@@ -172,6 +250,7 @@ describe("optional dinosaur asset", () => {
     const sparkles = reveal.effectRoot.children.filter(object => object instanceof Points);
     expect(sparkles.length).toBeGreaterThan(0);
     expect(sparkles.every(object => !object.visible)).toBe(true);
+    expect(reveal.effectRoot.getObjectByName("DinosaurLightColumn")!.visible).toBe(false);
     reveal.update(0.5, true, 2);
     expect(reveal.state).toBe("settled");
     expect(appearance.position.y).toBe(0);

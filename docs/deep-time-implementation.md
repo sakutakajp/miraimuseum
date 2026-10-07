@@ -4,7 +4,9 @@
 
 ## 起動と操作
 
-`/dinosaur` → START。タップ / クリック / Space / ↑で固定軌道のジャンプ。Escapeまたは右上のpauseで停止し、非表示になったタブも停止する。pauseのSOUNDでmuteを切り替える。STARTはユーザー操作でAudioContextを解除し、300msのタイトル遷移後に開始する。
+`/dinosaur` → START。ホームのブラキオサウルスからは `/dinosaur?play=1` へ遷移し、読み込みが完了すると自動で開始する。ホームのtap中にAudioContextをresumeし、ゲームのAudioDirectorへ一度だけ引き渡すことで、Safariでも音声の起動をユーザー操作に結び付ける。遷移しなかった場合は未使用のcontextを60秒後に閉じる。
+
+主人公は長い首と4本脚を持つブラキオサウルス。6枚の走行poseと上昇・下降のjump poseをSVG plateで描く。タップ / クリック / Space / ↑で固定軌道のジャンプ。Escapeまたは右上のpauseで停止し、非表示になったタブも停止する。pauseのSOUNDでmuteを切り替える。直接アクセス時のSTARTはユーザー操作でAudioContextを解除し、300msのタイトル遷移後に開始する。見た目の差し替えに伴うphysics、collision、50ジャンプの時刻変更は行わない。
 
 一撃死。死亡は短いhit stop、印刷片の破砕、到達率 / NEW BEST、画面のワイプで構成し、760ms後に同じPhaser.Gameで自動再走する。失敗リザルト・巻き戻し・無敵時間・自動救済・収集ポップアップは使用しない。
 
@@ -22,7 +24,7 @@
 
 ## 映像と音
 
-CALM → HERD → PREDATOR → FLASH → FALLOUT → BOUNDARY。空、遠景地形、地形の塊、植生、恐竜、ゲーム地面、前景、粒子を別の深度で描く。Bone / Obsidian / Fossil / Fern / Ironの印刷色に、鉱物の粒と分類タイポグラフィを重ねる。Impact Orangeは衝突の閃光以降に使用する。
+CALM → HERD → PREDATOR → FLASH → FALLOUT → BOUNDARY。空、遠景地形、地形の塊、植生、恐竜、ゲーム地面、前景、粒子を別の深度で描く。Bone / Obsidian / Fossil / Fern / Ironの印刷色に鉱物の粒を重ねる。背景の大きな文字、分類ラベル、endingの地層ラベルは表示しない。操作、pause、score、展示のUIは維持する。Impact Orangeは衝突の閃光以降に使用する。
 
 TriceratopsとT. rexは遠・中・近で異なる線・光の処理を持つSVG plate。T. rexは遠景、横断、近景の頭部、追走へ進むが、プレイヤーのcollision対象にはしない。FLASH直後には安全な鑑賞区間を設けた。FALLOUTは落下する石、燃える枝、崩れる足場と短い再ジャンプを組み合わせる。最後の入力後は死亡を無効にし、ズームを引き、世界を白へ、一本の黒い線をK–Pg境界の地層へ変える。
 
@@ -34,7 +36,7 @@ TriceratopsとT. rexは遠・中・近で異なる線・光の処理を持つSVG
 
 ## UIと保存
 
-`DinosaurRunScene` はphysicsと演出、`DinosaurUIScene` はHUD / pause / 到達率 / clear / exhibit。Nuxtはhost、loading / fatal、博物館への遷移と、Canvasと同じ位置のfocus可能なsemantic controlを担当する。展示文章にはscreen reader用の同じ内容も付与した。背景・物理を毎frame Vueへ送らない。
+`DinosaurRunScene` はphysicsと演出、`DinosaurUIScene` はHUD / pause / 到達率 / clear / exhibit。Nuxtはhost、loading / fatal、ホームへの遷移と、Canvasと同じ位置のfocus可能なsemantic controlを担当する。展示文章にはscreen reader用の同じ内容も付与した。背景・物理を毎frame Vueへ送らない。
 
 失敗は到達率だけを更新。clear scoreは `50,000 + SYNC × 40,000 + 10,000`、最大100,000。RankはS ≥ 92,000 / A ≥ 84,000 / B ≥ 72,000 / C。試行数は競争の優劣に使わない。
 
@@ -55,7 +57,7 @@ npm run test:storybook
 
 確認済み:
 
-- `npm test`: 79件pass。新しいStage 1は12件で、60 / 120 Hz / 不規則renderの同一world state、全50challengeの無補助clear、large delta、coyote / buffer / inset、cue / speed / collapse / SYNC / Rank / 保存を確認した。
+- `npm test`: 90件pass。Stage 1の12件で、60 / 120 Hz / 不規則renderの同一world state、全50challengeの無補助clear、large delta、coyote / buffer / inset、cue / speed / collapse / SYNC / Rank / 保存を確認した。ホームの出現、光柱、球面配置、見切れ、地球による選択の遮蔽、AudioContextの引き渡しも検証する。
 - `npm run typecheck`、本番build、Storybook build: pass。
 - DEEP TIME開発Playwright: 操作 / 空中pause / visibility / 20回以上の連続retry、実physicsの100,000点clear / 展示 / 永続保存、4画面サイズ / reduced motion / low / context loss、およびFLASH時の既存Rexの静止とphysics継続を確認した。
 - 390×844 / 430×932 / 1440×900 / 1280×800の構図を画像で確認。6場面の静止画、K–Pg ending、clear展示も確認した。ブラウザのpageerrorは通常動作で発生していない。

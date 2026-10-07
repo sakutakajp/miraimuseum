@@ -214,7 +214,7 @@ export function loadPlates(scene: Phaser.Scene) {
           `/deep-time/${species}-${depth}-${i}.svg`,
         );
   for (let i = 0; i < 8; i++)
-    scene.load.svg(`dt-runner-${i}`, `/deep-time/runner-${i}.svg`);
+    scene.load.svg(`dt-brachiosaurus-${i}`, `/deep-time/brachiosaurus-${i}.svg`);
   for (const kind of ["rock", "root", "branch"])
     scene.load.svg(`dt-${kind}`, `/deep-time/${kind}.svg`);
 }

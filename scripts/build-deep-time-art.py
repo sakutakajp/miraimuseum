@@ -35,20 +35,34 @@ for animal,w,h,path in [('rex',610,310,rex),('tri',450,240,tri)]:
       if depth=='near':
         body+=f'<path d="{path}" fill="none" stroke="#e9e4d8" stroke-width=".9" opacity=".52"/>'
       save(f'{animal}-{depth}-{frame}',w,h,body)
-# Scientific field runner: readable bone silhouette, rust cloth and articulated poses.
+# Brachiosaurus: high shoulders, a long upright neck and a four-beat running gait.
 for frame in range(8):
-  airborne=frame>=6
   phase=frame*math.pi/3
-  foot1=20+math.sin(phase)*12 if not airborne else 10
-  foot2=20-math.sin(phase)*12 if not airborne else 33
-  footy1=67-max(0,math.cos(phase))*8 if not airborne else 54
-  footy2=67-max(0,-math.cos(phase))*8 if not airborne else 60
-  body='<path d="M20 24L28 25L28 43L19 44L15 33Z" fill="#e9e4d8"/>'
-  body+=f'<path d="M20 43L15 50L{foot1} {footy1}L{foot1+7} {footy1}M27 43L30 50L{foot2} {footy2}L{foot2+7} {footy2}" fill="none" stroke="#e9e4d8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'
-  body+='<path d="M20 27L13 37L6 33M26 28L32 34L38 29" fill="none" stroke="#b7a68a" stroke-width="4" stroke-linecap="round"/>'
-  body+='<path d="M17 25L9 26L3 23L0 27L14 31L27 28Z" fill="#a94732"/><rect x="10" y="29" width="7" height="12" rx="2" fill="#53654b"/>'
-  body+='<path d="M17 21L17 10Q24 4 29 11L30 17L27 20L27 24Z" fill="#e9e4d8"/><path d="M17 13L30 13L32 16L22 18L17 17Z" fill="#10110f"/><path d="M21 13L28 14" stroke="#b7a68a" stroke-width="1.5"/>'
-  save(f'runner-{frame}',44,70,body)
+  legs=[]
+  for j,(hip,y) in enumerate([(38,49),(61,44),(32,51),(67,44)]):
+    if frame<6:
+      stride=math.sin(phase+j*math.pi/2)*6
+      foot_y=79-max(0,math.cos(phase+j*math.pi/2))*5
+    elif frame==6:
+      stride=-5 if j%2 else 5
+      foot_y=66+j%2*4
+    else:
+      stride=4 if j%2 else -3
+      foot_y=76+j%2*3
+    foot_x=hip+stride
+    color='#6e6251' if j<2 else '#ae9674'
+    legs.append(f'<path d="M{hip-4} {y}Q{hip+5} {y-2} {hip+5} {y+9}L{foot_x+2:.2f} {foot_y-6:.2f}Q{foot_x+8:.2f} {foot_y-2:.2f} {foot_x+5:.2f} {foot_y:.2f}L{foot_x-5:.2f} {foot_y:.2f}L{foot_x-4:.2f} {foot_y-5:.2f}L{hip-5} {y+12}Z" fill="{color}" stroke="#574f43" stroke-width=".65"/>')
+  body=''.join(legs[:2])
+  body+='<path d="M34 41Q24 43 15 39L2 34Q12 46 27 48L34 49Z" fill="#a58e6f" stroke="#574f43" stroke-width=".7"/>'
+  body+='<path d="M27 46Q27 37 41 35Q54 35 64 29Q69 24 70 14L70 9Q77 4 83 8L91 9Q95 12 91 16L80 17Q79 29 76 40Q72 51 62 53Q48 60 34 54Q27 52 27 46Z" fill="#ae9674" stroke="#574f43" stroke-width=".85"/>'
+  body+='<path d="M30 42Q43 35 61 35Q71 28 73 13L75 9Q79 7 83 9L88 10Q83 11 78 13Q77 30 69 39Q48 41 34 46Z" fill="#d6c3a1" opacity=".82"/>'
+  body+='<path d="M32 49Q47 56 62 49Q72 45 75 32M65 40Q70 37 71 31M74 19L78 19M79 14L89 14" fill="none" stroke="#7c6c55" stroke-width=".8"/>'
+  body+=''.join(legs[2:])
+  body+='<path d="M35 50L36 66M68 46L69 64" stroke="#d6c3a1" stroke-width="1.2" opacity=".6"/>'
+  for x,y in [(37,44),(44,46),(52,43),(58,40),(49,51),(62,47),(72,26),(73,22),(80,11)]:
+    body+=f'<path d="M{x} {y}l1 2m2-1l1 2" stroke="#75664f" stroke-width=".55" opacity=".5"/>'
+  body+='<circle cx="83" cy="10.5" r=".85" fill="#171712"/><circle cx="83.2" cy="10.2" r=".22" fill="#e9e4d8"/><path d="M89 11.5h1" stroke="#574f43" stroke-width=".6"/>'
+  save(f'brachiosaurus-{frame}',96,80,body)
 # Reusable obstacle plates: generous visual skirts outside precise collision solids.
 for kind in ['rock','root','branch']:
   if kind=='rock':

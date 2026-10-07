@@ -15,26 +15,6 @@ const uid = useId().replace(/:/g, "");
     </defs>
     <rect width="480" height="280" :fill="`url(#${uid}sky)`" />
     <circle cx="390" cy="87" r="40" fill="#e9e4d8" opacity=".3" />
-    <text
-      x="26"
-      y="65"
-      fill="#e9e4d8"
-      opacity=".55"
-      font-family="Georgia,serif"
-      font-size="46"
-    >
-      DEEP TIME
-    </text>
-    <text
-      x="28"
-      y="86"
-      fill="#e9e4d8"
-      font-family="monospace"
-      font-size="8"
-      letter-spacing="2"
-    >
-      CRETACEOUS // LAST DAY · 66.0 Ma
-    </text>
     <path d="M0 179Q80 98 170 142T290 139T480 106V280H0Z" fill="#8d957b" />
     <path d="M0 205Q89 130 181 178T323 160T480 158V280H0Z" fill="#53654b" />
     <image
@@ -61,10 +41,10 @@ const uid = useId().replace(/:/g, "");
       opacity=".65"
     />
     <image
-      href="/deep-time/runner-3.svg"
-      x="257"
+      href="/deep-time/brachiosaurus-3.svg"
+      x="242"
       y="183"
-      width="34"
+      width="64.8"
       height="54"
     />
     <image href="/deep-time/rock.svg" x="361" y="207" width="41" height="31" />

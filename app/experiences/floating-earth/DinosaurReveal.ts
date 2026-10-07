@@ -1,4 +1,4 @@
-import { Group, Vector3 } from "three";
+import { Box3, Group, Vector3 } from "three";
 import { DINOSAUR, placeOnSphere } from "./entities";
 import { loadDinosaurModel, type DinosaurModel } from "./DinosaurModel";
 import { RevealEffects } from "./effects";
@@ -83,13 +83,22 @@ export class DinosaurReveal {
 
   get state() { return this.phase; }
   get source() { return this.model?.source ?? "loading"; }
-  get visible() { return this.entityRoot.visible; }
+  get visible() { return this.object3D.visible && this.entityRoot.visible; }
   getAnchorWorldPosition(target: Vector3) { return this.object3D.getWorldPosition(target); }
+  getWorldBounds(target: Box3) {
+    if (!this.model) return target.makeEmpty();
+    this.appearance.updateWorldMatrix(true, false);
+    return target.copy(this.model.bounds).applyMatrix4(this.appearance.matrixWorld);
+  }
 
   isFrontFacing(cameraForward: Vector3) {
     this.object3D.updateWorldMatrix(true, false);
     this.worldNormal.set(0, 1, 0).transformDirection(this.object3D.matrixWorld);
     return this.worldNormal.dot(cameraForward) < 0;
+  }
+
+  updateVisibility(cameraForward: Vector3) {
+    this.object3D.visible = this.isFrontFacing(cameraForward);
   }
 
   dispose() {

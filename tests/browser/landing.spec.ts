@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { dinosaurPoint } from "./helpers/dinosaur";
+
+test.beforeEach(async ({ page }) => {
+  await page.route("https://fonts.googleapis.com/**", route => route.abort());
+});
 
 test("home loads visibly, rotates continuously, responds to scroll and opens the dinosaur game", async ({ page }) => {
   const errors: string[] = [];
@@ -17,6 +22,7 @@ test("home loads visibly, rotates continuously, responds to scroll and opens the
   await expect(page.getByText("世界に、触れる。", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Earth imagery credits")).toHaveCount(0);
   await expect(page.locator('a[href="/museum"]')).toHaveCount(0);
+  await expect(page.locator(".earth-home__header a, .earth-home__header button")).toHaveCount(0);
   release();
   await expect(root).toHaveAttribute("data-earth-ready", "true", { timeout: 30000 });
   await expect(page.getByRole("status")).toHaveCount(0);
@@ -31,11 +37,13 @@ test("home loads visibly, rotates continuously, responds to scroll and opens the
   await page.getByTestId("earth-control").focus();
   await page.keyboard.press("ArrowDown");
   await expect(root).toHaveAttribute("data-earth-pitch", "0.16000");
-  await page.getByRole("link", { name: "恐竜ゲームをはじめる" }).click();
-  await expect(page).toHaveURL(/\/dinosaur$/);
+  await page.keyboard.press("Home");
+  const point = await dinosaurPoint(page);
+  await page.mouse.click(point.x, point.y);
+  await expect(page).toHaveURL(/\/dinosaur\?play=1$/);
   await expect(page.locator(".deep-time-host")).toHaveAttribute("data-loaded", "true", { timeout: 30000 });
-  await page.getByRole("button", { name: "スタート", exact: true }).click();
   await expect(page.locator(".deep-time-host")).toHaveAttribute("data-mode", "running");
+  await expect(page.getByRole("button", { name: "スタート", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "一時停止", exact: true }).click();
   await page.getByRole("button", { name: "ホームへ戻る", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);

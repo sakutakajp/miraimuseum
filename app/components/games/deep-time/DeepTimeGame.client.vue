@@ -13,6 +13,7 @@ import {
   emptyRecord,
   parseRecord,
 } from "~/game/dinosaur/systems/records";
+const props = withDefaults(defineProps<{ autoStart?: boolean }>(), { autoStart: false });
 const emit = defineEmits<{
   record: [value: DeepTimeRecord];
   cleared: [value: ClearResult];
@@ -108,6 +109,7 @@ onMounted(async () => {
       {
         ready: () => {
           loaded.value = true;
+          if (props.autoStart && !disposed) scene?.act("start");
         },
         started: () => {
           attempts.value = scene!.attempts;
@@ -192,10 +194,11 @@ onBeforeUnmount(() => {
     :data-attempts="attempts"
     :data-best="best"
     :data-loaded="loaded"
+    data-player-species="brachiosaurus"
     :aria-label="
       locale === 'ja'
-        ? 'MIRAI: DEEP TIME。タップ、クリック、Space、↑でジャンプ。Escapeで一時停止。'
-        : 'MIRAI: DEEP TIME. Tap, click, Space or Up to jump. Escape to pause.'
+        ? 'MIRAI: DEEP TIME。ブラキオサウルスを操作。タップ、クリック、Space、↑でジャンプ。Escapeで一時停止。'
+        : 'MIRAI: DEEP TIME. Play as a Brachiosaurus. Tap, click, Space or Up to jump. Escape to pause.'
     "
   >
     <div ref="host" class="deep-time-canvas" />

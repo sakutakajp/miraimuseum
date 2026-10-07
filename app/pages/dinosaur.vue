@@ -3,6 +3,7 @@ import DeepTimeGame from "~/components/games/deep-time/DeepTimeGame.client.vue";
 import { GAME_SAVE_KEY, parseGameProgress, recordGameResult } from "~/games/progress";
 import type { ClearResult } from "~/game/dinosaur/types";
 const { initializeLanguage } = useLanguage();
+const route = useRoute();
 onMounted(initializeLanguage);
 useHead({ title: "MIRAI: DEEP TIME", meta: [{ name: "theme-color", content: "#10110f" }] });
 function saveClear(value: ClearResult) {
@@ -16,7 +17,7 @@ function saveClear(value: ClearResult) {
 </script>
 <template>
   <ClientOnly>
-    <DeepTimeGame @cleared="saveClear" @leave="navigateTo('/')" />
+    <DeepTimeGame :auto-start="route.query.play === '1'" @cleared="saveClear" @leave="navigateTo('/')" />
     <template #fallback><div class="deep-time-loading" role="status">Loading...</div></template>
   </ClientOnly>
 </template>

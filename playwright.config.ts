@@ -6,13 +6,14 @@ const executablePath =
 export default defineConfig({
   testDir: "./tests/browser",
   timeout: 150_000,
-  workers: 2,
+  // Software WebGL shares GPU resources; parallel scenes distort quality sampling.
+  workers: 1,
   use: {
     baseURL: "http://127.0.0.1:3001",
     headless: true,
     launchOptions: { executablePath },
     screenshot: "only-on-failure",
-    trace: "retain-on-failure",
+    trace: { mode: "retain-on-failure", screenshots: false },
   },
   webServer: {
     command: "npm run preview",

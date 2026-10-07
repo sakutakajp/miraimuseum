@@ -1,4 +1,5 @@
 import { MUSIC_STEMS, SOUND_NAMES, type SoundName } from "../config/audio";
+import { takeDinosaurAudio } from "../audio-context";
 export class AudioDirector {
   private ctx?: AudioContext;
   private master?: GainNode;
@@ -20,7 +21,7 @@ export class AudioDirector {
   }
   private ensureContext() {
     if (!this.ctx) {
-      this.ctx = new AudioContext();
+      this.ctx = takeDinosaurAudio() ?? new AudioContext();
       this.master = this.ctx.createGain();
       this.music = this.ctx.createGain();
       this.sfx = this.ctx.createGain();

@@ -13,6 +13,40 @@ async function open(page: Page) {
     "running",
   );
 }
+test("Brachiosaurus runs and jumps against scenery without background lettering", async ({ page }) => {
+  await open(page);
+  const observed = await page.evaluate(() => {
+    const s = window.__deepTime!;
+    const image = s.children.list.find(object => object.type === "Image"
+      && (object as import("phaser").GameObjects.Image).texture.key.startsWith("dt-brachiosaurus-")) as import("phaser").GameObjects.Image;
+    s.debugSeek(0);
+    s.runtime.world.previewInvincible = true;
+    s.debugTick(0.04);
+    const running = { texture: image.texture.key, width: image.displayWidth, height: image.displayHeight };
+    s.jump();
+    s.debugTick(0.12);
+    const rising = image.texture.key;
+    s.debugTick(0.22);
+    const falling = image.texture.key;
+    const sections: string[][] = [];
+    for (const index of [0, 1, 2, 3, 4, 5]) {
+      s.debugSeek(index);
+      s.debugTick(0.01);
+      sections.push(s.children.list.filter(object => object.type === "Text")
+        .map(object => (object as import("phaser").GameObjects.Text).text));
+    }
+    s.debugTick(12);
+    sections.push(s.children.list.filter(object => object.type === "Text")
+      .map(object => (object as import("phaser").GameObjects.Text).text));
+    return { running, rising, falling, sections, humanTexture: s.textures.exists("dt-runner-0") };
+  });
+  expect(observed.running.texture).toMatch(/^dt-brachiosaurus-[0-5]$/);
+  expect(observed.running.width / observed.running.height).toBeCloseTo(1.2);
+  expect(observed.rising).toBe("dt-brachiosaurus-6");
+  expect(observed.falling).toBe("dt-brachiosaurus-7");
+  expect(observed.sections.every(text => text.length === 0)).toBe(true);
+  expect(observed.humanTexture).toBe(false);
+});
 test("one-input jump, midair pause, hidden pause and twenty pooled retries", async ({
   page,
 }) => {

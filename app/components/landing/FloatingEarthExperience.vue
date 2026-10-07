@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import type { FloatingEarthWorld } from "~/experiences/floating-earth/FloatingEarthWorld";
+import { prepareDinosaurAudio } from "~/game/dinosaur/audio-context";
 
 const root = ref<HTMLElement>();
 const control = ref<HTMLButtonElement>();
 const canvas = ref<HTMLCanvasElement>();
+const dinosaurControl = ref<HTMLButtonElement>();
 const ready = ref(false);
 const pending = ref(true);
 let world: FloatingEarthWorld | undefined;
 let loading: AbortController | undefined;
+
+function startDinosaur() {
+  prepareDinosaurAudio();
+  void navigateTo({ path: "/dinosaur", query: { play: "1" } });
+}
 
 function fallback() {
   ready.value = false;
@@ -24,8 +31,9 @@ onMounted(async () => {
   const signal = loading.signal;
   try {
     const { FloatingEarthWorld } = await import("~/experiences/floating-earth/FloatingEarthWorld");
-    if (signal.aborted || !canvas.value || !control.value || !root.value) return;
-    world = await FloatingEarthWorld.create(canvas.value, control.value, root.value, signal, fallback);
+    if (signal.aborted || !canvas.value || !control.value || !root.value || !dinosaurControl.value) return;
+    world = await FloatingEarthWorld.create(canvas.value, control.value, root.value, signal,
+      { fallback, activateDinosaur: startDinosaur, dinosaurControl: dinosaurControl.value });
     if (signal.aborted) { world.dispose(); return; }
     root.value.dataset.renderer = "webgl";
     ready.value = true;
@@ -42,9 +50,6 @@ onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
   <main ref="root" class="earth-home" data-testid="floating-earth-experience" data-renderer="static" data-earth-ready="false" data-earth-yaw="0" data-earth-pitch="0" data-dragging="false">
     <header class="earth-home__header">
       <h1 class="earth-home__title">MIRAI MUSEUM</h1>
-      <NuxtLink to="/dinosaur" no-prefetch class="earth-home__entrance" aria-label="恐竜ゲームをはじめる" title="恐竜ゲームをはじめる">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5.5v13l10-6.5L8 5.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /></svg>
-      </NuxtLink>
     </header>
 
     <div class="earth-home__space">
@@ -53,13 +58,16 @@ onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
         <img class="earth-home__fallback" src="/floating-earth/earth-photo.webp" alt="" width="1024" height="1024" fetchpriority="high" draggable="false" />
         <canvas ref="canvas" class="earth-home__canvas" aria-hidden="true" />
       </button>
+      <button ref="dinosaurControl" class="earth-home__dinosaur" data-testid="dinosaur-control" type="button" hidden disabled aria-label="ブラキオサウルスで恐竜ゲームをはじめる" @click="startDinosaur" />
     </div>
 
     <footer class="earth-home__footer">
       <p id="earth-instructions" class="earth-home__instructions" :class="{ 'earth-home__instructions--ready': ready }">
-        <span aria-hidden="true">スクロールで回す <i>·</i> ドラッグで動かす</span>
-        <span class="earth-home__sr">ゆっくり自転する地球。スクロール、タップ、Enter、Spaceで回転。ドラッグ、矢印キーで向きを変更。Homeで元の向きに戻ります。</span>
+        <span aria-hidden="true">スクロールで回す <i>·</i> ブラキオサウルスをタップ</span>
+        <span class="earth-home__sr">ゆっくり自転する地球。スクロール、地球のタップ、Enter、Spaceで回転。ドラッグ、矢印キーで向きを変更。Homeで元の向きに戻ります。ブラキオサウルスをタップするか、ブラキオサウルスのボタンにフォーカスしてEnterまたはSpaceで恐竜ゲームを開始します。</span>
       </p>
+      <NuxtLink v-if="!pending && !ready" to="/dinosaur?play=1" no-prefetch class="earth-home__fallback-link" @click="prepareDinosaurAudio">恐竜ゲームをはじめる</NuxtLink>
+      <noscript><a class="earth-home__fallback-link" href="/dinosaur">恐竜ゲームをはじめる</a></noscript>
     </footer>
   </main>
 </template>
@@ -89,9 +97,9 @@ onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
   padding: max(24px, env(safe-area-inset-top)) max(36px, env(safe-area-inset-right)) 12px max(36px, env(safe-area-inset-left));
 }
 .earth-home__title { margin: 0; color: inherit; font-family: "M PLUS Rounded 1c", sans-serif; font-size: clamp(16px, 2vw, 22px); font-weight: 700; letter-spacing: .06em; line-height: 1.5; }
-.earth-home__entrance { display: grid; place-items: center; width: 44px; height: 44px; color: #b9c3d5; border: 1px solid #ffffff20; border-radius: 50%; transition: color .2s, background .2s; }
-.earth-home__entrance:hover { color: #fff; background: #ffffff0a; }
-.earth-home__entrance svg { width: 22px; height: 22px; }
+.earth-home__dinosaur { position: absolute; z-index: 1; padding: 0; border: 0; border-radius: 5px; background: transparent; pointer-events: none; }
+.earth-home__dinosaur:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.earth-home__fallback-link { color: #bbc4d0; font-size: 13px; text-underline-offset: 5px; }
 .earth-home__loading { position: absolute; z-index: 2; bottom: 12px; display: flex; gap: 10px; align-items: center; color: #d9e7ff; font-size: 13px; letter-spacing: .08em; }
 .earth-home__loading span { width: 14px; height: 14px; border: 1px solid #ffffff30; border-top-color: #a5deff; border-radius: 50%; animation: earth-loading 1s linear infinite; }
 @keyframes earth-loading { to { transform: rotate(360deg); } }

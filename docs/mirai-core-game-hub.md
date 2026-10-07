@@ -5,6 +5,8 @@ Date: 2026-10-07
 Status: Approved direction / implementation-ready
 Target branch: work
 
+現行実装: 歩行と没入トランジションは次期スコープ。現在は白い光柱とともにブラキオサウルスが出現し、tap / Enter / Spaceで `/dinosaur?play=1` を起動する。サイズは最大寸法0.432（以前の60%）。右上の再生ボタンは削除し、静止画fallbackではフッターのゲームリンクを表示する。詳細は [floating-earth.md](floating-earth.md) を参照する。
+
 ## 1. Purpose
 
 トップページの Floating Earth を単なるビジュアルではなく、MIRAI MUSEUM 全体へ入るための3Dゲームランチャーとして扱う。
@@ -42,7 +44,7 @@ Target branch: work
 - スクロール、ドラッグ、タップ、キーボードによる地球回転
 - WebGL失敗時の earth-photo.webp fallback
 
-既存右上の恐竜ゲーム直行再生ボタンはP0では削除せず、アクセシビリティとfallback用の第2導線として維持してよい。ただし視覚的主役は恐竜オブジェクトに移す。
+右上の再生ボタンは削除する。アクセシビリティには恐竜に追従するfocus可能なbutton、fallbackにはフッターの直行リンクを用意する。
 
 ## 4. Core experience
 
@@ -360,7 +362,7 @@ P0でpost-processing pipelineを追加しない。既存の軽量な描画を維
 
 3D恐竜を操作できない状況でも /dinosaur へ到達できなければならない。
 
-- 既存右上のリンクを維持、または同等のaccessible linkを残す
+- 静止画fallbackではフッターにaccessibleな直行リンクを残す
 - keyboardで恐竜entityをfocus/selectできる仕組みを用意する
 - Enter/Spaceでactivate
 - aria label: 恐竜ゲームをはじめる

@@ -1,5 +1,7 @@
 import {
   AmbientLight,
+  Box2,
+  Box3,
   Color,
   Group,
   DirectionalLight,
@@ -8,26 +10,46 @@ import {
   NoToneMapping,
   OrthographicCamera,
   PlaneGeometry,
+  Raycaster,
   Scene,
   ShaderMaterial,
   SRGBColorSpace,
+  Vector2,
+  Vector3,
   WebGLRenderer,
 } from "three";
 import { QualityManager } from "../landing/QualityManager";
 import { EarthInteraction } from "./interaction";
 import { loadPhotographicEarth, disposeEarthObjects } from "./model";
 import { DinosaurReveal } from "./DinosaurReveal";
+import { EARTH_VIEW_EXTENT } from "./entities";
+import { hitsVisibleEntity, projectBounds } from "./selection";
+
+interface EarthActions {
+  fallback(): void;
+  activateDinosaur(): void;
+  dinosaurControl: HTMLButtonElement;
+}
 
 /** One scene, one canvas and one clock; the museum's game runtimes are independent. */
 export class FloatingEarthWorld {
   private renderer: WebGLRenderer;
   private scene = new Scene();
-  private camera = new OrthographicCamera(-1.13, 1.13, 1.13, -1.13, 0.1, 20);
+  private camera = new OrthographicCamera(-EARTH_VIEW_EXTENT, EARTH_VIEW_EXTENT, EARTH_VIEW_EXTENT, -EARTH_VIEW_EXTENT, 0.1, 20);
   private floating = new Group();
   private rotation = new Group();
   private pose = new Group();
   private entityLayer = new Group();
   private dinosaur?: DinosaurReveal;
+  private earth?: Group;
+  private ray = new Raycaster();
+  private pointerPosition = new Vector2();
+  private cameraForward = new Vector3();
+  private entityBounds = new Box3();
+  private projectedBounds = new Box2();
+  private dinosaurPressed = false;
+  private entering = false;
+  private hoverTime = 0;
   private interaction = new EarthInteraction();
   private motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   private quality = new QualityManager({
@@ -51,9 +73,9 @@ export class FloatingEarthWorld {
     control: HTMLButtonElement,
     root: HTMLElement,
     signal: AbortSignal,
-    fallback: () => void,
+    actions: EarthActions,
   ) {
-    const world = new FloatingEarthWorld(canvas, control, root, fallback);
+    const world = new FloatingEarthWorld(canvas, control, root, actions);
     try {
       const earth = await loadPhotographicEarth(signal);
       if (world.disposed) {
@@ -61,6 +83,7 @@ export class FloatingEarthWorld {
         throw new Error("Earth rendering ended while loading");
       }
       world.pose.add(earth);
+      world.earth = earth;
       if (signal.aborted) throw new Error("Earth loading cancelled");
       world.renderer.compile(world.scene, world.camera);
       if (world.shaderFailed) throw new Error("Earth material unavailable");
@@ -83,7 +106,7 @@ export class FloatingEarthWorld {
     private canvas: HTMLCanvasElement,
     private control: HTMLButtonElement,
     private root: HTMLElement,
-    private fallback: () => void,
+    private actions: EarthActions,
   ) {
     const context = canvas.getContext("webgl2", {
       antialias: true,
@@ -115,6 +138,7 @@ export class FloatingEarthWorld {
     control.addEventListener("pointermove", this.pointerMove);
     control.addEventListener("pointerup", this.pointerUp);
     control.addEventListener("pointercancel", this.pointerCancel);
+    control.addEventListener("pointerleave", this.pointerLeave);
     control.addEventListener("lostpointercapture", this.pointerCancel);
     control.addEventListener("click", this.click);
     control.addEventListener("keydown", this.keyDown);
@@ -169,10 +193,11 @@ export class FloatingEarthWorld {
     this.renderer.setPixelRatio(this.quality.pixelRatio(window.devicePixelRatio));
     this.renderer.setSize(Math.round(width), Math.round(height), false);
     const aspect = width / height;
-    this.camera.left = -1.13 * aspect;
-    this.camera.right = 1.13 * aspect;
+    this.camera.left = -EARTH_VIEW_EXTENT * aspect;
+    this.camera.right = EARTH_VIEW_EXTENT * aspect;
     this.camera.updateProjectionMatrix();
     this.root.dataset.quality = this.quality.tier;
+    this.root.dataset.earthDiameter = (width / EARTH_VIEW_EXTENT).toFixed(2);
     this.requestFrame();
   };
 
@@ -226,13 +251,45 @@ export class FloatingEarthWorld {
     if (this.dinosaur) {
       this.root.dataset.dinosaurState = this.dinosaur.state;
       this.root.dataset.dinosaurSource = this.dinosaur.source;
+      this.camera.getWorldDirection(this.cameraForward);
+      this.dinosaur.updateVisibility(this.cameraForward);
     }
     this.renderer.render(this.scene, this.camera);
+    this.updateDinosaurControl();
     if (this.shaderFailed) this.fail();
   }
 
+  private updateDinosaurControl() {
+    const button = this.actions.dinosaurControl;
+    const visible = !this.entering && this.dinosaur?.state === "settled"
+      && this.dinosaur.object3D.visible;
+    button.hidden = !visible;
+    button.disabled = !visible;
+    if (!visible || !this.dinosaur) return;
+    projectBounds(this.dinosaur.getWorldBounds(this.entityBounds), this.camera, this.projectedBounds);
+    const rect = this.canvas.getBoundingClientRect();
+    const space = this.control.parentElement!.getBoundingClientRect();
+    const { min, max } = this.projectedBounds;
+    button.style.left = `${rect.left - space.left + (min.x + 1) * rect.width / 2 - 5}px`;
+    button.style.top = `${rect.top - space.top + (1 - max.y) * rect.height / 2 - 5}px`;
+    button.style.width = `${Math.max(24, (max.x - min.x) * rect.width / 2 + 10)}px`;
+    button.style.height = `${Math.max(24, (max.y - min.y) * rect.height / 2 + 10)}px`;
+  }
+
+  private picksDinosaur(event: PointerEvent) {
+    if (this.entering || this.dinosaur?.state !== "settled" || !this.earth) return false;
+    this.scene.updateMatrixWorld(true);
+    this.camera.getWorldDirection(this.cameraForward);
+    if (!this.dinosaur.isFrontFacing(this.cameraForward)) return false;
+    const rect = this.canvas.getBoundingClientRect();
+    this.pointerPosition.set((event.clientX - rect.left) / rect.width * 2 - 1,
+      1 - (event.clientY - rect.top) / rect.height * 2);
+    this.ray.setFromCamera(this.pointerPosition, this.camera);
+    return hitsVisibleEntity(this.ray, this.dinosaur.entityRoot, this.earth);
+  }
+
   private wheel = (event: WheelEvent) => {
-    if (!this.ready || event.ctrlKey || event.target instanceof Element && event.target.closest("a")) return;
+    if (!this.ready || this.entering || event.ctrlKey || event.target instanceof Element && event.target.closest("a")) return;
     event.preventDefault();
     const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.control.clientHeight : 1;
     const movement = (event.deltaY || event.deltaX) * unit;
@@ -241,17 +298,25 @@ export class FloatingEarthWorld {
   };
 
   private pointerDown = (event: PointerEvent) => {
-    if (!this.ready || !event.isPrimary || event.button !== 0 || this.pointer !== null) return;
+    if (!this.ready || this.entering || !event.isPrimary || event.button !== 0 || this.pointer !== null) return;
     this.pointer = event.pointerId;
     this.interaction.begin(event.clientX, event.clientY, event.timeStamp / 1000);
+    this.dinosaurPressed = this.picksDinosaur(event);
     this.control.setPointerCapture(event.pointerId);
     this.root.dataset.dragging = "true";
     this.requestFrame();
   };
 
   private pointerMove = (event: PointerEvent) => {
+    if (this.pointer === null) {
+      if (event.pointerType !== "touch" && event.timeStamp - this.hoverTime > 50) {
+        this.hoverTime = event.timeStamp;
+        this.control.style.cursor = this.picksDinosaur(event) ? "pointer" : "";
+      }
+      return;
+    }
     if (event.pointerId !== this.pointer) return;
-    this.interaction.move(event.clientX, event.clientY, event.timeStamp / 1000, this.control.clientWidth * 0.885);
+    this.interaction.move(event.clientX, event.clientY, event.timeStamp / 1000, this.control.clientWidth / EARTH_VIEW_EXTENT);
     this.requestFrame();
   };
 
@@ -259,10 +324,18 @@ export class FloatingEarthWorld {
     if (event.pointerId !== this.pointer) return;
     // Include the last sample even on devices that coalesce the final move.
     this.pointerMove(event);
-    this.interaction.end(event.timeStamp / 1000);
+    const activate = this.dinosaurPressed && !this.interaction.dragging && this.picksDinosaur(event);
+    if (activate) this.interaction.cancel();
+    else this.interaction.end(event.timeStamp / 1000);
     this.releasePointer();
+    if (activate) {
+      this.entering = true;
+      this.actions.activateDinosaur();
+    }
     this.requestFrame();
   };
+
+  private pointerLeave = () => { if (this.pointer === null) this.control.style.cursor = ""; };
 
   private pointerCancel = (event: PointerEvent) => {
     if (event.pointerId === this.pointer) this.cancelInput();
@@ -271,6 +344,7 @@ export class FloatingEarthWorld {
   private releasePointer() {
     const pointer = this.pointer;
     this.pointer = null;
+    this.dinosaurPressed = false;
     this.root.dataset.dragging = "false";
     if (pointer !== null && this.control.hasPointerCapture(pointer)) this.control.releasePointerCapture(pointer);
   }
@@ -306,7 +380,7 @@ export class FloatingEarthWorld {
   private fail() {
     if (this.disposed) return;
     this.dispose();
-    this.fallback();
+    this.actions.fallback();
   }
 
   dispose() {
@@ -323,11 +397,14 @@ export class FloatingEarthWorld {
     this.control.removeEventListener("pointermove", this.pointerMove);
     this.control.removeEventListener("pointerup", this.pointerUp);
     this.control.removeEventListener("pointercancel", this.pointerCancel);
+    this.control.removeEventListener("pointerleave", this.pointerLeave);
     this.control.removeEventListener("lostpointercapture", this.pointerCancel);
     this.control.removeEventListener("click", this.click);
     this.control.removeEventListener("keydown", this.keyDown);
     this.control.removeEventListener("blur", this.cancelInput);
     this.root.removeEventListener("wheel", this.wheel);
+    this.actions.dinosaurControl.hidden = true;
+    this.actions.dinosaurControl.disabled = true;
     this.dinosaur?.dispose();
     FloatingEarthWorld.disposeObjects(this.scene);
     this.renderer.dispose();
