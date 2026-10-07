@@ -216,9 +216,12 @@ describe("optional dinosaur asset", () => {
       reveal.entityRoot.traverse(object => {
         if (!(object instanceof Mesh)) return;
         for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+          if (!(material instanceof MeshStandardMaterial)) continue;
           expect(material.opacity).toBe(1);
           expect(material.transparent).toBe(false);
           expect(material.depthWrite).toBe(true);
+          expect(material.emissive.getHex()).toBe(0xffffff);
+          expect(material.emissiveIntensity).toBeGreaterThan(0);
         }
       });
     }

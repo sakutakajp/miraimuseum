@@ -76,8 +76,9 @@ export class DinosaurReveal {
         material.needsUpdate = true;
       }
       material.depthWrite = frame.opacity === 1;
-      material.emissiveIntensity = (1 - frame.opacity) * 0.14;
+      material.emissiveIntensity = 0.1 + (1 - frame.opacity) * 0.14;
     }
+    this.model.glow.update(frame.opacity);
     this.effects.update(this.elapsed, frame.light, reducedMotion, pixelRatio);
   }
 

@@ -9,7 +9,7 @@ void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(
 
 function veil(width: number, height: number, beam = false) {
   return new Mesh(new PlaneGeometry(width, height), new ShaderMaterial({
-    uniforms: { strength: { value: 0 }, tint: { value: new Color("#b8e6ed") } },
+    uniforms: { strength: { value: 0 }, tint: { value: new Color("#ffffff") } },
     transparent: true, depthWrite: false, depthTest: true, side: DoubleSide,
     forceSinglePass: true,
     blending: AdditiveBlending, toneMapped: false,
@@ -39,7 +39,6 @@ export class RevealEffects {
     this.glow.rotation.x = this.flare.rotation.x = -Math.PI / 2;
     this.glow.position.y = 0.002;
     this.flare.position.y = 0.003;
-    this.flare.material.uniforms.tint!.value.set("#f0e5d0");
     this.beams[0]!.position.y = this.beams[1]!.position.y = 0.085;
     this.beams[1]!.rotation.y = Math.PI / 2;
     const positions: number[] = [], seeds: number[] = [];
@@ -66,7 +65,7 @@ export class RevealEffects {
         void main() {
           float r = length(gl_PointCoord - 0.5);
           float a = (1.0 - smoothstep(0.05, 0.5, r)) * strength * twinkle;
-          gl_FragColor = vec4(0.72, 0.86, 0.9, a);
+          gl_FragColor = vec4(vec3(1.0), a);
           #include <colorspace_fragment>
         }`,
     }));

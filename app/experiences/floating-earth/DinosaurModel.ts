@@ -14,11 +14,13 @@ import {
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DINOSAUR } from "./entities";
 import { disposeEarthObjects } from "./model";
+import { addWhiteRim, DinosaurGlow } from "./DinosaurGlow";
 
 export interface DinosaurModel {
   object3D: Group;
   source: "glb" | "placeholder";
   materials: MeshStandardMaterial[];
+  glow: DinosaurGlow;
 }
 
 function revealMaterial(material: Material): MeshStandardMaterial {
@@ -64,8 +66,9 @@ function normalizeModel(scene: Group, source: DinosaurModel["source"]): Dinosaur
       let converted = replacements.get(material);
       if (!converted) {
         converted = revealMaterial(material);
-        converted.emissive.set("#a6d4e0");
-        converted.emissiveIntensity = 0;
+        converted.emissive.set("#ffffff");
+        converted.emissiveIntensity = 0.1;
+        addWhiteRim(converted);
         replacements.set(material, converted);
       }
       materials.add(converted);
@@ -74,7 +77,8 @@ function normalizeModel(scene: Group, source: DinosaurModel["source"]): Dinosaur
     object.material = Array.isArray(object.material) ? object.material.map(convert) : convert(object.material);
   });
   visual.updateMatrixWorld(true);
-  return { object3D: visual, source, materials: [...materials] };
+  const glow = new DinosaurGlow(scene);
+  return { object3D: visual, source, materials: [...materials], glow };
 }
 
 function createPlaceholder(): Group {
