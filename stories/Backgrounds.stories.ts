@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import DinosaurPreview from "./DinosaurPreview.vue";
 import WorldIllustration from "../app/components/WorldIllustration.vue";
-import SpacePreview from "./SpacePreview.vue";
 const meta = {
   title: "Backgrounds/Dinosaur",
   component: DinosaurPreview,
@@ -28,11 +27,5 @@ export const Illustration: Story = {
   render: () => ({
     components: { WorldIllustration },
     template: '<WorldIllustration style="width:480px;max-width:100%" />',
-  }),
-};
-export const Starfield: Story = {
-  render: () => ({
-    components: { SpacePreview },
-    template: '<SpacePreview mode="background" />',
   }),
 };

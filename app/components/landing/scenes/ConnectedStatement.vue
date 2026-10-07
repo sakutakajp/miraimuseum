@@ -24,11 +24,11 @@ defineProps<{ active: boolean }>();
       </p>
     </div>
     <NuxtLink
-      to="/museum"
+      to="/dinosaur"
       no-prefetch
       class="landing-end-link"
       :tabindex="active ? 0 : -1"
-      ><span>博物館へ</span><span aria-hidden="true">↗</span></NuxtLink
+      ><span>恐竜ゲームへ</span><span aria-hidden="true">↗</span></NuxtLink
     >
     <p class="landing-connected-note" aria-hidden="true">
       NO BOUNDARIES.<br />ONLY CONNECTIONS.

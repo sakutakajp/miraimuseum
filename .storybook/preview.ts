@@ -1,7 +1,7 @@
 import type { Preview } from "@storybook/vue3";
 import "../app/assets/css/main.css";
 import "../app/assets/css/v2.css";
-import "../app/assets/css/star-dive.css";
+import "../app/assets/css/deep-time.css";
 const preview: Preview = {
   globalTypes: {
     locale: {

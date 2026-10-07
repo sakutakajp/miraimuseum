@@ -104,13 +104,13 @@ export async function loadPhotographicEarth(signal?: AbortSignal): Promise<THREE
           occlusion += texture2D(cloudMap, vUv + offset + vec2(0.00035, 0.0)).a;
           occlusion += texture2D(cloudMap, vUv + offset - vec2(0.00035, 0.0)).a;
           occlusion /= 3.0;
-          vec3 color = base * (0.34 + 0.83 * daylight) * (1.0 - 0.23 * occlusion * daylight);
+          vec3 color = base * (0.42 + 0.92 * daylight) * (1.0 - 0.23 * occlusion * daylight);
           vec3 eye = normalize(cameraPosition - vWorld);
           float ocean = smoothstep(0.015, 0.10, base.b - max(base.r, base.g));
           float glint = pow(max(dot(n, normalize(light + eye)), 0.0), 65.0);
           color += vec3(0.13, 0.19, 0.25) * glint * ocean * (1.0 - occlusion);
           float rim = pow(1.0 - max(dot(n, eye), 0.0), 4.5);
-          color += vec3(0.005, 0.065, 0.28) * rim * (0.3 + 0.7 * daylight);
+          color += vec3(0.012, 0.12, 0.42) * rim * (0.3 + 0.7 * daylight);
           gl_FragColor = vec4(color, 1.0);
           #include <colorspace_fragment>
         }`,

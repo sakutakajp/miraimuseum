@@ -34,6 +34,7 @@ export class FloatingEarthWorld {
   private frame = 0;
   private lastTime = 0;
   private elapsed = 0;
+  private autoYaw = 0;
   private pointer: number | null = null;
   private ready = false;
   private disposed = false;
@@ -105,6 +106,7 @@ export class FloatingEarthWorld {
     control.addEventListener("click", this.click);
     control.addEventListener("keydown", this.keyDown);
     control.addEventListener("blur", this.cancelInput);
+    root.addEventListener("wheel", this.wheel, { passive: false });
     window.addEventListener("blur", this.cancelInput);
     document.addEventListener("visibilitychange", this.visibilityChange);
     this.motion.addEventListener("change", this.motionChange);
@@ -128,9 +130,9 @@ export class FloatingEarthWorld {
           float r = length(vUv - 0.5) * 2.5;
           // Broaden the atmospheric light and fade it before the canvas boundary.
           float edge = exp(-pow((r - 1.012) * 90.0, 2.0));
-          float glow = exp(-max(r - 1.008, 0.0) * 26.0) * 0.44;
-          float outer = 1.0 - smoothstep(1.05, 1.105, r);
-          gl_FragColor = vec4(mix(blue, cyan, edge), (edge * 0.88 + glow) * outer);
+          float glow = exp(-max(r - 1.008, 0.0) * 19.0) * 0.72;
+          float outer = 1.0 - smoothstep(1.07, 1.125, r);
+          gl_FragColor = vec4(mix(blue, cyan, edge), (edge * 1.1 + glow) * outer);
           #include <colorspace_fragment>
         }`,
     }));
@@ -183,6 +185,7 @@ export class FloatingEarthWorld {
     const delta = Math.min(rawDelta, 0.05);
     this.lastTime = time;
     this.elapsed += delta;
+    this.autoYaw = (this.autoYaw + delta * 0.035) % (Math.PI * 2);
     this.interaction.update(delta);
     if (!this.motion.matches) this.floating.position.y = Math.sin(this.elapsed * 0.85) * 0.022;
     if (this.quality.sample(rawDelta)) {
@@ -190,17 +193,26 @@ export class FloatingEarthWorld {
       this.resize();
     }
     this.render();
-    if (!this.motion.matches || this.interaction.moving) this.requestFrame();
-    else this.lastTime = 0;
+    this.requestFrame();
   };
 
   private render() {
-    this.rotation.rotation.set(this.interaction.pitch, this.interaction.yaw, 0, "YXZ");
-    this.root.dataset.earthYaw = this.interaction.yaw.toFixed(5);
+    const yaw = this.autoYaw + this.interaction.yaw;
+    this.rotation.rotation.set(this.interaction.pitch, yaw, 0, "YXZ");
+    this.root.dataset.earthYaw = yaw.toFixed(5);
     this.root.dataset.earthPitch = this.interaction.pitch.toFixed(5);
     this.renderer.render(this.scene, this.camera);
     if (this.shaderFailed) this.fail();
   }
+
+  private wheel = (event: WheelEvent) => {
+    if (!this.ready || event.ctrlKey || event.target instanceof Element && event.target.closest("a")) return;
+    event.preventDefault();
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.control.clientHeight : 1;
+    const movement = (event.deltaY || event.deltaX) * unit;
+    this.interaction.rotate(Math.max(-0.4, Math.min(0.4, movement * 0.002)), 0);
+    this.requestFrame();
+  };
 
   private pointerDown = (event: PointerEvent) => {
     if (!this.ready || !event.isPrimary || event.button !== 0 || this.pointer !== null) return;
@@ -256,7 +268,7 @@ export class FloatingEarthWorld {
       case "ArrowRight": this.interaction.rotate(step, 0); break;
       case "ArrowUp": this.interaction.rotate(0, -step); break;
       case "ArrowDown": this.interaction.rotate(0, step); break;
-      case "Home": this.interaction.reset(); break;
+      case "Home": this.interaction.reset(); this.autoYaw = 0; break;
       default: return;
     }
     event.preventDefault();
@@ -289,6 +301,7 @@ export class FloatingEarthWorld {
     this.control.removeEventListener("click", this.click);
     this.control.removeEventListener("keydown", this.keyDown);
     this.control.removeEventListener("blur", this.cancelInput);
+    this.root.removeEventListener("wheel", this.wheel);
     FloatingEarthWorld.disposeObjects(this.scene);
     this.renderer.dispose();
   }

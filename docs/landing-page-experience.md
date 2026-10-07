@@ -119,7 +119,6 @@ MIRAI COREはセクションごとに別の位置へDOMレイアウト的に瞬�
 | 01 | Scale Shift | 驚き | Three.js + scroll timeline |
 | 02 | Everything Is Connected | 発見 | DOM typography + shader |
 | 03 | Exhibition Portals | 探索 | Three.js + Vue |
-| 04 | Featured: STAR DIVE | 高揚 | Video / live Three.js teaser |
 | 05 | Knowledge Constellation | 理解 | WebGL nodes + DOM labels |
 | 06 | Game Archive | 選びたくなる | Vue + motion + theme transitions |
 | 07 | Manifesto | 余韻 | sticky + typography + media |
@@ -258,34 +257,6 @@ Initial portals:
 
 ---
 
-### Scene 04 — FEATURED EXPERIENCE: STAR DIVE / 820–980vh
-
-トップページの感情的ピーク。
-
-既存仕様 `MIRAI: STAR DIVE — ASTEROID BELT` をFeatured Exhibitとして扱う。
-
-#### Transition
-
-博物館の天井が暗くなる → 小さな光点が増える → 建築の輪郭が消える → 宇宙になる。
-
-フルスクリーンで10〜15秒のプレイ映像または軽量なlive teaser。
-
-DOM UI:
-
-`FEATURED EXPERIENCE 001`  
-`MIRAI: STAR DIVE`  
-`ASTEROID BELT`  
-`80 SEC / DRAG / AUTO FIRE`
-
-Primary action:
-
-`PLAY EXPERIENCE`
-
-CTAを一般的な角丸ボタンにしない。展示ラベルの中の操作要素として統合する。
-
-デスクトップではpointer位置に応じてteaser内のshipが数px追従。モバイルでは指を置いた瞬間だけ短い疑似操作を許可してからPLAYへ誘導してもよい。
-
----
 
 ### Scene 05 — KNOWLEDGE CONSTELLATION / 980–1160vh
 
@@ -427,7 +398,6 @@ pointer / touchには100ms以内に視覚反応を返す。大きな遷移完了
 - CORE proximity resonance
 - ガラス / 金属 / 紙 / 石のmaterial SE
 - Exhibition portalごとの短いsignature sound
-- STAR DIVEへの遷移だけ音楽的ピークを作る
 
 Sound ONはユーザー操作必須。
 
@@ -569,14 +539,6 @@ Target:
 
 `CTA → 展示物に接近 → 展示が画面を覆う → route swap → 同じ色/形からgame sceneが開始`
 
-STAR DIVEの場合:
-
-1. LPの星へcamera push
-2. 星が画面全体を覆う
-3. radial blur / dark
-4. Nuxt route swap
-5. GameHost ready
-6. 同じ方向の星fieldからゲーム開始
 
 実際のrendererを永続化できない場合でも、transition overlayをDOM/videoで跨がせることで連続して見せる。
 
@@ -667,7 +629,6 @@ type GameExperience = {
 
 ### Phase 4 — Featured Experience
 
-- STAR DIVE teaser連携
 - seamless LP→game transition
 - score / collection state連携
 

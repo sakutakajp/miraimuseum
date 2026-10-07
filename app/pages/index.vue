@@ -2,12 +2,12 @@
 import FloatingEarthExperience from "~/components/landing/FloatingEarthExperience.vue";
 useHead({
   htmlAttrs: { lang: "ja" },
-  title: "MIRAI MUSEUM — 世界に、触れる。",
+  title: "MIRAI MUSEUM",
   meta: [
     {
       name: "description",
       content:
-        "浮かぶ地球に触れて、世界を回そう。恐竜と宇宙の冒険が待つ、みらい博物館。",
+        "浮かぶ地球に触れて、世界を回そう。恐竜の冒険が待つ、みらい博物館。",
     },
     { name: "theme-color", content: "#000000" },
   ],

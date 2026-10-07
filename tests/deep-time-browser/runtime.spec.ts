@@ -1,16 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 async function open(page: Page) {
-  await page.goto("/museum?deepTimeDebug=1");
-  await page.waitForSelector(".v2-shell[data-ready=true]");
-  await page.getByRole("button", { name: "English", exact: true }).click();
-  await page
-    .locator(".v2-card")
-    .filter({ hasText: "MIRAI: DEEP TIME" })
-    .click();
-  await page
-    .getByRole("button", { name: "Choose a stage", exact: false })
-    .click();
-  await page.locator(".stage-choice").click();
+  await page.addInitScript(() => localStorage.setItem("mirai-museum:language", "en"));
+  await page.goto("/dinosaur?deepTimeDebug=1");
   await expect(page.locator(".deep-time-host")).toHaveAttribute(
     "data-loaded",
     "true",
@@ -41,7 +32,10 @@ test("one-input jump, midair pause, hidden pause and twenty pooled retries", asy
       original?.(t, at);
     };
   });
-  await page.mouse.click(220, 510);
+  await page.mouse.move(220, 510);
+  await page.mouse.down();
+  await page.waitForTimeout(150);
+  await page.mouse.up();
   await expect
     .poll(() =>
       page.evaluate(
@@ -168,7 +162,7 @@ test("authored input run clears with real physics, scores, exhibit and persisten
   );
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   await page
-    .getByRole("button", { name: "Return to the museum", exact: true })
+    .getByRole("button", { name: "Return home", exact: true })
     .click();
   await page.reload();
   const saved = await page.evaluate(() => ({
@@ -230,9 +224,9 @@ test("four compositions, reduced effects, low quality and recoverable context lo
     );
   await expect(page.locator(".deep-time-loading.fatal")).toBeVisible();
   await page
-    .getByRole("button", { name: "Return to the museum", exact: true })
+    .getByRole("button", { name: "Return home", exact: true })
     .click();
-  await expect(page.locator(".stage-list")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "MIRAI MUSEUM" })).toBeVisible();
 });
 
 test("FLASH holds the existing rex while gameplay keeps advancing", async ({

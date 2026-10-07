@@ -9,7 +9,6 @@
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:e2e": "npm run build && playwright test",
-    "test:star-dive": "playwright test --config playwright.star-dive.config.ts",
     "postinstall": "nuxt prepare",
     "storybook": "storybook dev -p 6006 --host 0.0.0.0 --no-open --disable-telemetry",
     "build-storybook": "storybook build --disable-telemetry",
@@ -18,7 +17,6 @@
     "test:deep-time": "playwright test --config playwright.deep-time.config.ts"
   },
   "dependencies": {
-    "@tresjs/core": "^5.9.2",
     "nuxt": "4.5.2",
     "phaser": "3.90.0",
     "three": "^0.186.1",

@@ -1414,7 +1414,6 @@ seek / invulnerableはQA用。通常プレイには出さない。
 - [ ] no per-frame Vue rerender requirement
 - [ ] mobile 60fps target
 - [ ] quality degradationがphysicsへ影響しない
-- [ ] existing museum / STAR DIVE interfacesを壊さない
 
 ---
 
@@ -1424,7 +1423,6 @@ seek / invulnerableはQA用。通常プレイには出さない。
 
 - README.md
 - docs/dinosaur-stage1.md
-- docs/star-dive-stage1.md
 - docs/landing-page-experience.md
 - 現在の app/game/DinosaurScene.ts
 - app/game/expedition.ts

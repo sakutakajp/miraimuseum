@@ -15,7 +15,6 @@ export default defineNuxtConfig({
       include: [
         "phaser",
         "three",
-        "@tresjs/core",
         "three/examples/jsm/environments/RoomEnvironment.js",
         "three/examples/jsm/postprocessing/EffectComposer.js",
         "three/examples/jsm/postprocessing/RenderPass.js",
@@ -28,7 +27,6 @@ export default defineNuxtConfig({
   css: [
     "~/assets/css/main.css",
     "~/assets/css/v2.css",
-    "~/assets/css/star-dive.css",
     "~/assets/css/deep-time.css",
     "~/assets/css/landing.css",
   ],
@@ -48,7 +46,11 @@ export default defineNuxtConfig({
           content: "width=device-width, initial-scale=1, viewport-fit=cover",
         },
       ],
-      link: [{ rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
+      link: [
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "anonymous" },
+        { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" },
+      ],
     },
   },
 });

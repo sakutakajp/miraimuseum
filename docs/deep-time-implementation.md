@@ -4,7 +4,7 @@
 
 ## 起動と操作
 
-`/museum` → MIRAI: DEEP TIME → Stage 1 → START。タップ / クリック / Space / ↑で固定軌道のジャンプ。Escapeまたは右上のpauseで停止し、非表示になったタブも停止する。pauseのSOUNDでmuteを切り替える。STARTはユーザー操作でAudioContextを解除し、300msのタイトル遷移後に開始する。
+`/dinosaur` → START。タップ / クリック / Space / ↑で固定軌道のジャンプ。Escapeまたは右上のpauseで停止し、非表示になったタブも停止する。pauseのSOUNDでmuteを切り替える。STARTはユーザー操作でAudioContextを解除し、300msのタイトル遷移後に開始する。
 
 一撃死。死亡は短いhit stop、印刷片の破砕、到達率 / NEW BEST、画面のワイプで構成し、760ms後に同じPhaser.Gameで自動再走する。失敗リザルト・巻き戻し・無敵時間・自動救済・収集ポップアップは使用しない。
 
@@ -42,13 +42,12 @@ TriceratopsとT. rexは遠・中・近で異なる線・光の処理を持つSVG
 
 ## 開発確認
 
-`/museum?deepTimeDebug=1` はdevelopment限定。hitbox、beat/bar、fixed tick、FPS / frame time、coyote / buffer、chunk / quality、audio error / source count、VFX数、trigger履歴を表示する。section seek、無敵preview、low tierを指定できる。本番にはUIとwindowのdebug参照を出さない。
+`/dinosaur?deepTimeDebug=1` はdevelopment限定。hitbox、beat/bar、fixed tick、FPS / frame time、coyote / buffer、chunk / quality、audio error / source count、VFX数、trigger履歴を表示する。section seek、無敵preview、low tierを指定できる。本番にはUIとwindowのdebug参照を出さない。
 
 ```sh
 npm test
 npm run typecheck
 npm run test:deep-time
-npm run test:star-dive
 npm run test:e2e
 npm run build-storybook
 npm run test:storybook
@@ -58,10 +57,7 @@ npm run test:storybook
 
 - `npm test`: 79件pass。新しいStage 1は12件で、60 / 120 Hz / 不規則renderの同一world state、全50challengeの無補助clear、large delta、coyote / buffer / inset、cue / speed / collapse / SYNC / Rank / 保存を確認した。
 - `npm run typecheck`、本番build、Storybook build: pass。
-- 本番Playwright: 9件pass（DEEP TIME / 博物館 / STAR DIVE / ランディング）。productionではdebug hookと無敵 / seek UIが存在しないことも確認した。
 - DEEP TIME開発Playwright: 操作 / 空中pause / visibility / 20回以上の連続retry、実physicsの100,000点clear / 展示 / 永続保存、4画面サイズ / reduced motion / low / context loss、およびFLASH時の既存Rexの静止とphysics継続を確認した。
-- STAR DIVE開発Playwright: 3件pass（clear / 保存 / 展示 / retry / context loss / WebGL不可）。
-- Storybook Playwright: 36件pass。新しいDEEP TIMEの6場面・quality・reduced motionに加えて、既存UI / 2D assets / STAR DIVEも確認した。
 - 390×844 / 430×932 / 1440×900 / 1280×800の構図を画像で確認。6場面の静止画、K–Pg ending、clear展示も確認した。ブラウザのpageerrorは通常動作で発生していない。
 - Ogg / AACの両ステムは24 kHz / stereo / 76.8秒。音源・アートは起動時だけ読み込み、連続retryでCanvas / texture / input listener数が増えず、audio sourceとVFXも上限内に収まることを確認した。
 

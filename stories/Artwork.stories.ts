@@ -6,7 +6,7 @@ const meta = {
   tags: ["autodocs"],
   args: { game: "dinosaur-run" },
   argTypes: {
-    game: { control: "select", options: ["dinosaur-run", "star-flight"] },
+    game: { control: "select", options: ["dinosaur-run"] },
   },
   decorators: [
     () => ({
@@ -18,4 +18,3 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Dinosaur: Story = {};
-export const Space: Story = { args: { game: "star-flight" } };

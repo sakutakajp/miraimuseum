@@ -8,7 +8,6 @@ export const v2English: Record<string, string> = {
   恐竜: "Dinosaurs",
   宇宙: "Space",
   アクション: "Action",
-  シューティング: "Shooting",
   "6600万年前。恐竜時代、最後の日を走る。1入力、76.8秒のシネマティック・リズムアクション。": "66 million years ago. Run through the last day of the dinosaurs. One input. 76.8 seconds of cinematic rhythm action.",
   恐竜ダッシュ: "Dinosaur Dash",
   スターフライト: "Star Flight",

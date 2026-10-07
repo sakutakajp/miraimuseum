@@ -61,7 +61,7 @@ function label(c: ControlRect) {
     pause: ja ? "一時停止" : "Pause",
     resume: ja ? "続ける" : "Resume",
     mute: c.label,
-    leave: ja ? "博物館へ戻る" : "Return to the museum",
+    leave: ja ? "ホームへ戻る" : "Return home",
     retry: "Run again",
     exhibit: "Open exhibit",
   }[c.action];
@@ -231,15 +231,15 @@ onBeforeUnmount(() => {
             ? locale === "ja"
               ? "読み込めませんでした"
               : "Unable to load the experience"
-            : "PREPARING THE EXHIBIT"
+            : "Loading..."
         }}
       </p>
       <button
         v-if="fatal"
-        :aria-label="locale === 'ja' ? '博物館へ戻る' : 'Return to the museum'"
+        :aria-label="locale === 'ja' ? 'ホームへ戻る' : 'Return home'"
         @click="emit('leave')"
       >
-        {{ locale === "ja" ? "博物館へ戻る" : "Return to the museum" }} ↗
+        {{ locale === "ja" ? "ホームへ戻る" : "Return home" }} ↗
       </button>
     </div>
     <p class="deep-time-sr" role="status" aria-live="polite">{{ announce }}</p>

@@ -13,7 +13,6 @@ The target is not a conventional hero section. The first 15–20 seconds must al
 
 If existing README visual guidance conflicts with this document, this document takes precedence for the landing page and brand shell. Existing game usability requirements remain valid.
 
-This phase deliberately stops after Scene 02. Do not build exhibition portals, the STAR DIVE feature section, archive, or manifesto in this pass.
 
 ---
 

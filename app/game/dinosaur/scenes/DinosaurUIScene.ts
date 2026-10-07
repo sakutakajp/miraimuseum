@@ -169,7 +169,7 @@ export class DinosaurUIScene extends Phaser.Scene {
       );
       this.button(
         "leave",
-        ja ? "博物館へ戻る" : "MUSEUM  ↗",
+        ja ? "ホームへ戻る" : "HOME  ↗",
         left,
         h * 0.89,
         bw,
@@ -203,7 +203,7 @@ export class DinosaurUIScene extends Phaser.Scene {
       );
       this.button(
         "leave",
-        ja ? "博物館へ戻る" : "MUSEUM  ↗",
+        ja ? "ホームへ戻る" : "HOME  ↗",
         left,
         h * 0.55 + 136,
         bw,
@@ -228,7 +228,7 @@ export class DinosaurUIScene extends Phaser.Scene {
         this.button("retry", "RUN AGAIN  →", left, h * 0.83, bw);
         this.button(
           "leave",
-          ja ? "博物館へ戻る" : "MUSEUM  ↗",
+          ja ? "ホームへ戻る" : "HOME  ↗",
           left,
           h * 0.91,
           bw,
@@ -269,7 +269,7 @@ export class DinosaurUIScene extends Phaser.Scene {
         this.button("retry", "RUN AGAIN  →", left, h * 0.7 + 65, bw);
         this.button(
           "leave",
-          ja ? "博物館へ戻る" : "MUSEUM  ↗",
+          ja ? "ホームへ戻る" : "HOME  ↗",
           left,
           h * 0.7 + 130,
           bw,

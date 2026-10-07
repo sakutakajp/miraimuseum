@@ -5,7 +5,6 @@ Scene 00–02 are implemented from `landing-page-scenes-00-02.md`. Scene 03 and 
 ## Routes
 
 - `/`: Threshold → Scale Shift → Everything Is Connected.
-- `/museum`: the existing museum, DEEP TIME, STAR DIVE, saved progress and language selection. This landing update does not change game runtime or storage formats.
 
 The opening keeps an always-available museum link and a quiet entry link at the end of Scene 02. Museum assets are not prefetched from the opening.
 
@@ -33,7 +32,6 @@ Reduced motion disables pointer parallax, idle rotation, cloud drift, particle d
 - `npm test` — timeline boundaries, damping, viewport preservation, downward-only quality policy, intact Earth/connected-before-breakup and normalized reversible figure weights, plus existing game tests.
 - `npm run build`
 - `npx playwright test` — landing semantics, stable Earth UUID and canvas through observations, connected-before-breakup, five figure families, native/reverse scrolling, mobile/reduced motion, fallback, no-JavaScript entry, context loss/visibility, and existing game flows.
-- `npm run test:star-dive` — existing runtime, score persistence, retry and renderer recovery.
 
 Visual review uses 1440 × 900, 1280 × 800, 390 × 844 and 430 × 932 browser viewports, including forward/reverse transitions and static treatment. Physical iPhone Safari/GPU performance still requires a device check; Chromium viewport emulation does not substitute for that measurement.
 
