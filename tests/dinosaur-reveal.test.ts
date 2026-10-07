@@ -220,8 +220,8 @@ describe("optional dinosaur asset", () => {
           expect(material.opacity).toBe(1);
           expect(material.transparent).toBe(false);
           expect(material.depthWrite).toBe(true);
-          expect(material.emissive.getHex()).toBe(0xffffff);
-          expect(material.emissiveIntensity).toBeGreaterThan(0);
+          expect(material.emissive.getHex()).toBe(0x000000);
+          expect(material.emissiveIntensity).toBe(0);
         }
       });
     }

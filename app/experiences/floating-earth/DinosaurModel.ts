@@ -14,7 +14,7 @@ import {
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DINOSAUR } from "./entities";
 import { disposeEarthObjects } from "./model";
-import { addWhiteRim, DinosaurGlow } from "./DinosaurGlow";
+import { DinosaurGlow } from "./DinosaurGlow";
 
 export interface DinosaurModel {
   object3D: Group;
@@ -66,9 +66,8 @@ function normalizeModel(scene: Group, source: DinosaurModel["source"]): Dinosaur
       let converted = replacements.get(material);
       if (!converted) {
         converted = revealMaterial(material);
-        converted.emissive.set("#ffffff");
-        converted.emissiveIntensity = 0.1;
-        addWhiteRim(converted);
+        converted.emissive.set("#000000");
+        converted.emissiveIntensity = 0;
         replacements.set(material, converted);
       }
       materials.add(converted);

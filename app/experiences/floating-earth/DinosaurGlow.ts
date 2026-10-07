@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, BackSide, Group, Mesh, MeshStandardMaterial, ShaderMaterial,
+  AdditiveBlending, BackSide, Group, Mesh, ShaderMaterial,
 } from "three";
 
 function halo(width: number, strength: number) {
@@ -41,17 +41,6 @@ function halo(width: number, strength: number) {
         #include <colorspace_fragment>
       }`,
   });
-}
-
-export function addWhiteRim(material: MeshStandardMaterial) {
-  material.onBeforeCompile = shader => {
-    shader.fragmentShader = shader.fragmentShader.replace("#include <emissivemap_fragment>", `
-      #include <emissivemap_fragment>
-      float dinosaurRim = pow(1.0 - abs(dot(normal, normalize(vViewPosition))), 3.0);
-      totalEmissiveRadiance += vec3(0.65) * dinosaurRim;
-    `);
-  };
-  material.customProgramCacheKey = () => "dinosaur-white-rim-v1";
 }
 
 /** Aura shells share each mesh's geometry and rig, including future animation. */

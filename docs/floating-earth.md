@@ -30,7 +30,7 @@ Floating Earth をゲームへの3Dランチャーへ進化させる。地球表
 
 この段階は出現演出のみ。歩行、hover、tap、ゲームへのトランジションは後続で実装する。右上の `/dinosaur` リンクは維持する。
 
-地球の表示後に恐竜を独立して読み込み、初めは見せない。通常は1.2秒の間から光点が現れ、2秒前後から白いglow、柔らかなradial flare、14点のsparkle、淡い縦方向の光が強まる。1.95〜2.95秒で恐竜がフェードし、控えめなscale（88〜100%）とせり上がりを加える。3.5秒で導入の光が収束し、薄い残光と恐竜の常時発光を残す。assetの読み込みが遅くても、光から始まる順序を飛ばさない。
+地球の表示後に恐竜を独立して読み込み、初めは見せない。通常は1.2秒の間から光点が現れ、2秒前後から白いglow、柔らかなradial flare、14点のsparkle、淡い縦方向の光が強まる。1.95〜2.95秒で恐竜がフェードし、控えめなscale（88〜100%）とせり上がりを加える。3.5秒で導入の光が収束し、薄い残光と恐竜の輪郭光を残す。assetの読み込みが遅くても、光から始まる順序を飛ばさない。
 
 reduced motionでは約1.15秒までに短いフェードと微光で出現する。拡大縮小、せり上がり、粒子、光柱を使わない。タブ非表示時は地球と同じ時計で停止する。
 
@@ -45,9 +45,9 @@ floating → rotation → EarthRoot (pose)
                              └─ DinosaurEffectRoot
 ```
 
-`entities.ts` にモデルURL、サイズ、球面法線、surface offset、モデル向きを集約する。球面法線をup方向にし、半径1 + offset0.008に足元を置く。恐竜の最大寸法は0.24（地球直径の12%、従来の2.4倍）。添付モデルの地表上のX/Z外接矩形を、地球半径6,371kmで換算すると約113万km²となり、日本の国土面積の約3倍を大きさの目安とする。モデルと光は地球と一緒に回り、opaqueなEarthの深度で裏側が遮蔽される。光にもdepth testを適用し、裏側から透けるHUD表現を避ける。post-processing/bloomは追加しない。
+`entities.ts` にモデルURL、サイズ、球面法線、surface offset、モデル向きを集約する。球面法線をup方向にし、半径1 + offset0.008に足元を置く。恐竜の最大寸法は0.72（地球直径の36%、前回の3倍）。拡大後も初期表示が切れず、半周回した際に地球に隠れるよう、発見点を正面寄りに配置する。モデルと光は地球と一緒に回り、opaqueなEarthの深度で裏側が遮蔽される。光にもdepth testを適用し、裏側から透けるHUD表現を避ける。post-processing/bloomは追加しない。
 
-`DinosaurGlow.ts` が白いrim lightと二層の柔らかい輪郭光を追加する。発光shellは元meshのgeometryとrigを共有し、出現のopacityに追従する。出現後も白い発光を維持し、地球の青い大気発光は維持する。shellはraycastから除外し、リソースの破棄はモデル本体とまとめて行う。
+`DinosaurGlow.ts` が二層の柔らかい白い輪郭光を追加する。本体のemissiveと表面へのrim light加算は使わず、元のテクスチャと通常の照明を維持する。発光shellは元meshのgeometryとrigを共有し、出現のopacityに追従する。出現後も輪郭の白い発光を維持し、地球の青い大気発光は維持する。shellはraycastから除外し、リソースの破棄はモデル本体とまとめて行う。
 
 `DinosaurModel.ts` は `/floating-earth/dinosaur.glb` を読み、足元を原点に正規化する。添付されたMeshyモデルを軽量化して使用（約1.46MB、24,790 triangle、JPEG 1024px、42-bone rig維持、animation clipなし。decoder不要）。読み込みはEarth readinessを待たせない。404や破損時は今回の明示的な依頼に従い、静かなマット素材のtemporary placeholderで出現演出を維持する。モデル読み込み失敗は地球の失敗扱いにしない。既存のWebGL static fallbackを維持する。
 

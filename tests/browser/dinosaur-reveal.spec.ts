@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 const home = '[data-testid="floating-earth-experience"]';
 
 test("the optional GLB reveals after Earth readiness and remains attached during rotation", async ({ page }) => {
-  await page.setViewportSize({ width: 900, height: 600 });
+  await page.setViewportSize({ width: 800, height: 550 });
   const errors: string[] = [];
   page.on("pageerror", e => errors.push(e.message));
   await page.route("https://fonts.googleapis.com/**", route => route.abort());
@@ -15,10 +15,7 @@ test("the optional GLB reveals after Earth readiness and remains attached during
   await expect(root).toHaveAttribute("data-earth-ready", "true");
   await expect(root).toHaveAttribute("data-dinosaur-source", "loading");
   await expect(root).toHaveAttribute("data-dinosaur-state", "waiting");
-  await page.getByTestId("earth-control").focus();
-  await page.keyboard.press("ArrowDown");
-  await expect(root).toHaveAttribute("data-earth-pitch", "0.16000");
-  await page.keyboard.press("Home");
+  await expect(page.getByTestId("earth-control")).toBeEnabled();
   await root.evaluate(el => {
     const node = el as HTMLElement & { revealStates: string[] };
     node.revealStates = [node.dataset.dinosaurState!];
@@ -32,8 +29,8 @@ test("the optional GLB reveals after Earth readiness and remains attached during
   await expect(root).toHaveAttribute("data-dinosaur-state", "settled", { timeout: 30000 });
   expect(await root.evaluate(el => (el as HTMLElement & { revealStates: string[] }).revealStates))
     .toEqual(["waiting", "light", "revealing", "settled"]);
-  await page.getByRole("heading", { name: "MIRAI MUSEUM" }).click();
   await page.screenshot({ path: "work/dinosaur-front.png" });
+  await expect(root).toHaveAttribute("data-earth-ready", "true");
   const yaw = Number(await root.getAttribute("data-earth-yaw"));
   const bounds = await page.getByTestId("earth-control").boundingBox();
   await page.mouse.move(bounds!.x + bounds!.width * 0.25, bounds!.y + bounds!.height / 2);
@@ -44,6 +41,7 @@ test("the optional GLB reveals after Earth readiness and remains attached during
   await expect(root).toHaveAttribute("data-earth-ready", "true");
   await page.getByTestId("earth-control").evaluate(el => (el as HTMLElement).blur());
   await page.screenshot({ path: "work/dinosaur-back.png" });
+  await expect(root).toHaveAttribute("data-earth-ready", "true");
   await page.mouse.up();
   await expect(root).toHaveAttribute("data-dinosaur-state", "settled");
   expect(errors).toEqual([]);

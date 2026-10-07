@@ -18,11 +18,10 @@ export const DINOSAUR: FloatingEarthEntityDefinition = {
   id: "dinosaur",
   modelUrl: "/floating-earth/dinosaur.glb",
   targetRoute: "/dinosaur",
-  // The supplied model's X/Z footprint is roughly three times Japan's land area.
-  size: 0.24,
+  size: 0.72,
   surfaceOffset: 0.008,
   // Keep the enlarged silhouette inside the limb for occlusion on the far side.
-  normal: new Vector3(0.35, 0.64, 0.68).normalize().applyQuaternion(initialEarthPose.invert()),
+  normal: new Vector3(0.25, 0.4, 0.88).normalize().applyQuaternion(initialEarthPose.invert()),
   modelRotation: new Euler(0, -Math.PI / 3, 0),
 };
 
