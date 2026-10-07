@@ -13,7 +13,7 @@ test("home loads visibly, rotates continuously, responds to scroll and opens the
   await page.route("**/floating-earth/earth-vivid.glb", async route => { await gate; await route.continue(); });
   await page.goto("/");
   const root = page.getByTestId("floating-earth-experience");
-  await expect(page.getByRole("status")).toHaveText("Loading...");
+  await expect(page.getByRole("status")).toHaveText("読み込み中...");
   await expect(page.getByTestId("earth-control")).toBeHidden();
   await expect(page.locator(".earth-home__fallback")).toBeHidden();
   await expect(page.getByRole("heading", { name: "MIRAI MUSEUM" })).toBeVisible();
@@ -22,7 +22,9 @@ test("home loads visibly, rotates continuously, responds to scroll and opens the
   await expect(page.getByText("世界に、触れる。", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Earth imagery credits")).toHaveCount(0);
   await expect(page.locator('a[href="/museum"]')).toHaveCount(0);
-  await expect(page.locator(".earth-home__header a, .earth-home__header button")).toHaveCount(0);
+  await expect(page.locator(".earth-home__header a")).toHaveCount(0);
+  await expect(page.locator(".earth-home__header button")).toHaveCount(1);
+  await expect(page.getByTestId("language-switch")).toBeVisible();
   release();
   await expect(root).toHaveAttribute("data-earth-ready", "true", { timeout: 30000 });
   await expect(page.getByRole("status")).toHaveCount(0);

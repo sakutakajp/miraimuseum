@@ -7,7 +7,7 @@ import type {
   RunMode,
   UIAction,
 } from "~/game/dinosaur/types";
-import { EXHIBIT_PLATES } from "~/game/dinosaur/exhibit";
+import { gameCopy } from "~/game/dinosaur/copy";
 import { takeDinosaurRuntime, discardDinosaurPreload } from "~/game/dinosaur/preload";
 import {
   DEEP_TIME_SAVE_KEY,
@@ -21,6 +21,7 @@ const emit = defineEmits<{
   leave: [];
 }>();
 const { locale } = useLanguage();
+const copy = computed(() => gameCopy(locale.value));
 const host = ref<HTMLDivElement>();
 const mode = ref<RunMode>("ready"),
   loaded = ref(false),
@@ -30,12 +31,6 @@ const mode = ref<RunMode>("ready"),
   storageAvailable = ref(true);
 const controls = shallowRef<ControlRect[]>([]);
 const result = shallowRef<ClearResult>();
-const showingExhibit = computed(
-  () =>
-    mode.value === "complete" &&
-    controls.value.length > 0 &&
-    !controls.value.some((c) => c.action === "exhibit"),
-);
 const debug = ref(false),
   debugText = ref("");
 let scene: DinosaurRunScene | undefined;
@@ -46,32 +41,31 @@ const lifetime = new AbortController();
 let debugTimer: ReturnType<typeof setInterval> | undefined;
 const announce = computed(() =>
   fatal.value
-    ? locale.value === "ja"
-      ? "読み込めませんでした"
-      : "Unable to load"
+    ? copy.value.failed
     : mode.value === "dead"
-      ? `ATTEMPT ${attempts.value} / BEST ${Math.floor(best.value * 100)}%`
+      ? copy.value.attemptBest(attempts.value, Math.floor(best.value * 100))
       : mode.value === "paused"
-        ? "PAUSED"
+        ? copy.value.pausedTitle
         : mode.value === "complete"
-          ? `RUN COMPLETE. SCORE ${result.value?.score}. SYNC ${Math.round((result.value?.sync ?? 0) * 100)}%. RANK ${result.value?.rank}`
+          ? copy.value.result(result.value?.score ?? 0, Math.round((result.value?.sync ?? 0) * 100), result.value?.rank ?? "C")
           : "",
 );
 function label(c: ControlRect) {
-  const ja = locale.value === "ja";
   return {
-    start: ja ? "スタート" : "Start",
-    pause: ja ? "一時停止" : "Pause",
-    resume: ja ? "続ける" : "Resume",
+    start: copy.value.start,
+    pause: copy.value.pause,
+    resume: copy.value.resume,
     mute: c.label,
-    leave: ja ? "ホームへ戻る" : "Return home",
-    retry: "Run again",
-    exhibit: "Open exhibit",
+    leave: copy.value.home,
+    retry: copy.value.retry,
   }[c.action];
 }
 function action(value: UIAction) {
   scene?.act(value);
 }
+watch(locale, next => {
+  if (scene) { scene.locale = next; scene.ui?.refresh(); }
+});
 function persist(record: DeepTimeRecord) {
   best.value = record.bestProgress;
   try {
@@ -82,7 +76,7 @@ function persist(record: DeepTimeRecord) {
   emit("record", { ...record });
 }
 function error(value: unknown) {
-  console.error("DEEP TIME initialization failed", value);
+  console.error("Dinosaur game initialization failed", value);
   fatal.value = true;
   scene?.pause();
   controls.value = [];
@@ -100,8 +94,10 @@ onMounted(async () => {
   }
   best.value = record.bestProgress;
   try {
-    const { Phaser, DinosaurRunScene, DinosaurUIScene } = await takeDinosaurRuntime(lifetime.signal);
+    const { Phaser, DinosaurRunScene, DinosaurUIScene, playerModel } = await takeDinosaurRuntime(lifetime.signal);
     if (disposed || !host.value) return;
+    const model = await playerModel.takePlayerModel(lifetime.signal);
+    if (disposed || !host.value) { playerModel.disposePlayerModel(model); return; }
     scene = new DinosaurRunScene(
       {
         ready: () => {
@@ -130,9 +126,15 @@ onMounted(async () => {
       record,
       matchMedia("(prefers-reduced-motion: reduce)").matches,
       locale.value,
+      model,
     );
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("webgl2", { antialias: true, alpha: false, depth: true, stencil: true });
     game = new Phaser.Game({
-      type: Phaser.AUTO,
+      type: context ? Phaser.WEBGL : Phaser.CANVAS,
+      canvas,
+      // Phaser accepts WebGL contexts; its config type only lists Canvas2D.
+      context: (context ?? undefined) as unknown as CanvasRenderingContext2D | undefined,
       parent: host.value,
       width: host.value.clientWidth,
       height: host.value.clientHeight,
@@ -180,7 +182,7 @@ onBeforeUnmount(() => {
   clearInterval(debugTimer);
   observer?.disconnect();
   game?.canvas.removeEventListener("webglcontextlost", lost);
-  scene?.audio.dispose();
+  scene?.dispose();
   game?.destroy(true);
   if (import.meta.dev)
     delete (window as unknown as { __deepTime?: DinosaurRunScene }).__deepTime;
@@ -194,11 +196,7 @@ onBeforeUnmount(() => {
     :data-best="best"
     :data-loaded="loaded"
     data-player-species="brachiosaurus"
-    :aria-label="
-      locale === 'ja'
-        ? 'MIRAI: DEEP TIME。ブラキオサウルスを操作。タップ、クリック、Space、↑でジャンプ。Escapeで一時停止。'
-        : 'MIRAI: DEEP TIME. Play as a Brachiosaurus. Tap, click, Space or Up to jump. Escape to pause.'
-    "
+    :aria-label="copy.gameAria"
   >
     <div ref="host" class="deep-time-canvas" />
     <div class="deep-time-accessibility" v-if="!fatal">
@@ -225,50 +223,19 @@ onBeforeUnmount(() => {
       </button>
     </div>
     <div v-if="!loaded || fatal" class="deep-time-loading" :class="{ fatal }">
-      <span>DEEP TIME / 01</span>
-      <h1>CRETACEOUS<br />LAST DAY</h1>
-      <p>
-        {{
-          fatal
-            ? locale === "ja"
-              ? "読み込めませんでした"
-              : "Unable to load the experience"
-            : "Loading..."
-        }}
-      </p>
+      <p>{{ fatal ? copy.failed : copy.loading }}</p>
       <button
         v-if="fatal"
-        :aria-label="locale === 'ja' ? 'ホームへ戻る' : 'Return home'"
+        :aria-label="copy.home"
         @click="emit('leave')"
       >
-        {{ locale === "ja" ? "ホームへ戻る" : "Return home" }} ↗
+        {{ copy.home }} ↗
       </button>
     </div>
     <p class="deep-time-sr" role="status" aria-live="polite">{{ announce }}</p>
-    <article
-      v-if="showingExhibit"
-      class="deep-time-sr"
-      aria-label="DEEP TIME exhibit"
-    >
-      <h2>66.0 Ma / K—Pg BOUNDARY</h2>
-      <section v-for="plate in EXHIBIT_PLATES" :key="plate.heading">
-        <h3>{{ plate.heading }}</h3>
-        <p>
-          {{
-            (locale === "ja" ? plate.ja : plate.en).join(
-              locale === "ja" ? "" : " ",
-            )
-          }}
-        </p>
-      </section>
-    </article>
-    <h1 v-if="mode === 'complete'" class="deep-time-sr">RUN COMPLETE</h1>
+    <h1 v-if="mode === 'complete'" class="deep-time-sr">{{ copy.completeTitle }}</h1>
     <p v-if="!storageAvailable" class="deep-time-storage" role="status">
-      {{
-        locale === "ja"
-          ? "この端末では記録を保存できません。"
-          : "Records cannot be saved on this device."
-      }}
+      {{ copy.noStorage }}
     </p>
     <aside v-if="debug" class="deep-time-debug">
       <pre>{{ debugText }}</pre>

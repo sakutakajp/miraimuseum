@@ -1,7 +1,7 @@
 export const DINOSAUR_PLATES = [
   ...["rex", "tri"].flatMap(species => ["far", "mid", "near"].flatMap(depth =>
     Array.from({ length: 4 }, (_, frame) => `${species}-${depth}-${frame}`))),
-  ...Array.from({ length: 8 }, (_, frame) => `brachiosaurus-${frame}`),
+  "brachiosaurus-0",
   "rock", "root", "branch",
 ].map(name => ({ key: `dt-${name}`, url: `/deep-time/${name}.svg` }));
 

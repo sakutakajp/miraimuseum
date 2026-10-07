@@ -1,0 +1,54 @@
+import { expect, test } from "@playwright/test";
+
+test("one tip at a time, a persistent language switch, and English game controls", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.route("https://fonts.googleapis.com/**", route => route.abort());
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const earth = page.getByTestId("floating-earth-experience"), tip = page.getByTestId("earth-tip");
+  await expect(earth).toHaveAttribute("data-earth-ready", "true", { timeout: 30000 });
+  await expect(tip).toHaveCount(1);
+  expect(await tip.evaluate(el => getComputedStyle(el).fontFamily)).toContain("DotGothic16");
+  await expect(page.locator('link[href*="fonts.googleapis.com/css2"]')).toHaveAttribute("href", /family=DotGothic16/);
+  const initial = await tip.innerText();
+  expect(["スクロールで回す", "ブラキオサウルスをタップ"]).toContain(initial);
+  await earth.evaluate(el => {
+    const root = el as HTMLElement & { maximumTips: number };
+    root.maximumTips = root.querySelectorAll('[data-testid="earth-tip"]').length;
+    new MutationObserver(() => {
+      root.maximumTips = Math.max(root.maximumTips, root.querySelectorAll('[data-testid="earth-tip"]').length);
+    }).observe(root, { childList: true, subtree: true });
+  });
+  await expect(tip).toHaveText(initial === "スクロールで回す" ? "ブラキオサウルスをタップ" : "スクロールで回す", { timeout: 8000 });
+  expect(await earth.evaluate(el => (el as HTMLElement & { maximumTips: number }).maximumTips)).toBe(1);
+  const switcher = page.getByTestId("language-switch");
+  const bounds = await switcher.boundingBox();
+  expect(bounds!.x).toBeGreaterThan(195);
+  expect(bounds!.y).toBeLessThan(80);
+  await switcher.click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByTestId("earth-control")).toHaveAttribute("aria-label", "Rotate Earth");
+  await expect(tip).toHaveText(/^(Scroll to rotate|Tap the Brachiosaurus)$/);
+  expect(await page.evaluate(() => localStorage.getItem("mirai-museum:language"))).toBe("en");
+  await expect(earth).toHaveAttribute("data-earth-ready", "true");
+  await page.screenshot({ path: "work/home-english.png" });
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(switcher).toHaveText("日本語");
+  const dinosaur = page.getByRole("button", { name: "Start the dinosaur game with the Brachiosaurus", exact: true });
+  await expect(dinosaur).toBeEnabled({ timeout: 30000 });
+  await dinosaur.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".deep-time-host")).toHaveAttribute("data-mode", "running", { timeout: 30000 });
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Resume", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sound on", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Return home", exact: true }).click();
+  await expect(switcher).toHaveText("日本語");
+  await switcher.click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "ja");
+  await expect(page.getByTestId("dinosaur-control")).toHaveAttribute("aria-label", "ブラキオサウルスで恐竜ゲームをはじめる");
+  expect(errors).toEqual([]);
+});

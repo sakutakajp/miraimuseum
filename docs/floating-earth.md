@@ -10,15 +10,19 @@ reduced motionでは浮遊と操作後の慣性を停止する。ゆっくりし
 
 恐竜の選択は実体meshをraycastし、opaqueな地表との距離を比較する。輪郭光や雲のmeshは選択対象にせず、実体の近くにtouchで10px、mouseで6pxの許容範囲を設ける。出現途中でも正面に実体が見えた時から選択できる。7px以上動くドラッグは恐竜上から始めても地球を回し、ゲームを起動しない。キーボードには恐竜の位置に追従するfocus可能な透明buttonを用意し、Enter / Spaceでも開始できる。
 
+右上の控えめなボタンで日本語と英語を切り替える。選択は保存し、ゲームとホームを往復しても引き継ぐ。文書のlang、description、操作の読み上げ、fallbackのリンクも選択言語に揃える。
+
+フッターのTipsはGoogle FontsのDotGothic16を使い、「スクロールで回す」と「ブラキオサウルスをタップ」を5.5秒ごとに一つずつ表示する。切り替えは短いfadeだけにし、reduced motionではfadeを省く。非表示タブではTipsを進めず、読み上げには変化しない全文の操作説明を用意する。
+
 ## 読み込み
 
-サーバーが出力する初期画面から `Loading...` を表示する。読み込み中は静止画とCanvasを含む地球全体を非表示にし、描画用のサイズは維持する。Three.jsと `/floating-earth/earth-vivid.glb` の読み込み・初回描画が完了したら消す。失敗時も読み込み表示を終了し、`earth-photo.webp` とフッターの控えめなゲームへのリンクを残す。JavaScript無効でも恐竜ゲームへのリンクは表示する。
+サーバーが出力する初期画面から `読み込み中...` / `Loading...` を表示する。読み込み中は静止画とCanvasを含む地球全体を非表示にし、描画用のサイズは維持する。Three.jsと `/floating-earth/earth-vivid.glb` の読み込み・初回描画が完了したら消す。失敗時も読み込み表示を終了し、`earth-photo.webp` とフッターの控えめなゲームへのリンクを残す。JavaScript無効でも恐竜ゲームへのリンクは表示する。
 
-地球の初回描画後、`game/dinosaur/preload.ts` でゲームのroute、Phaser、scene、SVG plate、音声を先読みする。画像とAudioBufferをdecodeして保持し、tap時にゲームへ引き渡す。ホームで第二のWebGL rendererは作らず、音声はtapまで再生しない。恐竜からの起動はSTARTと300msのタイトル遷移を省き、準備が整い次第プレイを開始する。先読み失敗時はゲーム側で通常の読み込みへ戻る。別ページへの移動時は未使用の読み込み、画像、AudioContextを解放する。
+地球の初回描画後、`game/dinosaur/preload.ts` でゲームのroute、Phaser、scene、ブラキオサウルスGLB、背景SVG plate、音声を先読みする。GLBはparseし、画像とAudioBufferはdecodeして保持し、tap時にゲームへ引き渡す。ゲームでも同じGLBを固定poseの3Dモデルとして描く。ホームで第二のWebGL rendererは作らず、音声はtapまで再生しない。恐竜からの起動はSTARTと300msのタイトル遷移を省き、準備が整い次第プレイを開始する。画像・音声の先読み失敗時は通常の読み込み、GLB失敗時は3D placeholderに戻る。別ページへの移動時は未使用の読み込み、モデル、画像、AudioContextを解放する。
 
 ## ページ
 
-`/museum` と博物館の一覧・詳細・ステージ選択は削除。恐竜ゲームは `/dinosaur` で動作し、終了・退出後はホームへ戻る。ゲーム内の結果、展示、端末への記録保存は維持する。
+`/museum` と博物館の一覧・詳細・ステージ選択は削除。恐竜ゲームは `/dinosaur` で動作し、終了・退出後はホームへ戻る。ゲーム内の結果と端末への記録保存は維持し、`OPEN EXHIBIT` と展示画面は削除する。
 
 ## 次期実装: MIRAI CORE Game Hub
 
@@ -51,7 +55,7 @@ floating → rotation → EarthRoot (pose)
 
 `entities.ts` にモデルURL、サイズ、球面法線、surface offset、モデル向きを集約する。球面法線をup方向にし、半径1 + offset0.008に足元を置く。恐竜の最大寸法は0.432（前回0.72の60%、地球直径の21.6%）。カメラの表示範囲には恐竜のサイズと余白を含め、回転後も頭や尾がCanvasから見切れないようにする。初期の発見点は地球の上端寄りに置き、長い首と白い光柱を黒い背景に見せる。モデルと光は地球と一緒に回り、裏半球ではanchor全体を非表示にする。前半球でもopaqueなEarthの深度で地表との遮蔽を保つ。光にもdepth testを適用し、裏側から透けるHUD表現を避ける。post-processing/bloomは追加しない。
 
-`DinosaurGlow.ts` が二層の柔らかい白い輪郭光を追加する。内側0.01、外側0.026のview-space extrusionで以前より約3倍厚くし、外側の強度を低くして柔らかさを保つ。本体のemissiveと表面へのrim light加算は使わず、元のテクスチャと通常の照明を維持する。発光shellは元meshのgeometryとrigを共有し、出現のopacityに追従する。出現後も輪郭の白い発光を維持し、地球の青い大気発光は維持する。shellはraycastから除外し、リソースの破棄はモデル本体とまとめて行う。
+`DinosaurGlow.ts` が二層の柔らかい白い輪郭光を追加する。内側0.016 / 強度1.0、外側0.042 / 強度0.4のview-space extrusionで明るさと広がりを強め、外側の強度を低くして柔らかさを保つ。本体のemissiveと表面へのrim light加算は使わず、元のテクスチャと通常の照明を維持する。発光shellは元meshのgeometryとrigを共有し、出現のopacityに追従する。出現後も輪郭の白い発光を維持し、地球の青い大気発光は維持する。shellはraycastから除外し、リソースの破棄はモデル本体とまとめて行う。
 
 濃い茶色の皮膚が影で沈みすぎないよう、白いAmbientLight（intensity 2.4）を補助光として加える。既存のDirectionalLightで立体感を残し、本体のemissiveは0を維持する。地球の独自shaderと輪郭shellはscene lightingを参照しないため、補助光はそれらの発光色や明るさを変えない。
 

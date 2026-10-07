@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { FloatingEarthWorld } from "~/experiences/floating-earth/FloatingEarthWorld";
 import { prepareDinosaurAudio } from "~/game/dinosaur/audio-context";
 import { preloadDinosaurGame, discardDinosaurPreload } from "~/game/dinosaur/preload";
@@ -10,9 +10,21 @@ const canvas = ref<HTMLCanvasElement>();
 const dinosaurControl = ref<HTMLButtonElement>();
 const ready = ref(false);
 const pending = ref(true);
+const { locale, t, setLocale } = useLanguage();
+const tipIndex = ref(0);
+const tips = ["スクロールで回す", "ブラキオサウルスをタップ"];
+const tip = computed(() => t(tips[tipIndex.value]));
+let tipsTimer: ReturnType<typeof setInterval> | undefined;
 let world: FloatingEarthWorld | undefined;
 let loading: AbortController | undefined;
 let entering = false;
+
+watch(ready, visible => {
+  clearInterval(tipsTimer);
+  if (visible) tipsTimer = setInterval(() => {
+    if (!document.hidden) tipIndex.value = (tipIndex.value + 1) % tips.length;
+  }, 5500);
+});
 
 function prepareGameEntry() {
   entering = true;
@@ -58,6 +70,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  clearInterval(tipsTimer);
   loading?.abort(); world?.dispose();
   if (!entering) discardDinosaurPreload();
 });
@@ -67,24 +80,30 @@ onBeforeUnmount(() => {
   <main ref="root" class="earth-home" data-testid="floating-earth-experience" data-renderer="static" data-earth-ready="false" data-earth-yaw="0" data-earth-pitch="0" data-dragging="false">
     <header class="earth-home__header">
       <h1 class="earth-home__title">MIRAI MUSEUM</h1>
+      <button class="earth-home__language" type="button" data-testid="language-switch"
+        :lang="locale === 'ja' ? 'en' : 'ja'"
+        :aria-label="locale === 'ja' ? 'Switch to English' : '日本語に切り替える'"
+        @click="setLocale(locale === 'ja' ? 'en' : 'ja')">{{ locale === 'ja' ? 'EN' : '日本語' }}</button>
     </header>
 
     <div class="earth-home__space">
-      <p v-if="pending" class="earth-home__loading" role="status" aria-live="polite"><span aria-hidden="true" />Loading...</p>
-      <button ref="control" class="earth-home__globe" :style="{ visibility: pending ? 'hidden' : undefined }" :aria-hidden="pending ? true : undefined" data-testid="earth-control" :disabled="!ready" :aria-label="ready ? '地球を回す' : '青い海と白い雲に包まれた地球'" :aria-describedby="ready ? 'earth-instructions' : undefined">
+      <p v-if="pending" class="earth-home__loading" role="status" aria-live="polite"><span aria-hidden="true" />{{ t('読み込み中...') }}</p>
+      <button ref="control" class="earth-home__globe" :style="{ visibility: pending ? 'hidden' : undefined }" :aria-hidden="pending ? true : undefined" data-testid="earth-control" :disabled="!ready" :aria-label="t(ready ? '地球を回す' : '青い海と白い雲に包まれた地球')" :aria-describedby="ready ? 'earth-instructions' : undefined">
         <img class="earth-home__fallback" src="/floating-earth/earth-photo.webp" alt="" width="1024" height="1024" fetchpriority="high" draggable="false" />
         <canvas ref="canvas" class="earth-home__canvas" aria-hidden="true" />
       </button>
-      <button ref="dinosaurControl" class="earth-home__dinosaur" data-testid="dinosaur-control" type="button" hidden disabled aria-label="ブラキオサウルスで恐竜ゲームをはじめる" @click="startDinosaur" />
+      <button ref="dinosaurControl" class="earth-home__dinosaur" data-testid="dinosaur-control" type="button" hidden disabled :aria-label="t('ブラキオサウルスで恐竜ゲームをはじめる')" @click="startDinosaur" />
     </div>
 
     <footer class="earth-home__footer">
       <p id="earth-instructions" class="earth-home__instructions" :class="{ 'earth-home__instructions--ready': ready }">
-        <span aria-hidden="true">スクロールで回す <i>·</i> ブラキオサウルスをタップ</span>
-        <span class="earth-home__sr">ゆっくり自転する地球。スクロール、地球のタップ、Enter、Spaceで回転。ドラッグ、矢印キーで向きを変更。Homeで元の向きに戻ります。ブラキオサウルスをタップするか、ブラキオサウルスのボタンにフォーカスしてEnterまたはSpaceで恐竜ゲームを開始します。</span>
+        <Transition name="earth-tip" mode="out-in">
+          <span :key="`${locale}-${tipIndex}`" class="earth-home__tip" data-testid="earth-tip" aria-hidden="true">{{ tip }}</span>
+        </Transition>
+        <span class="earth-home__sr">{{ t('ゆっくり自転する地球。スクロール、地球のタップ、Enter、Spaceで回転。ドラッグ、矢印キーで向きを変更。Homeで元の向きに戻ります。ブラキオサウルスをタップするか、ブラキオサウルスのボタンにフォーカスしてEnterまたはSpaceで恐竜ゲームを開始します。') }}</span>
       </p>
-      <NuxtLink v-if="!pending && !ready" to="/dinosaur?play=1" no-prefetch class="earth-home__fallback-link" @click="prepareGameEntry">恐竜ゲームをはじめる</NuxtLink>
-      <noscript><a class="earth-home__fallback-link" href="/dinosaur">恐竜ゲームをはじめる</a></noscript>
+      <NuxtLink v-if="!pending && !ready" to="/dinosaur?play=1" no-prefetch class="earth-home__fallback-link" @click="prepareGameEntry">{{ t('恐竜ゲームをはじめる') }}</NuxtLink>
+      <noscript><a class="earth-home__fallback-link" href="/dinosaur">{{ t('恐竜ゲームをはじめる') }}</a></noscript>
     </footer>
   </main>
 </template>
@@ -114,6 +133,9 @@ onBeforeUnmount(() => {
   padding: max(24px, env(safe-area-inset-top)) max(36px, env(safe-area-inset-right)) 12px max(36px, env(safe-area-inset-left));
 }
 .earth-home__title { margin: 0; color: inherit; font-family: "M PLUS Rounded 1c", sans-serif; font-size: clamp(16px, 2vw, 22px); font-weight: 700; letter-spacing: .06em; line-height: 1.5; }
+.earth-home__language { display: grid; place-items: center; flex-shrink: 0; min-width: 60px; min-height: 40px; padding: 8px 12px; border: 1px solid #ffffff24; border-radius: 24px; background: transparent; color: #dce0e8; font-family: inherit; font-size: 12px; line-height: 1.2; cursor: pointer; touch-action: manipulation; }
+.earth-home__language:hover { border-color: #ffffff60; color: #fff; }
+.earth-home__language:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 .earth-home__dinosaur { position: absolute; z-index: 1; padding: 0; border: 0; border-radius: 5px; background: transparent; pointer-events: none; }
 .earth-home__dinosaur:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .earth-home__fallback-link { color: #bbc4d0; font-size: 13px; text-underline-offset: 5px; }
@@ -146,9 +168,12 @@ onBeforeUnmount(() => {
 .earth-home[data-renderer="webgl"] .earth-home__canvas { opacity: 1; }
 .earth-home[data-renderer="webgl"] .earth-home__fallback { opacity: 0; }
 .earth-home__footer { position: relative; z-index: 1; padding: 12px 20px max(30px, env(safe-area-inset-bottom)); text-align: center; }
-.earth-home__instructions { margin-top: 10px; font-size: 12px; font-weight: 400; line-height: 1.6; letter-spacing: .04em; color: #a1abc0; visibility: hidden; }
+.earth-home__instructions { min-height: 1.6em; margin: 10px 0; font-family: "DotGothic16", monospace; font-size: 12px; font-weight: 400; line-height: 1.6; letter-spacing: .04em; color: #a1abc0; visibility: hidden; }
 .earth-home__instructions--ready { visibility: visible; }
-.earth-home__instructions i { font-style: normal; margin: 0 9px; opacity: .6; }
+.earth-home__tip { display: inline-block; }
+.earth-tip-enter-active, .earth-tip-leave-active { transition: opacity .2s ease; }
+.earth-tip-enter-from, .earth-tip-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .earth-tip-enter-active, .earth-tip-leave-active { transition: none; } }
 .earth-home__sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .earth-home a:focus-visible, .earth-home__globe:focus-visible { outline: 2px solid #62dfff; outline-offset: 6px; }
 @media (max-width: 600px) {

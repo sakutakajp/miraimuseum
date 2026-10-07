@@ -20,8 +20,10 @@ export class CameraDirector {
     height: number,
     t: number,
     section: SectionId,
+    safe: { top: number; bottom: number } = { top: 0, bottom: 0 },
   ): Composition {
-    const baseScale = width < 700 ? width / 420 : Math.min(1.28, height / 800);
+    const availableHeight = Math.max(1, height - safe.top - safe.bottom);
+    const baseScale = Math.min(1.28, availableHeight / 800, width < 700 ? width / 420 : 1.28);
     const ending =
       section === "boundary" ? Math.max(0, Math.min(1, (t - 70) / 5)) : 0;
     const scale =
@@ -41,7 +43,7 @@ export class CameraDirector {
       width,
       height,
       scale,
-      floor: height * 0.755,
+      floor: safe.top + availableHeight * 0.755,
       playerX:
         width * (0.28 - pressure * 0.025 - (section === "fallout" ? 0.02 : 0)) +
         recoil,

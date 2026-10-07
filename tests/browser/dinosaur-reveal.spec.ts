@@ -72,6 +72,8 @@ test("missing dinosaur uses a brief reduced-motion reveal without failing Earth"
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/dinosaur\?play=1$/);
   await expect(page.locator(".deep-time-host")).toHaveAttribute("data-mode", "running", { timeout: 30000 });
+  await expect(page.locator("canvas")).toHaveAttribute("data-player-renderer", "three");
+  await expect(page.locator("canvas")).toHaveAttribute("data-player-model-source", "placeholder");
   expect(errors).toEqual([]);
 });
 
@@ -118,7 +120,8 @@ test("a preloaded mobile Brachiosaurus tap starts immediately without another as
   let entering = false;
   const entryAssets: string[] = [];
   page.on("request", request => {
-    if (entering && new URL(request.url()).pathname.startsWith("/deep-time/")) entryAssets.push(request.url());
+    const path = new URL(request.url()).pathname;
+    if (entering && (path.startsWith("/deep-time/") || path === "/floating-earth/dinosaur.glb")) entryAssets.push(request.url());
   });
   await page.route("https://fonts.googleapis.com/**", route => route.abort());
   await page.goto("http://127.0.0.1:3001/", { waitUntil: "domcontentloaded" });
@@ -146,6 +149,8 @@ test("a preloaded mobile Brachiosaurus tap starts immediately without another as
   expect(entry.running - entry.tapped).toBeLessThan(2000);
   expect(entry.modes).not.toContain("starting");
   expect(entryAssets).toEqual([]);
+  await expect(page.locator("canvas")).toHaveAttribute("data-player-renderer", "three");
+  await expect(page.locator("canvas")).toHaveAttribute("data-player-model-source", "glb");
   await testInfo.attach("game-entry", { body: JSON.stringify({ milliseconds: entry.running - entry.tapped, modes: entry.modes, entryAssets }), contentType: "application/json" });
   await expect(page.getByRole("button", { name: "スタート", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "一時停止", exact: true }).click();

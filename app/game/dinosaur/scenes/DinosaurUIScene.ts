@@ -1,21 +1,20 @@
 import Phaser from "phaser";
 import type { ControlRect, UIAction } from "../types";
 import type { DinosaurRunScene } from "./DinosaurRunScene";
-import { EXHIBIT_PLATES } from "../exhibit";
+import { gameCopy } from "../copy";
 import { COLORS } from "../config/visual";
 export class DinosaurUIScene extends Phaser.Scene {
   private run!: DinosaurRunScene;
   private panel!: Phaser.GameObjects.Container;
-  private title!: Phaser.GameObjects.Text;
   private percent!: Phaser.GameObjects.Text;
   private progress!: Phaser.GameObjects.Rectangle;
   private death!: Phaser.GameObjects.Text;
   private deathLabel!: Phaser.GameObjects.Text;
   private buttons = new Map<UIAction, Phaser.GameObjects.Rectangle>();
   private controls: ControlRect[] = [];
-  private exhibition = false;
   private lastProgress = -1;
   private backdrop!: Phaser.GameObjects.Rectangle;
+  private panelX = 0;
   constructor() {
     super("deep-time-ui");
   }
@@ -23,12 +22,6 @@ export class DinosaurUIScene extends Phaser.Scene {
     this.run = data.run;
   }
   create() {
-    this.title = this.add.text(0, 0, "DEEP TIME / 01", {
-      fontFamily: "monospace",
-      fontSize: "12px",
-      color: "#e9e4d8",
-      letterSpacing: 2,
-    });
     this.percent = this.add
       .text(0, 0, "0%", {
         fontFamily: "monospace",
@@ -101,7 +94,7 @@ export class DinosaurUIScene extends Phaser.Scene {
       .setStrokeStyle(1, COLORS.bone, 0.5);
     this.panel.add(rect);
     this.buttons.set(action, rect);
-    if (label) this.text(x + 18, y + 16, label, 14);
+    if (label) this.text(x + 18, y + 16, this.run.locale === "en" ? label.toUpperCase() : label, 14);
     this.controls.push({ action, x, y, width: w, height: h, label });
   }
   refresh() {
@@ -111,11 +104,12 @@ export class DinosaurUIScene extends Phaser.Scene {
       m = w < 700 ? 24 : 48,
       bw = Math.min(360, w - m * 2),
       left = (w - bw) / 2;
+    const compact = w >= 700 && h < 600;
     if (this.run.mode === "starting") {
       this.run.hooks.controls([]);
       return;
     }
-    this.panel.setAlpha(1).setX(0);
+    this.panel.setAlpha(1).setPosition(0, 0).setScale(1);
     this.backdrop.setAlpha(1);
     this.panel.removeAll(true);
     this.controls = [];
@@ -127,7 +121,6 @@ export class DinosaurUIScene extends Phaser.Scene {
         getComputedStyle(this.game.canvas.parentElement!).paddingTop,
       ) || 0,
     );
-    this.title.setPosition(m, 28 + safe);
     this.percent.setPosition(w - m - 58, 26 + safe);
     this.progress
       .setPosition(0, 0)
@@ -135,43 +128,29 @@ export class DinosaurUIScene extends Phaser.Scene {
     this.death.setPosition(w / 2, h * 0.36);
     this.deathLabel.setPosition(w / 2, h * 0.45);
     this.backdrop.setSize(w, h);
-    const mode = this.run.mode,
-      ja = this.run.locale === "ja";
+    const mode = this.run.mode, copy = gameCopy(this.run.locale);
     this.backdrop.setVisible(
       mode === "ready" ||
         mode === "paused" ||
-        (mode === "complete" && !this.exhibition),
-    );
-    this.title.setVisible(
-      mode === "running" || mode === "dead" || mode === "paused",
+        mode === "complete",
     );
     this.percent.setVisible(mode === "running" || mode === "dead");
     this.progress.setVisible(mode === "running" || mode === "dead");
     if (mode === "ready") {
-      this.text(m, h * 0.14, "EXPERIENCE / 002", 11, "#b7a68a");
-      this.text(
-        m,
-        h * 0.25,
-        "DEEP\nTIME",
-        w < 700 ? Math.min(86, w * 0.22) : 132,
-        "#e9e4d8",
-        true,
-      );
-      this.text(m, h * 0.53, "01 / CRETACEOUS\n       LAST DAY", 16);
-      this.text(m, h * 0.66, "66.0 Ma · 150 BPM · 48 BARS", 10, "#b7a68a");
-      this.button("start", "START  →", left, h * 0.77, bw);
+      this.text(left, 0, copy.metadata, 10, "#b7a68a");
+      this.button("start", `${copy.start}  →`, left, 48, bw);
       this.text(
         left,
-        h * 0.77 + 69,
-        ja ? "タップ / Space / ↑" : "TAP / SPACE / ↑",
+        117,
+        copy.jumpHint,
         11,
         "#b7a68a",
       );
       this.button(
         "leave",
-        ja ? "ホームへ戻る" : "HOME  ↗",
+        `${copy.home}  ↗`,
         left,
-        h * 0.89,
+        158,
         bw,
         44,
       );
@@ -184,110 +163,91 @@ export class DinosaurUIScene extends Phaser.Scene {
             .setOrigin(0),
         );
     } else if (mode === "paused") {
-      this.text(left, h * 0.19, "TIME SUSPENDED", 11, "#b7a68a");
-      this.text(left, h * 0.3, "PAUSED", w < 700 ? 52 : 80, "#e9e4d8", true);
-      this.text(
-        left,
-        h * 0.43,
-        `ATTEMPT ${String(this.run.attempts).padStart(2, "0")} / BEST ${Math.floor(this.run.record.bestProgress * 100)}%`,
+      const x = compact ? m : left;
+      this.text(x, 0, copy.pauseCaption, 11, "#b7a68a");
+      const heading = this.text(x, 36, copy.pausedTitle, compact || w < 700 ? 52 : 80, "#e9e4d8", true);
+      const details = this.text(
+        x,
+        heading.y + heading.height + 24,
+        copy.attemptBest(this.run.attempts, Math.floor(this.run.record.bestProgress * 100)),
         11,
         "#b7a68a",
       );
-      this.button("resume", ja ? "続ける  →" : "RESUME  →", left, h * 0.55, bw);
+      const y = details.y + details.height + 32;
+      const width = compact ? (w - m * 2 - 32) / 3 : bw;
+      this.button("resume", `${copy.resume}  →`, x, y, width);
       this.button(
         "mute",
-        this.run.audio.muted ? "SOUND  OFF" : "SOUND  ON",
-        left,
-        h * 0.55 + 68,
-        bw,
+        this.run.audio.muted ? copy.soundOff : copy.soundOn,
+        compact ? x + width + 16 : x,
+        compact ? y : y + 68,
+        width,
       );
       this.button(
         "leave",
-        ja ? "ホームへ戻る" : "HOME  ↗",
-        left,
-        h * 0.55 + 136,
-        bw,
+        `${copy.home}  ↗`,
+        compact ? x + (width + 16) * 2 : x,
+        compact ? y : y + 136,
+        width,
       );
     } else if (mode === "complete" && this.run.result) {
       const r = this.run.result;
-      if (this.exhibition) {
-        this.backdrop.setVisible(true);
-        this.backdrop.setFillStyle(COLORS.bone, 1);
-        this.text(m, h * 0.11, "EXHIBIT / DEEP TIME", 11, "#53654b");
-        this.text(m, h * 0.18, "66.0 Ma", w < 700 ? 56 : 88, "#10110f", true);
-        this.text(m, h * 0.3, "K—Pg BOUNDARY", 16, "#10110f");
-        const lines = EXHIBIT_PLATES.flatMap((plate, i) => [
-          ...(i === 0 ? [] : ["", plate.heading]),
-          ...(ja ? plate.ja : plate.en),
-        ]);
-        lines.forEach((line, i) =>
-          this.text(m, h * 0.39 + i * 23, line, 15, "#10110f")
-            .setFontFamily("sans-serif")
-            .setLetterSpacing(0),
-        );
-        this.button("retry", "RUN AGAIN  →", left, h * 0.83, bw);
-        this.button(
-          "leave",
-          ja ? "ホームへ戻る" : "HOME  ↗",
-          left,
-          h * 0.91,
-          bw,
-          44,
-        );
-        for (const b of this.buttons.values())
-          b.setStrokeStyle(1, COLORS.obsidian, 0.6);
-        for (const obj of this.panel.list)
-          if (obj instanceof Phaser.GameObjects.Text && obj.y >= h * 0.83)
-            obj.setColor("#10110f");
-      } else {
-        this.text(left, h * 0.1, "CRETACEOUS // LAST DAY", 11, "#b7a68a");
-        this.text(
-          left,
-          h * 0.18,
-          "RUN\nCOMPLETE",
-          w < 700 ? 46 : 66,
-          "#e9e4d8",
-          true,
-        );
-        this.text(
-          left,
-          h * 0.39,
-          `CLEAR 100%     SYNC ${Math.round(r.sync * 100)}%\nATTEMPTS ${this.run.attempts}`,
-          12,
-          "#b7a68a",
-        );
-        this.text(
-          left,
-          h * 0.51,
-          r.score.toLocaleString(),
-          w < 700 ? 58 : 82,
-          "#e9e4d8",
-          true,
-        );
-        this.text(left, h * 0.62, `RUN SCORE / RANK ${r.rank}`, 14);
-        this.button("exhibit", "OPEN EXHIBIT  ↗", left, h * 0.7, bw);
-        this.button("retry", "RUN AGAIN  →", left, h * 0.7 + 65, bw);
-        this.button(
-          "leave",
-          ja ? "ホームへ戻る" : "HOME  ↗",
-          left,
-          h * 0.7 + 130,
-          bw,
-          44,
-        );
-      }
+      const x = compact ? m : left;
+      const heading = this.text(
+        x,
+        0,
+        compact ? copy.completeTitle : copy.completeTitle.replace(" ", "\n"),
+        compact ? 38 : w < 700 ? 46 : 66,
+        "#e9e4d8",
+        true,
+      );
+      const details = this.text(
+        x,
+        heading.height + 24,
+        copy.clearDetails(Math.round(r.sync * 100), this.run.attempts),
+        12,
+        "#b7a68a",
+      );
+      const score = this.text(
+        compact ? w * 0.57 : x,
+        compact ? heading.height + 20 : details.y + details.height + 24,
+        r.score.toLocaleString(this.run.locale === "ja" ? "ja-JP" : "en-US"),
+        compact || w < 700 ? 58 : 82,
+        "#e9e4d8",
+        true,
+      );
+      const rank = this.text(x, Math.max(score.y + score.height, details.y + details.height) + 18, copy.scoreRank(r.rank), 14);
+      const y = rank.y + rank.height + 32;
+      const width = compact ? (w - m * 2 - 16) / 2 : bw;
+      this.button("retry", `${copy.retry}  →`, x, y, width);
+      this.button(
+        "leave",
+        `${copy.home}  ↗`,
+        compact ? x + width + 16 : x,
+        compact ? y : y + 68,
+        width,
+        compact ? 52 : 44,
+      );
     }
+    if (mode !== "running" && mode !== "dead") {
+      const bottom = parseFloat(getComputedStyle(this.game.canvas.parentElement!).paddingBottom) || 0;
+      const bounds = this.panel.getBounds();
+      const available = Math.max(1, h - safe - bottom - 40);
+      const scale = Math.min(1, available / Math.max(1, bounds.height));
+      this.panel.setScale(scale).setPosition(w * (1 - scale) / 2,
+        safe + 20 + (available - bounds.height * scale) / 2 - bounds.y * scale);
+      this.controls = this.controls.map(control => ({ ...control,
+        x: this.panel.x + control.x * scale, y: this.panel.y + control.y * scale,
+        width: control.width * scale, height: control.height * scale,
+      }));
+    }
+    this.panelX = this.panel.x;
     this.run.hooks.controls(this.controls);
-  }
-  openExhibit() {
-    if (this.run.mode !== "complete") return;
-    this.exhibition = true;
-    this.refresh();
   }
   override update() {
     if (this.run.mode === "starting") {
       const p = Math.min(1, this.run.startingAge / 0.3);
-      this.panel.setAlpha(1 - p).setX(-16 * p);
+      this.panel.setAlpha(1 - p).setX(this.panelX - 16 * p);
       this.backdrop.setAlpha(1 - p);
     }
 
@@ -307,13 +267,12 @@ export class DinosaurUIScene extends Phaser.Scene {
       this.death.setText(`${Math.floor(this.run.failedProgress * 100)}%`);
       this.deathLabel.setText(
         this.run.deathBest
-          ? "NEW BEST"
-          : `ATTEMPT ${String(this.run.attempts).padStart(2, "0")}`,
+          ? gameCopy(this.run.locale).newBest
+          : gameCopy(this.run.locale).attempt(this.run.attempts),
       );
       const alpha = Math.min(1, (this.run.deadAge - 0.18) / 0.09);
       this.death.setAlpha(alpha);
       this.deathLabel.setAlpha(alpha);
     }
-    if (this.run.mode !== "complete") this.exhibition = false;
   }
 }

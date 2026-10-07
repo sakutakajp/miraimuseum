@@ -13,7 +13,14 @@ const props = withDefaults(
 const host = ref<HTMLDivElement>();
 let game: import("phaser").Game | undefined,
   disposed = false,
-  seek: ((t: number) => void) | undefined;
+  seek: ((t: number) => void) | undefined,
+  disposePlayer: (() => void) | undefined;
+const lifetime = new AbortController();
+function releasePlayer() {
+  const release = disposePlayer;
+  disposePlayer = undefined;
+  release?.();
+}
 watch(
   () => [props.seconds, props.reducedMotion],
   () => seek?.(props.seconds),
@@ -32,6 +39,7 @@ onMounted(async () => {
     { PlayerRenderer },
     { BoundaryRenderer },
     { createTextures, loadPlates },
+    playerModel,
   ] = await Promise.all([
     import("phaser"),
     import("../app/game/dinosaur/levels/stage01"),
@@ -45,8 +53,16 @@ onMounted(async () => {
     import("../app/game/dinosaur/rendering/PlayerRenderer"),
     import("../app/game/dinosaur/rendering/BoundaryRenderer"),
     import("../app/game/dinosaur/rendering/textures"),
+    import("../app/game/dinosaur/player-model"),
   ]);
   if (disposed) return;
+  const model = await playerModel.takePlayerModel(lifetime.signal).catch(error => {
+    if (disposed) return undefined;
+    throw error;
+  });
+  if (!model) return;
+  if (disposed) { playerModel.disposePlayerModel(model); return; }
+  disposePlayer = () => playerModel.disposePlayerModel(model);
   class Preview extends Phaser.Scene {
     runtime = new LevelRuntime(STAGE_01);
     cameraDirector = new CameraDirector(props.reducedMotion);
@@ -61,6 +77,7 @@ onMounted(async () => {
       super("deep-time-preview");
     }
     preload() {
+      this.events.once(Phaser.Scenes.Events.DESTROY, releasePlayer);
       loadPlates(this);
     }
     create() {
@@ -68,7 +85,8 @@ onMounted(async () => {
       this.bg = new BackgroundLayers(this);
       this.terrain = new TerrainRenderer(this);
       this.dinosaurs = new DinosaurRenderer(this);
-      this.player = new PlayerRenderer(this);
+      this.player = new PlayerRenderer(this, model);
+      disposePlayer = () => this.player.dispose();
       this.boundary = new BoundaryRenderer(this);
       this.vfx = new VfxDirector(this, props.reducedMotion);
       this.runtime.onCue = (cue) => {
@@ -80,8 +98,6 @@ onMounted(async () => {
         if (cue.value === "impact-flash")
           this.visual.flash(this.runtime.world.clock.elapsedSeconds);
       };
-      this.runtime.world.onLand = () =>
-        this.player.land(this.runtime.world.clock.elapsedSeconds);
       seek = (t) => {
         this.cameraDirector = new CameraDirector(props.reducedMotion);
         this.visual = new VisualDirector(props.reducedMotion);
@@ -124,7 +140,7 @@ onMounted(async () => {
       );
       this.dinosaurs.render(c, t, section, props.quality === "low");
       this.terrain.render(c, world, false);
-      this.player.render(c, world.state, t, -1);
+      this.player.render(c, world.state, -1);
       this.vfx.render(
         c,
         t,
@@ -137,8 +153,12 @@ onMounted(async () => {
       this.boundary.render(c, t);
     }
   }
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("webgl2", { antialias: true, alpha: false, depth: true, stencil: true });
   game = new Phaser.Game({
-    type: Phaser.AUTO,
+    type: context ? Phaser.WEBGL : Phaser.CANVAS,
+    canvas,
+    context: (context ?? undefined) as unknown as CanvasRenderingContext2D | undefined,
     parent: host.value,
     width: 420,
     height: 844,
@@ -150,7 +170,9 @@ onMounted(async () => {
 });
 onBeforeUnmount(() => {
   disposed = true;
+  lifetime.abort();
   seek = undefined;
+  releasePlayer();
   game?.destroy(true);
 });
 </script>

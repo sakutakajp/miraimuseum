@@ -81,7 +81,6 @@ export type UIAction =
   | "resume"
   | "mute"
   | "retry"
-  | "exhibit"
   | "leave";
 export interface ControlRect {
   action: UIAction;

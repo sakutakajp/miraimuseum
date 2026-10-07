@@ -13,6 +13,7 @@ import { DinosaurRenderer } from "../rendering/DinosaurRenderer";
 import { PlayerRenderer } from "../rendering/PlayerRenderer";
 import { BoundaryRenderer } from "../rendering/BoundaryRenderer";
 import { createTextures, loadPlates } from "../rendering/textures";
+import { disposePlayerModel, type PlayerModel } from "../player-model";
 import type { DinosaurUIScene } from "./DinosaurUIScene";
 import type {
   ClearResult,
@@ -49,11 +50,14 @@ export class DinosaurRunScene extends Phaser.Scene {
   private stepFoot = -1;
   private lastPointer = -100;
   private lastKey = -100;
+  private safe = { top: 0, bottom: 0 };
+  private disposed = false;
   constructor(
     readonly hooks: HostHooks,
     record: DeepTimeRecord,
     readonly reduced: boolean,
-    readonly locale: "ja" | "en",
+    public locale: "ja" | "en",
+    private readonly model: PlayerModel,
   ) {
     super("deep-time-run");
     this.record = { ...record };
@@ -61,17 +65,25 @@ export class DinosaurRunScene extends Phaser.Scene {
     this.visual = new VisualDirector(reduced);
   }
   preload() {
+    this.events.once(Phaser.Scenes.Events.DESTROY, () => this.dispose());
     loadPlates(this);
     this.load.on("loaderror", (file: Phaser.Loader.File) =>
       this.hooks.fatal(new Error(`Art asset: ${file.key}`)),
     );
   }
   create() {
+    const resize = () => {
+      const style = getComputedStyle(this.game.canvas.parentElement!);
+      this.safe = { top: parseFloat(style.paddingTop) || 0, bottom: parseFloat(style.paddingBottom) || 0 };
+    };
+    resize();
+    this.scale.on(Phaser.Scale.Events.RESIZE, resize);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, resize));
     createTextures(this);
     this.bg = new BackgroundLayers(this);
     this.terrain = new TerrainRenderer(this);
     this.dinosaurs = new DinosaurRenderer(this);
-    this.player = new PlayerRenderer(this);
+    this.player = new PlayerRenderer(this, this.model);
     this.vfx = new VfxDirector(this, this.reduced);
     this.boundary = new BoundaryRenderer(this);
     this.runtime.onCue = (cue) => {
@@ -115,7 +127,6 @@ export class DinosaurRunScene extends Phaser.Scene {
     };
     this.runtime.world.onLand = () => {
       const t = this.runtime.world.clock.elapsedSeconds;
-      this.player.land(t);
       this.audio.play("land", 0.7);
       const c = this.composition();
       this.vfx.burst(
@@ -163,7 +174,7 @@ export class DinosaurRunScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener("keydown", key);
       document.removeEventListener("visibilitychange", visibility);
-      this.audio.dispose();
+      this.dispose();
     });
     this.scene.launch("deep-time-ui", { run: this });
     this.ui = this.scene.get("deep-time-ui") as DinosaurUIScene;
@@ -199,6 +210,7 @@ export class DinosaurRunScene extends Phaser.Scene {
       this.scale.height,
       w.clock.elapsedSeconds + Math.max(0, this.deadAge),
       this.runtime.section.id,
+      this.safe,
     );
   }
   jump() {
@@ -283,7 +295,6 @@ export class DinosaurRunScene extends Phaser.Scene {
       this.audio.play("ui");
       this.beginAttempt();
     }
-    if (action === "exhibit") this.ui?.openExhibit();
     if (action === "leave") this.hooks.leave();
   }
   override update(_time: number, deltaMs: number) {
@@ -342,7 +353,7 @@ export class DinosaurRunScene extends Phaser.Scene {
     );
     this.dinosaurs.render(c, t, section, low);
     this.terrain.render(c, this.runtime.world, this.hitboxes);
-    this.player.render(c, this.runtime.world.state, t, this.deadAge);
+    this.player.render(c, this.runtime.world.state, this.deadAge);
     const renderDelta =
       this.mode === "paused"
         ? 0
@@ -359,6 +370,13 @@ export class DinosaurRunScene extends Phaser.Scene {
       this.deadAge,
     );
     this.boundary.render(c, t);
+  }
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.audio.dispose();
+    if (this.player) this.player.dispose();
+    else disposePlayerModel(this.model);
   }
   // These methods are wired only by a development host; production exposes no shortcuts.
   debugSeek(section: number) {

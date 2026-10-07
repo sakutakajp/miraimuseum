@@ -45,7 +45,7 @@ function halo(width: number, strength: number) {
 
 /** Aura shells share each mesh's geometry and rig, including future animation. */
 export class DinosaurGlow {
-  private materials = [halo(0.01, 0.58), halo(0.026, 0.2)];
+  private materials = [halo(0.016, 1), halo(0.042, 0.4)];
 
   constructor(scene: Group) {
     const meshes: Mesh[] = [];

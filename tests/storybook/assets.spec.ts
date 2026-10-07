@@ -19,8 +19,11 @@ for (const id of [
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(`/iframe.html?id=${id}&viewMode=story`);
     await expect(page.locator("#storybook-root > div")).toBeVisible();
-    if (id.startsWith("backgrounds-dinosaur") && !id.endsWith("illustration"))
+    if (id.startsWith("backgrounds-dinosaur") && !id.endsWith("illustration")) {
       await expect(page.locator("canvas")).toBeVisible();
+      await expect(page.locator("canvas")).toHaveAttribute("data-player-renderer", "three");
+      await expect(page.locator("canvas")).toHaveAttribute("data-player-model-source", "glb");
+    }
     if (
       id.includes("explorer") ||
       id.includes("pixel-objects") ||
@@ -37,6 +40,6 @@ test("language toolbar applies to real game cards", async ({ page }) => {
     "/iframe.html?id=ui-gamecard--dinosaur&viewMode=story&globals=locale:en",
   );
   await expect(
-    page.getByRole("heading", { name: "MIRAI: DEEP TIME" }),
+    page.getByRole("heading", { name: "Dinosaur game" }),
   ).toBeVisible();
 });

@@ -2,10 +2,15 @@
 import DeepTimeGame from "~/components/games/deep-time/DeepTimeGame.client.vue";
 import { GAME_SAVE_KEY, parseGameProgress, recordGameResult } from "~/games/progress";
 import type { ClearResult } from "~/game/dinosaur/types";
-const { initializeLanguage } = useLanguage();
+const { locale, initializeLanguage } = useLanguage();
 const route = useRoute();
 onMounted(initializeLanguage);
-useHead({ title: "MIRAI: DEEP TIME", meta: [{ name: "theme-color", content: "#10110f" }] });
+useHead(() => ({ title: "MIRAI MUSEUM", meta: [
+  { name: "description", content: locale.value === "ja"
+    ? "ブラキオサウルスと恐竜時代を駆け抜ける、タップでジャンプするリズムゲーム。"
+    : "Run through the age of dinosaurs with a Brachiosaurus. Tap to jump in a cinematic rhythm game." },
+  { name: "theme-color", content: "#10110f" },
+] }));
 function saveClear(value: ClearResult) {
   try {
     const progress = parseGameProgress(localStorage.getItem(GAME_SAVE_KEY));
