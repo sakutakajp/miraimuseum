@@ -20,7 +20,7 @@ void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
 /** Selective screen-space bloom. The globe writes depth but never emits bloom. */
 export class DinosaurBloom {
-  private mask = new WebGLRenderTarget(1, 1);
+  private mask = new WebGLRenderTarget(1, 1, { samples: 4 });
   private horizontal = new WebGLRenderTarget(1, 1, { depthBuffer: false });
   private blurred = new WebGLRenderTarget(1, 1, { depthBuffer: false });
   private size = new Vector2();
@@ -65,12 +65,17 @@ export class DinosaurBloom {
     vertexShader: fullscreenVertex,
     fragmentShader: `varying vec2 vUv; uniform sampler2D source; uniform vec2 step;
       void main() {
-        vec3 color = texture2D(source, vUv).rgb * 0.227027;
-        color += texture2D(source, vUv + step * 1.384615).rgb * 0.316216;
-        color += texture2D(source, vUv - step * 1.384615).rgb * 0.316216;
-        color += texture2D(source, vUv + step * 3.230769).rgb * 0.070270;
-        color += texture2D(source, vUv - step * 3.230769).rgb * 0.070270;
-        gl_FragColor = vec4(color, 1.0);
+        // Sample every texel: spreading a five-tap kernel produces repeated
+        // silhouettes and vertical/horizontal streaks around thin necks and legs.
+        vec3 color = vec3(0.0);
+        float total = 0.0;
+        for (int i = -10; i <= 10; i++) {
+          float x = float(i);
+          float weight = exp(-0.5 * x * x / (3.5 * 3.5));
+          color += texture2D(source, vUv + step * x).rgb * weight;
+          total += weight;
+        }
+        gl_FragColor = vec4(color / total, 1.0);
       }`,
   });
   private composite = new ShaderMaterial({
@@ -80,7 +85,7 @@ export class DinosaurBloom {
     vertexShader: fullscreenVertex,
     fragmentShader: `varying vec2 vUv; uniform sampler2D sharp; uniform sampler2D soft;
       void main() {
-        vec3 light = texture2D(sharp, vUv).rgb * 1.15 + texture2D(soft, vUv).rgb * 2.8;
+        vec3 light = texture2D(sharp, vUv).rgb * 0.85 + texture2D(soft, vUv).rgb * 2.8;
         gl_FragColor = vec4(light, 1.0);
         #include <colorspace_fragment>
       }`,
@@ -100,11 +105,14 @@ export class DinosaurBloom {
     });
     if (appearance <= 0) return;
     renderer.getDrawingBufferSize(this.size);
-    // Half resolution keeps the two blur passes affordable on phones.
-    const width = Math.max(1, Math.ceil(this.size.x / 2));
-    const height = Math.max(1, Math.ceil(this.size.y / 2));
-    if (this.mask.width !== width || this.mask.height !== height) {
-      for (const target of [this.mask, this.horizontal, this.blurred]) target.setSize(width, height);
+    // Native-resolution sampling keeps thin silhouette edges stable on phones.
+    const width = this.size.x;
+    const height = this.size.y;
+    // Keep the light's sharp core at native resolution with multisample AA.
+    if (this.mask.width !== this.size.x || this.mask.height !== this.size.y) {
+      this.mask.setSize(this.size.x, this.size.y);
+      this.horizontal.setSize(this.size.x, height);
+      this.blurred.setSize(width, height);
     }
     this.rim.uniforms.appearance!.value = appearance;
     const target = renderer.getRenderTarget();
@@ -138,14 +146,13 @@ export class DinosaurBloom {
       for (const [mesh, material] of materials) mesh.material = material;
       for (const object of hidden) object.visible = true;
       scene.background = background;
-      const radius = renderer.getPixelRatio() * 1.5;
       this.quad.material = this.blur;
       this.blur.uniforms.source!.value = this.mask.texture;
-      this.blur.uniforms.step!.value.set(radius / width, 0);
+      this.blur.uniforms.step!.value.set(1 / this.mask.width, 0);
       renderer.setRenderTarget(this.horizontal);
       renderer.render(this.screen, this.camera);
       this.blur.uniforms.source!.value = this.horizontal.texture;
-      this.blur.uniforms.step!.value.set(0, radius / height);
+      this.blur.uniforms.step!.value.set(0, 1 / height);
       renderer.setRenderTarget(this.blurred);
       renderer.render(this.screen, this.camera);
       renderer.setRenderTarget(target);
