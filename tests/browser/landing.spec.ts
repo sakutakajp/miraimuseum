@@ -9,6 +9,8 @@ test("home loads visibly, rotates continuously, responds to scroll and opens the
   await page.goto("/");
   const root = page.getByTestId("floating-earth-experience");
   await expect(page.getByRole("status")).toHaveText("Loading...");
+  await expect(page.getByTestId("earth-control")).toBeHidden();
+  await expect(page.locator(".earth-home__fallback")).toBeHidden();
   await expect(page.getByRole("heading", { name: "MIRAI MUSEUM" })).toBeVisible();
   expect(await page.locator("h1").evaluate(el => getComputedStyle(el).fontFamily)).toContain("M PLUS Rounded 1c");
   expect(await page.locator("h1").evaluate(el => getComputedStyle(el).fontWeight)).toBe("700");
@@ -18,6 +20,7 @@ test("home loads visibly, rotates continuously, responds to scroll and opens the
   release();
   await expect(root).toHaveAttribute("data-earth-ready", "true", { timeout: 30000 });
   await expect(page.getByRole("status")).toHaveCount(0);
+  await expect(page.getByTestId("earth-control")).toBeVisible();
   const yaw = () => root.evaluate(el => Number((el as HTMLElement).dataset.earthYaw));
   const before = await yaw();
   await expect.poll(yaw).toBeGreaterThan(before + 0.01);

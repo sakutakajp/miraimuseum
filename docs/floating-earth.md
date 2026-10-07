@@ -10,7 +10,7 @@ reduced motionでは浮遊と操作後の慣性を停止する。ゆっくりし
 
 ## 読み込み
 
-サーバーが出力する初期画面から `Loading...` を表示し、Three.jsと `/floating-earth/earth-vivid.glb` の読み込み・初回描画が完了したら消す。失敗時も読み込み表示を終了し、`earth-photo.webp` の静止画を残す。JavaScript無効でも恐竜ゲームへのリンクは表示する。
+サーバーが出力する初期画面から `Loading...` を表示する。読み込み中は静止画とCanvasを含む地球全体を非表示にし、描画用のサイズは維持する。Three.jsと `/floating-earth/earth-vivid.glb` の読み込み・初回描画が完了したら消す。失敗時も読み込み表示を終了し、`earth-photo.webp` の静止画を残す。JavaScript無効でも恐竜ゲームへのリンクは表示する。
 
 ## ページ
 

@@ -49,7 +49,7 @@ onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
 
     <div class="earth-home__space">
       <p v-if="pending" class="earth-home__loading" role="status" aria-live="polite"><span aria-hidden="true" />Loading...</p>
-      <button ref="control" class="earth-home__globe" data-testid="earth-control" :disabled="!ready" :aria-label="ready ? '地球を回す' : '青い海と白い雲に包まれた地球'" :aria-describedby="ready ? 'earth-instructions' : undefined">
+      <button ref="control" class="earth-home__globe" :style="{ visibility: pending ? 'hidden' : undefined }" :aria-hidden="pending ? true : undefined" data-testid="earth-control" :disabled="!ready" :aria-label="ready ? '地球を回す' : '青い海と白い雲に包まれた地球'" :aria-describedby="ready ? 'earth-instructions' : undefined">
         <img class="earth-home__fallback" src="/floating-earth/earth-photo.webp" alt="" width="1024" height="1024" fetchpriority="high" draggable="false" />
         <canvas ref="canvas" class="earth-home__canvas" aria-hidden="true" />
       </button>
