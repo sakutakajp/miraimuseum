@@ -22,6 +22,7 @@ import { QualityManager } from "../landing/QualityManager";
 import { EarthInteraction } from "./interaction";
 import { loadPhotographicEarth, disposeEarthObjects } from "./model";
 import { DinosaurReveal } from "./DinosaurReveal";
+import { DinosaurBloom } from "./DinosaurGlow";
 import { EARTH_VIEW_EXTENT } from "./entities";
 import { picksVisibleEntity, projectBounds } from "./selection";
 
@@ -41,6 +42,7 @@ export class FloatingEarthWorld {
   private pose = new Group();
   private entityLayer = new Group();
   private dinosaur?: DinosaurReveal;
+  private dinosaurBloom = new DinosaurBloom();
   private earth?: Group;
   private ray = new Raycaster();
   private pointerPosition = new Vector2();
@@ -256,6 +258,7 @@ export class FloatingEarthWorld {
       this.dinosaur.updateVisibility(this.cameraForward);
     }
     this.renderer.render(this.scene, this.camera);
+    this.dinosaurBloom.render(this.renderer, this.scene, this.camera);
     this.updateDinosaurControl();
     if (this.shaderFailed) this.fail();
   }
@@ -409,6 +412,7 @@ export class FloatingEarthWorld {
     this.actions.dinosaurControl.disabled = true;
     this.dinosaur?.dispose();
     FloatingEarthWorld.disposeObjects(this.scene);
+    this.dinosaurBloom.dispose();
     this.renderer.dispose();
   }
 
