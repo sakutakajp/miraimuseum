@@ -8,6 +8,7 @@ import type {
   UIAction,
 } from "~/game/dinosaur/types";
 import { EXHIBIT_PLATES } from "~/game/dinosaur/exhibit";
+import { takeDinosaurRuntime, discardDinosaurPreload } from "~/game/dinosaur/preload";
 import {
   DEEP_TIME_SAVE_KEY,
   emptyRecord,
@@ -41,6 +42,7 @@ let scene: DinosaurRunScene | undefined;
 let game: import("phaser").Game | undefined;
 let observer: ResizeObserver | undefined;
 let disposed = false;
+const lifetime = new AbortController();
 let debugTimer: ReturnType<typeof setInterval> | undefined;
 const announce = computed(() =>
   fatal.value
@@ -98,18 +100,13 @@ onMounted(async () => {
   }
   best.value = record.bestProgress;
   try {
-    const [{ default: Phaser }, { DinosaurRunScene }, { DinosaurUIScene }] =
-      await Promise.all([
-        import("phaser"),
-        import("~/game/dinosaur/scenes/DinosaurRunScene"),
-        import("~/game/dinosaur/scenes/DinosaurUIScene"),
-      ]);
+    const { Phaser, DinosaurRunScene, DinosaurUIScene } = await takeDinosaurRuntime(lifetime.signal);
     if (disposed || !host.value) return;
     scene = new DinosaurRunScene(
       {
         ready: () => {
           loaded.value = true;
-          if (props.autoStart && !disposed) scene?.act("start");
+          if (props.autoStart && !disposed) void scene?.start(true);
         },
         started: () => {
           attempts.value = scene!.attempts;
@@ -173,11 +170,13 @@ onMounted(async () => {
       }, 200);
     }
   } catch (value) {
-    error(value);
+    if (!disposed) error(value);
   }
 });
 onBeforeUnmount(() => {
   disposed = true;
+  lifetime.abort();
+  discardDinosaurPreload();
   clearInterval(debugTimer);
   observer?.disconnect();
   game?.canvas.removeEventListener("webglcontextlost", lost);

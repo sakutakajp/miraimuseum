@@ -110,19 +110,76 @@ test("mobile dinosaur fits and a real touch drag rotates Earth without opening t
   await context.close();
 });
 
-test("tapping the mobile Brachiosaurus starts gameplay without a second start button", async ({ browser }) => {
+test("a preloaded mobile Brachiosaurus tap starts immediately without another asset download", async ({ browser }, testInfo) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   const page = await context.newPage();
   const errors: string[] = [];
   page.on("pageerror", e => errors.push(e.message));
+  let entering = false;
+  const entryAssets: string[] = [];
+  page.on("request", request => {
+    if (entering && new URL(request.url()).pathname.startsWith("/deep-time/")) entryAssets.push(request.url());
+  });
   await page.route("https://fonts.googleapis.com/**", route => route.abort());
   await page.goto("http://127.0.0.1:3001/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(home)).toHaveAttribute("data-game-ready", "true", { timeout: 30000 });
   const tap = await dinosaurPoint(page);
+  await page.evaluate(() => {
+    const measurement = { tapped: 0, running: 0, modes: [] as string[] };
+    (window as unknown as { gameEntry: typeof measurement }).gameEntry = measurement;
+    document.addEventListener("pointerup", () => { measurement.tapped = performance.now(); }, { once: true, capture: true });
+    new MutationObserver(() => {
+      const mode = document.querySelector<HTMLElement>(".deep-time-host")?.dataset.mode;
+      if (!mode || measurement.modes.at(-1) === mode) return;
+      measurement.modes.push(mode);
+      if (mode === "running" && !measurement.running) measurement.running = performance.now();
+    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-mode"] });
+  });
+  entering = true;
   await page.touchscreen.tap(tap.x, tap.y);
   await expect(page).toHaveURL(/\/dinosaur\?play=1$/);
   await expect(page.locator(".deep-time-host")).toHaveAttribute("data-mode", "running", { timeout: 30000 });
+  const entry = await page.evaluate(() => (window as unknown as {
+    gameEntry: { tapped: number; running: number; modes: string[] };
+  }).gameEntry);
+  expect(entry.tapped).toBeGreaterThan(0);
+  expect(entry.running - entry.tapped).toBeLessThan(2000);
+  expect(entry.modes).not.toContain("starting");
+  expect(entryAssets).toEqual([]);
+  await testInfo.attach("game-entry", { body: JSON.stringify({ milliseconds: entry.running - entry.tapped, modes: entry.modes, entryAssets }), contentType: "application/json" });
   await expect(page.getByRole("button", { name: "スタート", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "一時停止", exact: true }).click();
   expect(errors).toEqual([]);
   await context.close();
+});
+
+test("a failed background preparation retries the missing art and audio when the dinosaur is tapped", async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 550 });
+  const errors: string[] = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.route("https://fonts.googleapis.com/**", route => route.abort());
+  let artAttempts = 0, audioAttempts = 0;
+  await page.route("**/deep-time/brachiosaurus-0.svg", route => {
+    artAttempts += 1;
+    return artAttempts === 1 ? route.fulfill({ status: 503, body: "" }) : route.continue();
+  });
+  await page.route("**/deep-time/audio/mineral.ogg", route => {
+    audioAttempts += 1;
+    return audioAttempts === 1 ? route.fulfill({ status: 503, body: "" }) : route.continue();
+  });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(home)).toHaveAttribute("data-game-ready", "false", { timeout: 30000 });
+  await expect(page.locator(home)).toHaveAttribute("data-earth-ready", "true");
+  const tap = await dinosaurPoint(page);
+  await page.mouse.click(tap.x, tap.y);
+  await expect(page.locator(".deep-time-host")).toHaveAttribute("data-mode", "running", { timeout: 30000 });
+  expect(artAttempts).toBe(2);
+  expect(audioAttempts).toBe(2);
+  await page.getByRole("button", { name: "一時停止", exact: true }).click();
+  await page.getByRole("button", { name: "ホームへ戻る", exact: true }).click();
+  await expect(page.locator(home)).toHaveAttribute("data-game-ready", "true", { timeout: 30000 });
+  const second = await dinosaurPoint(page);
+  await page.mouse.click(second.x, second.y);
+  await expect(page.locator(".deep-time-host")).toHaveAttribute("data-mode", "running", { timeout: 30000 });
+  expect(errors).toEqual([]);
 });

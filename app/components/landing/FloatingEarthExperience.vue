@@ -2,6 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import type { FloatingEarthWorld } from "~/experiences/floating-earth/FloatingEarthWorld";
 import { prepareDinosaurAudio } from "~/game/dinosaur/audio-context";
+import { preloadDinosaurGame, discardDinosaurPreload } from "~/game/dinosaur/preload";
 
 const root = ref<HTMLElement>();
 const control = ref<HTMLButtonElement>();
@@ -11,9 +12,15 @@ const ready = ref(false);
 const pending = ref(true);
 let world: FloatingEarthWorld | undefined;
 let loading: AbortController | undefined;
+let entering = false;
+
+function prepareGameEntry() {
+  entering = true;
+  prepareDinosaurAudio();
+}
 
 function startDinosaur() {
-  prepareDinosaurAudio();
+  prepareGameEntry();
   void navigateTo({ path: "/dinosaur", query: { play: "1" } });
 }
 
@@ -40,10 +47,20 @@ onMounted(async () => {
     pending.value = false;
   } catch {
     if (!signal.aborted) fallback();
+  } finally {
+    if (!signal.aborted) {
+      void preloadRouteComponents("/dinosaur").catch(() => {});
+      void preloadDinosaurGame().then(prepared => {
+        if (!signal.aborted && root.value) root.value.dataset.gameReady = String(prepared);
+      });
+    }
   }
 });
 
-onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
+onBeforeUnmount(() => {
+  loading?.abort(); world?.dispose();
+  if (!entering) discardDinosaurPreload();
+});
 </script>
 
 <template>
@@ -66,7 +83,7 @@ onBeforeUnmount(() => { loading?.abort(); world?.dispose(); });
         <span aria-hidden="true">スクロールで回す <i>·</i> ブラキオサウルスをタップ</span>
         <span class="earth-home__sr">ゆっくり自転する地球。スクロール、地球のタップ、Enter、Spaceで回転。ドラッグ、矢印キーで向きを変更。Homeで元の向きに戻ります。ブラキオサウルスをタップするか、ブラキオサウルスのボタンにフォーカスしてEnterまたはSpaceで恐竜ゲームを開始します。</span>
       </p>
-      <NuxtLink v-if="!pending && !ready" to="/dinosaur?play=1" no-prefetch class="earth-home__fallback-link" @click="prepareDinosaurAudio">恐竜ゲームをはじめる</NuxtLink>
+      <NuxtLink v-if="!pending && !ready" to="/dinosaur?play=1" no-prefetch class="earth-home__fallback-link" @click="prepareGameEntry">恐竜ゲームをはじめる</NuxtLink>
       <noscript><a class="earth-home__fallback-link" href="/dinosaur">恐竜ゲームをはじめる</a></noscript>
     </footer>
   </main>

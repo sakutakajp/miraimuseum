@@ -4,7 +4,9 @@
 
 ## 起動と操作
 
-`/dinosaur` → START。ホームのブラキオサウルスからは `/dinosaur?play=1` へ遷移し、読み込みが完了すると自動で開始する。ホームのtap中にAudioContextをresumeし、ゲームのAudioDirectorへ一度だけ引き渡すことで、Safariでも音声の起動をユーザー操作に結び付ける。遷移しなかった場合は未使用のcontextを60秒後に閉じる。
+`/dinosaur` → START。ホームの地球が表示されたらroute、Phaser、scene、SVG画像、音声を先読みし、画像と音声はdecodeまで済ませる。ホームのブラキオサウルスからは `/dinosaur?play=1` へ遷移し、STARTと300msのタイトル遷移を省いて開始する。`preload.ts` がruntimeと読み込みの寿命、`plate-assets.ts` が画像の引き渡しを管理する。先読みに失敗した素材はゲーム側で通常通り読み込む。
+
+ホームのtap中にAudioContextをresumeし、decode済みAudioBufferとともにゲームのAudioDirectorへ一度だけ引き渡すことで、Safariでも音声の起動をユーザー操作に結び付ける。先読み中は音声を再生せず、別ページへの移動で未使用のcontextを閉じる。tap後に遷移しなかった場合も60秒後に閉じる。ホームでは追加のPhaser.Gameを作らない。
 
 主人公は長い首と4本脚を持つブラキオサウルス。6枚の走行poseと上昇・下降のjump poseをSVG plateで描く。タップ / クリック / Space / ↑で固定軌道のジャンプ。Escapeまたは右上のpauseで停止し、非表示になったタブも停止する。pauseのSOUNDでmuteを切り替える。直接アクセス時のSTARTはユーザー操作でAudioContextを解除し、300msのタイトル遷移後に開始する。見た目の差し替えに伴うphysics、collision、50ジャンプの時刻変更は行わない。
 
@@ -57,10 +59,10 @@ npm run test:storybook
 
 確認済み:
 
-- `npm test`: 90件pass。Stage 1の12件で、60 / 120 Hz / 不規則renderの同一world state、全50challengeの無補助clear、large delta、coyote / buffer / inset、cue / speed / collapse / SYNC / Rank / 保存を確認した。ホームの出現、光柱、球面配置、見切れ、地球による選択の遮蔽、AudioContextの引き渡しも検証する。
-- `npm run typecheck`、本番build、Storybook build: pass。
-- DEEP TIME開発Playwright: 操作 / 空中pause / visibility / 20回以上の連続retry、実physicsの100,000点clear / 展示 / 永続保存、4画面サイズ / reduced motion / low / context loss、およびFLASH時の既存Rexの静止とphysics継続を確認した。
+- `npm test`: 94件pass。Stage 1の12件で、60 / 120 Hz / 不規則renderの同一world state、全50challengeの無補助clear、large delta、coyote / buffer / inset、cue / speed / collapse / SYNC / Rank / 保存を確認した。ホームの出現、光柱、球面配置、見切れ、地球による選択の遮蔽、輪郭付近のtap、音声の先読み・引き渡し・失敗後の再読み込み・解放も検証する。
+- `npm run typecheck`、本番build: pass。本番Playwright 8件でホームの操作・先読みからのtouch起動・先読み失敗後の再起動・static fallbackを確認した。
+- DEEP TIME開発Playwright 5件: 操作 / 空中pause / visibility / 20回以上の連続retry、実physicsの100,000点clear / 展示 / 永続保存、4画面サイズ / reduced motion / low / context loss、およびFLASH時の既存Rexの静止とphysics継続を確認した。
 - 390×844 / 430×932 / 1440×900 / 1280×800の構図を画像で確認。6場面の静止画、K–Pg ending、clear展示も確認した。ブラウザのpageerrorは通常動作で発生していない。
-- Ogg / AACの両ステムは24 kHz / stereo / 76.8秒。音源・アートは起動時だけ読み込み、連続retryでCanvas / texture / input listener数が増えず、audio sourceとVFXも上限内に収まることを確認した。
+- Ogg / AACの両ステムは24 kHz / stereo / 76.8秒。ホームでの先読み完了後、実際のtouchから新たな素材ダウンロードとタイトル遷移を挟まず開始できることを検証する。連続retryでCanvas / texture / input listener数が増えず、audio sourceとVFXも上限内に収まることを確認した。
 
 Chromiumのソフトウェア描画による確認と、モバイル実機のGPU性能は分けて扱う。iPhone Safari実機の音声復帰・温度・safe areaはこの環境では未計測。

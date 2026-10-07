@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { COLORS } from "../config/visual";
+import { DINOSAUR_PLATES, takeDinosaurPlate } from "../plate-assets";
 function rng(seed: number) {
   return () => {
     seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
@@ -206,15 +207,9 @@ export function createTextures(scene: Phaser.Scene) {
   });
 }
 export function loadPlates(scene: Phaser.Scene) {
-  for (const species of ["rex", "tri"])
-    for (const depth of ["far", "mid", "near"])
-      for (let i = 0; i < 4; i++)
-        scene.load.svg(
-          `dt-${species}-${depth}-${i}`,
-          `/deep-time/${species}-${depth}-${i}.svg`,
-        );
-  for (let i = 0; i < 8; i++)
-    scene.load.svg(`dt-brachiosaurus-${i}`, `/deep-time/brachiosaurus-${i}.svg`);
-  for (const kind of ["rock", "root", "branch"])
-    scene.load.svg(`dt-${kind}`, `/deep-time/${kind}.svg`);
+  for (const { key, url } of DINOSAUR_PLATES) {
+    const image = takeDinosaurPlate(key);
+    if (image) scene.textures.addImage(key, image);
+    else scene.load.svg(key, url);
+  }
 }

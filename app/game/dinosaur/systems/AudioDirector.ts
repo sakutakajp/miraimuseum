@@ -1,11 +1,13 @@
-import { MUSIC_STEMS, SOUND_NAMES, type SoundName } from "../config/audio";
+import { MUSIC_STEMS, type SoundName } from "../config/audio";
 import { takeDinosaurAudio } from "../audio-context";
+import { loadDinosaurAudioBuffers } from "../audio-assets";
 export class AudioDirector {
   private ctx?: AudioContext;
   private master?: GainNode;
   private music?: GainNode;
   private sfx?: GainNode;
   private buffers = new Map<string, AudioBuffer>();
+  private preparedBuffers?: Promise<Map<string, AudioBuffer>>;
   private sources = new Set<AudioBufferSourceNode>();
   private connections = new Map<AudioBufferSourceNode, GainNode>();
   private musicSources: AudioBufferSourceNode[] = [];
@@ -21,7 +23,10 @@ export class AudioDirector {
   }
   private ensureContext() {
     if (!this.ctx) {
-      this.ctx = takeDinosaurAudio() ?? new AudioContext();
+      const audio = takeDinosaurAudio();
+      this.ctx = audio?.context ?? new AudioContext();
+      this.preparedBuffers = audio?.buffers;
+      if (audio) this.abort = audio.abort;
       this.master = this.ctx.createGain();
       this.music = this.ctx.createGain();
       this.sfx = this.ctx.createGain();
@@ -43,20 +48,8 @@ export class AudioDirector {
   }
   async load() {
     this.ensureContext();
-    const ext = new Audio().canPlayType('audio/ogg; codecs="vorbis"')
-      ? "ogg"
-      : "m4a";
-    await Promise.all(
-      [...MUSIC_STEMS, ...SOUND_NAMES].map(async (name) => {
-        const response = await fetch(`/deep-time/audio/${name}.${ext}`, {
-          signal: this.abort.signal,
-        });
-        if (!response.ok) throw new Error(`Audio asset: ${name}`);
-        const bytes = await response.arrayBuffer();
-        const buffer = await this.ctx!.decodeAudioData(bytes);
-        if (!this.disposed) this.buffers.set(name, buffer);
-      }),
-    );
+    const buffers = await (this.preparedBuffers ?? loadDinosaurAudioBuffers(this.ctx!, this.abort.signal));
+    if (!this.disposed) this.buffers = buffers;
   }
   private source(name: string, bus: GainNode, volume = 1) {
     if (!this.ctx || !this.buffers.has(name) || this.disposed) return;

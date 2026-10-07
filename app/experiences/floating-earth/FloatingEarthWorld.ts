@@ -23,7 +23,7 @@ import { EarthInteraction } from "./interaction";
 import { loadPhotographicEarth, disposeEarthObjects } from "./model";
 import { DinosaurReveal } from "./DinosaurReveal";
 import { EARTH_VIEW_EXTENT } from "./entities";
-import { hitsVisibleEntity, projectBounds } from "./selection";
+import { picksVisibleEntity, projectBounds } from "./selection";
 
 interface EarthActions {
   fallback(): void;
@@ -44,6 +44,7 @@ export class FloatingEarthWorld {
   private earth?: Group;
   private ray = new Raycaster();
   private pointerPosition = new Vector2();
+  private pickTolerance = new Vector2();
   private cameraForward = new Vector3();
   private entityBounds = new Box3();
   private projectedBounds = new Box2();
@@ -261,8 +262,7 @@ export class FloatingEarthWorld {
 
   private updateDinosaurControl() {
     const button = this.actions.dinosaurControl;
-    const visible = !this.entering && this.dinosaur?.state === "settled"
-      && this.dinosaur.object3D.visible;
+    const visible = !this.entering && this.dinosaur?.visible;
     button.hidden = !visible;
     button.disabled = !visible;
     if (!visible || !this.dinosaur) return;
@@ -277,15 +277,17 @@ export class FloatingEarthWorld {
   }
 
   private picksDinosaur(event: PointerEvent) {
-    if (this.entering || this.dinosaur?.state !== "settled" || !this.earth) return false;
+    if (this.entering || !this.dinosaur?.visible || !this.earth) return false;
     this.scene.updateMatrixWorld(true);
     this.camera.getWorldDirection(this.cameraForward);
     if (!this.dinosaur.isFrontFacing(this.cameraForward)) return false;
     const rect = this.canvas.getBoundingClientRect();
     this.pointerPosition.set((event.clientX - rect.left) / rect.width * 2 - 1,
       1 - (event.clientY - rect.top) / rect.height * 2);
-    this.ray.setFromCamera(this.pointerPosition, this.camera);
-    return hitsVisibleEntity(this.ray, this.dinosaur.entityRoot, this.earth);
+    const padding = event.pointerType === "touch" ? 10 : 6;
+    this.pickTolerance.set(padding * 2 / rect.width, padding * 2 / rect.height);
+    return picksVisibleEntity(this.ray, this.pointerPosition, this.pickTolerance,
+      this.camera, this.dinosaur.entityRoot, this.earth);
   }
 
   private wheel = (event: WheelEvent) => {

@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   Box2, Box3, BoxGeometry, Euler, Group, Mesh, MeshStandardMaterial,
-  OrthographicCamera, Points, Quaternion, Raycaster, SphereGeometry, Vector3,
+  OrthographicCamera, Points, Quaternion, Raycaster, SphereGeometry, Vector2, Vector3,
 } from "three";
 import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
 import { DINOSAUR, EARTH_VIEW_EXTENT, placeOnSphere } from "../app/experiences/floating-earth/entities";
 import { loadDinosaurModel } from "../app/experiences/floating-earth/DinosaurModel";
 import { DinosaurReveal, revealAt } from "../app/experiences/floating-earth/DinosaurReveal";
 import { disposeEarthObjects } from "../app/experiences/floating-earth/model";
-import { hitsVisibleEntity, projectBounds } from "../app/experiences/floating-earth/selection";
+import { hitsVisibleEntity, picksVisibleEntity, projectBounds } from "../app/experiences/floating-earth/selection";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -139,6 +139,28 @@ describe("surface entity placement", () => {
 });
 
 describe("dinosaur selection", () => {
+  it("accepts a tap near the silhouette while still rejecting distant and Earth-occluded taps", () => {
+    const camera = new OrthographicCamera(-2, 2, 2, -2, 0.1, 20);
+    camera.position.z = 5;
+    camera.updateMatrixWorld(true);
+    const earth = new Group(), entity = new Group();
+    earth.add(new Mesh(new SphereGeometry(1, 24, 16), new MeshStandardMaterial()));
+    entity.add(new Mesh(new BoxGeometry(0.12, 0.12, 0.12), new MeshStandardMaterial()));
+    entity.position.z = 1.1;
+    earth.updateMatrixWorld(true);
+    entity.updateMatrixWorld(true);
+    const ray = new Raycaster(), pointer = new Vector2(0.065, 0), tolerance = new Vector2(0.04, 0.04);
+    ray.setFromCamera(pointer, camera);
+    expect(hitsVisibleEntity(ray, entity, earth)).toBe(false);
+    expect(picksVisibleEntity(ray, pointer, tolerance, camera, entity, earth)).toBe(true);
+    expect(picksVisibleEntity(ray, new Vector2(0.4, 0), tolerance, camera, entity, earth)).toBe(false);
+    entity.position.z = -1.1;
+    entity.updateMatrixWorld(true);
+    expect(picksVisibleEntity(ray, pointer, tolerance, camera, entity, earth)).toBe(false);
+    disposeEarthObjects(earth);
+    disposeEarthObjects(entity);
+  });
+
   it("selects real geometry in front of Earth, ignores the aura, and rejects occluded or hidden geometry", () => {
     const earth = new Group();
     earth.add(new Mesh(new SphereGeometry(1, 24, 16), new MeshStandardMaterial()));

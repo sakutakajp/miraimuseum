@@ -1,4 +1,4 @@
-import { Box2, Box3, Camera, Mesh, Object3D, Raycaster, Vector3 } from "three";
+import { Box2, Box3, Camera, Mesh, Object3D, Raycaster, Vector2, Vector3 } from "three";
 
 /** Match picking to the opaque Earth's depth, excluding clouds and aura shells. */
 export function hitsVisibleEntity(ray: Raycaster, entity: Object3D, earth: Object3D) {
@@ -10,6 +10,21 @@ export function hitsVisibleEntity(ray: Raycaster, entity: Object3D, earth: Objec
       .some(material => !material.transparent),
   );
   return !surface || hit.distance < surface.distance;
+}
+
+const pickOffsets = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1],
+  [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]] as const;
+
+/** A small screen-space tolerance makes the glowing edge and finger taps usable. */
+export function picksVisibleEntity(ray: Raycaster, pointer: Vector2, tolerance: Vector2,
+  camera: Camera, entity: Object3D, earth: Object3D) {
+  const sample = new Vector2();
+  for (const [x, y] of pickOffsets) {
+    sample.set(pointer.x + x * tolerance.x, pointer.y + y * tolerance.y);
+    ray.setFromCamera(sample, camera);
+    if (hitsVisibleEntity(ray, entity, earth)) return true;
+  }
+  return false;
 }
 
 export function projectBounds(bounds: Box3, camera: Camera, target: Box2) {

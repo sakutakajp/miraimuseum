@@ -204,11 +204,12 @@ export class DinosaurRunScene extends Phaser.Scene {
   jump() {
     if (this.mode === "running") this.runtime.world.queueJump();
   }
-  async start() {
+  async start(immediate = false) {
     if (!this.ready || this.mode !== "ready" || this.startPending) return;
     this.startPending = true;
     await this.audio.unlock();
     if (!this.sys.isActive()) return;
+    if (immediate) { this.beginAttempt(); return; }
     this.setMode("starting");
     this.startingAge = 0;
     this.audio.play("ui");
