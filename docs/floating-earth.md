@@ -16,6 +16,12 @@ reduced motionでは浮遊と操作後の慣性を停止する。ゆっくりし
 
 `/museum` と博物館の一覧・詳細・ステージ選択は削除。恐竜ゲームは `/dinosaur` で動作し、終了・退出後はホームへ戻る。ゲーム内の結果、展示、端末への記録保存は維持する。
 
+## 次期実装: MIRAI CORE Game Hub
+
+Floating Earth をゲームへの3Dランチャーへ進化させる。地球表面を恐竜が歩き、その恐竜を発見・選択すると、地球から恐竜時代へ入っていく短いトランジションを経て `/dinosaur` へ遷移する。
+
+実装仕様、球面歩行、hit testing、モバイル操作、fallback、将来の複数ゲームentity設計は [mirai-core-game-hub.md](./mirai-core-game-hub.md) を正とする。
+
 ## 検証
 
 `npm run typecheck`、`npm test`、`npm run build`、`npx playwright test`。恐竜の詳細な実行時検証は `npm run test:deep-time`。
