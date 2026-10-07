@@ -23,7 +23,7 @@ import { EarthInteraction } from "./interaction";
 import { loadPhotographicEarth, disposeEarthObjects } from "./model";
 import { DinosaurReveal } from "./DinosaurReveal";
 import { DinosaurBloom } from "./DinosaurGlow";
-import { EARTH_VIEW_EXTENT } from "./entities";
+import { EARTH_DISPLAY_EXTENT, EARTH_VIEW_EXTENT } from "./entities";
 import { picksVisibleEntity, projectBounds } from "./selection";
 
 interface EarthActions {
@@ -123,6 +123,8 @@ export class FloatingEarthWorld {
     this.renderer.toneMapping = NoToneMapping;
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.debug.onShaderError = () => { this.shaderFailed = true; };
+    // Expand the canvas with the camera's framing without shrinking the globe.
+    root.style.setProperty("--earth-frame-scale", String(EARTH_VIEW_EXTENT / EARTH_DISPLAY_EXTENT));
     this.camera.position.z = 5;
     this.pose.rotation.set(12 * Math.PI / 180, 100 * Math.PI / 180, 0, "XYZ");
     this.rotation.rotation.order = "YXZ";
@@ -395,6 +397,7 @@ export class FloatingEarthWorld {
     cancelAnimationFrame(this.frame);
     this.releasePointer();
     this.observer.disconnect();
+    this.root.style.removeProperty("--earth-frame-scale");
     this.motion.removeEventListener("change", this.motionChange);
     document.removeEventListener("visibilitychange", this.visibilityChange);
     window.removeEventListener("blur", this.cancelInput);

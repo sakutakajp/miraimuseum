@@ -74,7 +74,7 @@ export class DinosaurBloom {
     depthTest: false, depthWrite: false, toneMapped: false,
     uniforms: {
       silhouette: { value: this.mask.texture }, soft: { value: this.blurred.texture },
-      appearance: { value: 0 }, strength: { value: 0.5 },
+      appearance: { value: 0 }, strength: { value: 0.25 },
     },
     vertexShader: fullscreenVertex,
     fragmentShader: `varying vec2 vUv;

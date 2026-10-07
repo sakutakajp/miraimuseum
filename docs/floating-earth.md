@@ -55,9 +55,9 @@ floating → rotation → EarthRoot (pose)
                              └─ DinosaurEffectRoot
 ```
 
-`entities.ts` にモデルURL、サイズ、球面法線、surface offset、モデル向きを集約する。球面法線をup方向にし、半径1 + offset0.008に足元を置く。恐竜の最大寸法は0.432（前回0.72の60%、地球直径の21.6%）。カメラの表示範囲には恐竜のサイズと余白を含め、回転後も頭や尾がCanvasから見切れないようにする。初期の発見点は地球の上端寄りに置き、長い首と白い光柱を黒い背景に見せる。モデルと光は地球と一緒に回り、裏半球ではanchor全体を非表示にする。前半球でもopaqueなEarthの深度で地表との遮蔽を保つ。光にもdepth testを適用し、裏側から透けるHUD表現を避ける。bloomは恐竜の輪郭の外側に限定する。
+`entities.ts` にモデルURL、サイズ、球面法線、surface offset、モデル向きを集約する。球面法線をup方向にし、半径1 + offset0.008に足元を置く。恐竜の最大寸法は0.5616（前回0.432の1.3倍、地球直径の28.08%）。カメラの表示範囲には恐竜のサイズと余白を含め、回転後も頭や尾がCanvasから見切れないようにする。表示範囲の拡大に合わせてCanvasサイズも補正し、地球の見た目の大きさを維持する。初期の発見点は地球の上端寄りに置き、長い首と白い光柱を黒い背景に見せる。モデルと光は地球と一緒に回り、裏半球ではanchor全体を非表示にする。前半球でもopaqueなEarthの深度で地表との遮蔽を保つ。光にもdepth testを適用し、裏側から透けるHUD表現を避ける。bloomは恐竜の輪郭の外側に限定する。
 
-`DinosaurGlow.ts` が実体のsilhouette maskを描き、二方向のGaussian blurから柔らかい白い光を作る。元のsilhouetteを切り抜いて輪郭の外側だけに加算し、光の強度は前回の50%（strength 0.5）にする。本体のemissiveと表面へのrim light加算は使わず、元のテクスチャと通常の照明を維持する。maskは地球の深度による遮蔽と出現のopacityに追従する。出現後も輪郭の白い発光を維持し、地球の青い大気発光は維持する。追加の発光meshは作らず、raycastは実体だけを対象にする。render targetとshaderはworldの終了時に破棄する。
+`DinosaurGlow.ts` が実体のsilhouette maskを描き、二方向のGaussian blurから柔らかい白い光を作る。元のsilhouetteを切り抜いて輪郭の外側だけに加算し、光の強度は0.5からさらに50%落としたstrength 0.25（当初の25%）にする。本体のemissiveと表面へのrim light加算は使わず、元のテクスチャと通常の照明を維持する。maskは地球の深度による遮蔽と出現のopacityに追従する。出現後も輪郭の白い発光を維持し、地球の青い大気発光は維持する。追加の発光meshは作らず、raycastは実体だけを対象にする。render targetとshaderはworldの終了時に破棄する。
 
 濃い茶色の皮膚が影で沈みすぎないよう、白いAmbientLight（intensity 2.4）を補助光として加える。既存のDirectionalLightで立体感を残し、本体のemissiveは0を維持する。地球の独自shaderと輪郭のbloomはscene lightingを参照しないため、補助光はそれらの発光色や明るさを変えない。
 

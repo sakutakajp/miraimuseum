@@ -18,14 +18,15 @@ export const DINOSAUR: FloatingEarthEntityDefinition = {
   id: "dinosaur",
   modelUrl: "/floating-earth/dinosaur.glb",
   targetRoute: "/dinosaur",
-  size: 0.432,
+  size: 0.5616,
   surfaceOffset: 0.008,
   // Let the upright silhouette and rising light read against the black sky.
   normal: new Vector3(0.32, 0.82, 0.48).normalize().applyQuaternion(initialEarthPose.invert()),
   modelRotation: new Euler(0, -Math.PI / 3, 0),
 };
 
-export const EARTH_VIEW_EXTENT = 1 + DINOSAUR.size + DINOSAUR.surfaceOffset + 0.08;
+export const EARTH_DISPLAY_EXTENT = 1.52;
+export const EARTH_VIEW_EXTENT = Math.max(EARTH_DISPLAY_EXTENT, 1 + DINOSAUR.size + DINOSAUR.surfaceOffset + 0.08);
 
 /** Position an entity's feet on the logical sphere without modifying its visual. */
 export function placeOnSphere(root: Object3D, normal: Vector3, radius: number, offset: number) {

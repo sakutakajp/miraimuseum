@@ -149,9 +149,9 @@ onBeforeUnmount(() => {
   position: relative;
   display: block;
   flex-shrink: 0;
-  width: min(115.2vw, calc((100dvh - 150px) * 1.2), 1248px);
+  width: min(calc(115.2vw * var(--earth-frame-scale, 1)), calc((100dvh - 150px) * 1.2 * var(--earth-frame-scale, 1)), calc(1248px * var(--earth-frame-scale, 1)));
   /* The camera's framing margin keeps the enlarged objects inside the viewport. */
-  max-width: calc((100dvh - 32px) * 1.04);
+  max-width: calc((100dvh - 32px) * 1.04 * var(--earth-frame-scale, 1));
   height: auto;
   aspect-ratio: 1;
   padding: 0;
@@ -186,7 +186,7 @@ onBeforeUnmount(() => {
 }
 @media (max-height: 500px) and (orientation: landscape) {
   .earth-home__header { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: 0; }
-  .earth-home__globe { width: min(72vw, calc((100dvh - 112px) * 1.2)); max-width: calc(100dvh - 16px); }
+  .earth-home__globe { width: min(calc(72vw * var(--earth-frame-scale, 1)), calc((100dvh - 112px) * 1.2 * var(--earth-frame-scale, 1))); max-width: calc((100dvh - 16px) * var(--earth-frame-scale, 1)); }
   .earth-home__footer { padding: 2px 20px max(8px, env(safe-area-inset-bottom)); }
   .earth-home__instructions { margin-top: 2px; font-size: 12px; }
 }
