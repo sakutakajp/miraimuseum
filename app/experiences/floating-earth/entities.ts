@@ -21,8 +21,23 @@ export const DINOSAUR: FloatingEarthEntityDefinition = {
   size: 0.5616,
   surfaceOffset: 0.008,
   // Let the upright silhouette and rising light read against the black sky.
-  normal: new Vector3(0.32, 0.82, 0.48).normalize().applyQuaternion(initialEarthPose.invert()),
+  normal: new Vector3(0.32, 0.82, 0.48).normalize().applyQuaternion(initialEarthPose.clone().invert()),
   modelRotation: new Euler(0, -Math.PI / 3, 0),
+};
+
+export const CYBERTRUCK = {
+  modelUrl: "/floating-earth/cybertruck.glb",
+  size: DINOSAUR.size,
+  surfaceOffset: DINOSAUR.surfaceOffset,
+  orbitSpeed: 0.25,
+  // A great circle perpendicular to the dinosaur's normal stays 90° away
+  // from it throughout the entire drive, including while Earth is rotated.
+  orbitAxis: DINOSAUR.normal.clone(),
+  initialNormal: new Vector3(-0.85, 0.3, 0.65)
+    .applyQuaternion(initialEarthPose.clone().invert())
+    .projectOnPlane(DINOSAUR.normal).normalize(),
+  // This GLB faces -X; the surface anchor drives toward its local +Z.
+  modelRotation: new Euler(0, Math.PI / 2, 0),
 };
 
 export const EARTH_DISPLAY_EXTENT = 1.52;

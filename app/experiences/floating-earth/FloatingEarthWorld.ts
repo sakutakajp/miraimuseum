@@ -23,6 +23,7 @@ import { EarthInteraction } from "./interaction";
 import { loadPhotographicEarth, disposeEarthObjects } from "./model";
 import { DinosaurReveal } from "./DinosaurReveal";
 import { DinosaurBloom } from "./DinosaurGlow";
+import { CybertruckVehicle } from "./CybertruckVehicle";
 import { EARTH_DISPLAY_EXTENT, EARTH_VIEW_EXTENT } from "./entities";
 import { picksVisibleEntity, projectBounds } from "./selection";
 
@@ -42,6 +43,7 @@ export class FloatingEarthWorld {
   private pose = new Group();
   private entityLayer = new Group();
   private dinosaur?: DinosaurReveal;
+  private cybertruck?: CybertruckVehicle;
   private dinosaurBloom = new DinosaurBloom();
   private earth?: Group;
   private ray = new Raycaster();
@@ -98,6 +100,7 @@ export class FloatingEarthWorld {
       world.root.dataset.earthReady = "true";
       world.root.dataset.earthObject = earth.uuid;
       world.beginDinosaurReveal();
+      world.beginCybertruckDrive();
       world.requestFrame();
       return world;
     } catch (error) {
@@ -162,6 +165,14 @@ export class FloatingEarthWorld {
     this.entityLayer.add(this.dinosaur.object3D);
     void this.dinosaur.load().catch(() => {
       // Optional asset loading cannot turn the Earth into a static fallback.
+    });
+  }
+
+  private beginCybertruckDrive() {
+    this.cybertruck = new CybertruckVehicle();
+    this.entityLayer.add(this.cybertruck.object3D);
+    void this.cybertruck.load().catch(() => {
+      // Loading or cancelling the vehicle never interrupts the globe.
     });
   }
 
@@ -240,6 +251,7 @@ export class FloatingEarthWorld {
     this.autoYaw = (this.autoYaw + delta * 0.035) % (Math.PI * 2);
     this.interaction.update(delta);
     this.dinosaur?.update(Math.min(rawDelta, 0.25), this.motion.matches, this.renderer.getPixelRatio());
+    this.cybertruck?.update(delta, this.motion.matches);
     if (!this.motion.matches) this.floating.position.y = Math.sin(this.elapsed * 0.85) * 0.022;
     if (this.quality.sample(rawDelta)) {
       if (this.quality.tier === "static") { this.fail(); return; }
@@ -254,11 +266,17 @@ export class FloatingEarthWorld {
     this.rotation.rotation.set(this.interaction.pitch, yaw, 0, "YXZ");
     this.root.dataset.earthYaw = yaw.toFixed(5);
     this.root.dataset.earthPitch = this.interaction.pitch.toFixed(5);
+    this.camera.getWorldDirection(this.cameraForward);
     if (this.dinosaur) {
       this.root.dataset.dinosaurState = this.dinosaur.state;
       this.root.dataset.dinosaurSource = this.dinosaur.source;
-      this.camera.getWorldDirection(this.cameraForward);
       this.dinosaur.updateVisibility(this.cameraForward);
+    }
+    if (this.cybertruck) {
+      this.cybertruck.updateVisibility(this.cameraForward);
+      this.root.dataset.cybertruckSource = this.cybertruck.source;
+      this.root.dataset.cybertruckAngle = this.cybertruck.angle.toFixed(5);
+      this.root.dataset.cybertruckVisible = String(this.cybertruck.visible);
     }
     this.renderer.render(this.scene, this.camera);
     this.dinosaurBloom.render(this.renderer, this.scene, this.camera);
@@ -415,6 +433,7 @@ export class FloatingEarthWorld {
     this.actions.dinosaurControl.hidden = true;
     this.actions.dinosaurControl.disabled = true;
     this.dinosaur?.dispose();
+    this.cybertruck?.dispose();
     FloatingEarthWorld.disposeObjects(this.scene);
     this.dinosaurBloom.dispose();
     this.renderer.dispose();

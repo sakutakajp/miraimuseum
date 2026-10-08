@@ -36,6 +36,14 @@ Floating Earth をゲームへの3Dランチャーへ進化させる。地球表
 
 `npm run typecheck`、`npm test`、`npm run build`、`npx playwright test`。恐竜の詳細な実行時検証は `npm run test:deep-time`。
 
+## 地表を走るCybertruck
+
+添付されたテクスチャ付きGLBを `public/floating-earth/cybertruck.glb` に保持する。`CybertruckVehicle.ts` で読み込み、最大寸法をブラキオサウルスと同じ0.5616に正規化する。元のテクスチャを維持し、ブラキオサウルスと共通のsilhouette bloom（strength 0.25）で輪郭の外側を白く発光させる。複数entityの出現opacityをmask内で別々に保持し、車の発光が恐竜のフェードを早めないようにする。
+
+車は恐竜の球面法線に垂直な大円を0.25 rad/s（約25秒で一周）で走る。走行中の車のanchorと恐竜のanchorは常に90°離れ、両モデルのboundsを含めても接触しない。車のupを地表の法線、前方を走行軌道の接線に合わせる。タイヤ底部の平均footprintから球面の高さを求めて接地する。地球の回転・ドラッグと同じ親transformを使い、裏半球では車と発光を隠す。
+
+車の読み込みはEarth readinessを待たせず、404や破損時も地球と恐竜は維持する。タブ非表示時は地球と一緒に停止し、reduced motionでは周回を止める。ページ離脱時は読み込みを中止し、geometry・material・textureを解放する。
+
 ## 恐竜の発見演出
 
 出現演出とtapによる起動を実装する。歩行やゲームへ入る専用トランジションは後続のスコープ。

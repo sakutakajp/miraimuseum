@@ -20,6 +20,7 @@ void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
 /** Selective screen-space bloom. The globe writes depth but never emits bloom. */
 export class DinosaurBloom {
+  private silhouettes = new Map<{ value: number }, ShaderMaterial>();
   private mask = new WebGLRenderTarget(1, 1, { samples: 4 });
   private horizontal = new WebGLRenderTarget(1, 1, { depthBuffer: false });
   private blurred = new WebGLRenderTarget(1, 1, { depthBuffer: false });
@@ -28,6 +29,7 @@ export class DinosaurBloom {
   private rim = new ShaderMaterial({
     name: "Dinosaur silhouette mask",
     blending: NoBlending, depthTest: true, depthWrite: true, toneMapped: false,
+    uniforms: { appearance: { value: 0 } },
     vertexShader: `
       #include <common>
       #include <morphtarget_pars_vertex>
@@ -45,9 +47,11 @@ export class DinosaurBloom {
         gl_Position = projectionMatrix * viewPosition;
       }`,
     fragmentShader: `
+      uniform float appearance;
       void main() {
         // Solid coverage, independent of reveal opacity, protects all skin pixels.
-        gl_FragColor = vec4(1.0);
+        // Green carries each entity's own reveal intensity through the blur.
+        gl_FragColor = vec4(1.0, appearance, 0.0, 1.0);
       }`,
   });
   private blur = new ShaderMaterial({
@@ -74,20 +78,20 @@ export class DinosaurBloom {
     depthTest: false, depthWrite: false, toneMapped: false,
     uniforms: {
       silhouette: { value: this.mask.texture }, soft: { value: this.blurred.texture },
-      appearance: { value: 0 }, strength: { value: 0.25 },
+      strength: { value: 0.25 },
     },
     vertexShader: fullscreenVertex,
     fragmentShader: `varying vec2 vUv;
       uniform sampler2D silhouette;
       uniform sampler2D soft;
-      uniform float appearance;
       uniform float strength;
       void main() {
         float outside = 1.0 - clamp(texture2D(silhouette, vUv).r, 0.0, 1.0);
         vec3 light = texture2D(soft, vUv).rgb;
+        float appearance = light.g / max(light.r, 0.00001);
         // Add light only outside the actual silhouette. Apply coverage in alpha
         // so color-space conversion cannot brighten partially covered skin edges.
-        gl_FragColor = vec4(light, outside * appearance * strength);
+        gl_FragColor = vec4(light.rrr, outside * appearance * strength);
         #include <colorspace_fragment>
       }`,
   });
@@ -115,7 +119,6 @@ export class DinosaurBloom {
       this.horizontal.setSize(this.size.x, height);
       this.blurred.setSize(width, height);
     }
-    this.composite.uniforms.appearance!.value = appearance;
     const target = renderer.getRenderTarget();
     const autoClear = renderer.autoClear;
     const clearColor = renderer.getClearColor(new Color());
@@ -130,7 +133,14 @@ export class DinosaurBloom {
           const original = object.material;
           if (object.userData.dinosaurRim) {
             materials.push([object, original]);
-            object.material = this.rim;
+            const intensity = object.userData.dinosaurRim as { value: number };
+            let silhouette = this.silhouettes.get(intensity);
+            if (!silhouette) {
+              silhouette = this.rim.clone();
+              silhouette.uniforms.appearance = intensity;
+              this.silhouettes.set(intensity, silhouette);
+            }
+            object.material = silhouette;
           } else if ((Array.isArray(original) ? original : [original]).some(m => m.transparent)) {
             hidden.push(object);
           } else {
@@ -173,6 +183,7 @@ export class DinosaurBloom {
   dispose() {
     for (const target of [this.mask, this.horizontal, this.blurred]) target.dispose();
     for (const material of [this.black, this.rim, this.blur, this.composite]) material.dispose();
+    for (const material of this.silhouettes.values()) material.dispose();
     this.quad.geometry.dispose();
   }
 }
