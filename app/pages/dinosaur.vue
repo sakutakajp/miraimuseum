@@ -2,6 +2,7 @@
 import DeepTimeGame from "~/components/games/deep-time/DeepTimeGame.client.vue";
 import { GAME_SAVE_KEY, parseGameProgress, recordGameResult } from "~/games/progress";
 import type { ClearResult } from "~/game/dinosaur/types";
+import { cybertruckUnlock } from "~/experiences/floating-earth/cybertruck-unlock";
 const { locale, initializeLanguage } = useLanguage();
 const route = useRoute();
 onMounted(initializeLanguage);
@@ -12,6 +13,7 @@ useHead(() => ({ title: "MIRAI MUSEUM", meta: [
   { name: "theme-color", content: "#10110f" },
 ] }));
 function saveClear(value: ClearResult) {
+  cybertruckUnlock.cleared();
   try {
     const progress = parseGameProgress(localStorage.getItem(GAME_SAVE_KEY));
     localStorage.setItem(GAME_SAVE_KEY, JSON.stringify(recordGameResult(progress, {

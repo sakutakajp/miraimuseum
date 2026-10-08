@@ -14,8 +14,8 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
-const createVehicle = () => {
-  const vehicle = new CybertruckVehicle();
+const createVehicle = (reveal = false) => {
+  const vehicle = new CybertruckVehicle(reveal);
   vehicles.push(vehicle);
   return vehicle;
 };
@@ -44,6 +44,92 @@ function uploadedModel() {
 }
 
 describe("the uploaded Cybertruck on Earth", () => {
+  it("lights the original metallic surface with reflections and leaves their ownership to the world", async () => {
+    const { material } = uploadedModel();
+    const map = material.map;
+    const normal = material.normalMap = new Texture();
+    const metallic = material.metalnessMap = material.roughnessMap = new Texture();
+    material.metalness = 1;
+    material.roughness = 0.4;
+    const environment = new Texture();
+    const releaseEnvironment = vi.spyOn(environment, "dispose");
+    const releaseMap = vi.spyOn(map!, "dispose");
+    const releaseMetallic = vi.spyOn(metallic, "dispose");
+    const vehicle = createVehicle();
+    await vehicle.load();
+    vehicle.setEnvironment(environment);
+    expect(material.envMap).toBe(environment);
+    expect(material.envMapIntensity).toBeGreaterThan(1);
+    expect(material.map).toBe(map);
+    expect(material.normalMap).toBe(normal);
+    expect(material.metalnessMap).toBe(metallic);
+    expect(material.metalness).toBe(1);
+    expect(material.roughness).toBe(0.4);
+    expect(material.emissive.getHex()).toBe(0);
+    vehicle.dispose();
+    expect(releaseEnvironment).not.toHaveBeenCalled();
+    expect(releaseMap).toHaveBeenCalledOnce();
+    expect(releaseMetallic).toHaveBeenCalledOnce();
+  });
+
+  it("raises the light column before revealing a stationary car, then starts driving", async () => {
+    const { material, mesh } = uploadedModel();
+    const vehicle = createVehicle(true);
+    await vehicle.load();
+    expect(vehicle.visible).toBe(false);
+    expect(vehicle.columnVisible).toBe(false);
+    vehicle.update(1.6, false);
+    expect(vehicle.state).toBe("light");
+    expect(vehicle.columnVisible).toBe(true);
+    expect(vehicle.visible).toBe(false);
+    expect(vehicle.angle).toBe(0);
+    vehicle.update(0.8, false);
+    expect(vehicle.state).toBe("revealing");
+    expect(vehicle.visible).toBe(true);
+    expect(material.opacity).toBeGreaterThan(0);
+    expect(material.opacity).toBeLessThan(1);
+    expect(mesh.userData.dinosaurRim.value).toBe(material.opacity);
+    expect(vehicle.angle).toBe(0);
+    vehicle.update(1.2, false);
+    expect(vehicle.state).toBe("settled");
+    expect(material.opacity).toBe(1);
+    expect(material.depthWrite).toBe(true);
+    expect(vehicle.columnVisible).toBe(false);
+    expect(vehicle.angle).toBe(0);
+    vehicle.update(0.1, false);
+    expect(vehicle.angle).toBeGreaterThan(0);
+  });
+
+  it("uses the same short reduced-motion introduction without a light column or movement", async () => {
+    uploadedModel();
+    const vehicle = createVehicle(true);
+    await vehicle.load();
+    const bounds = vehicle.getWorldBounds(new Box3()).clone();
+    vehicle.update(0.75, true, 2);
+    expect(vehicle.state).toBe("revealing");
+    expect(vehicle.visible).toBe(true);
+    expect(vehicle.columnVisible).toBe(false);
+    expect(vehicle.getWorldBounds(new Box3()).equals(bounds)).toBe(true);
+    vehicle.update(0.5, true, 2);
+    expect(vehicle.state).toBe("settled");
+    expect(vehicle.angle).toBe(0);
+  });
+
+  it("keeps an already appeared car fully visible without replaying the column", async () => {
+    const { material } = uploadedModel();
+    const vehicle = createVehicle(false);
+    await vehicle.load();
+    expect(vehicle.state).toBe("settled");
+    expect(vehicle.visible).toBe(true);
+    for (let frame = 0; frame < 40; frame++) {
+      vehicle.update(0.1, false);
+      expect(vehicle.state).toBe("settled");
+      expect(material.opacity).toBe(1);
+      expect(vehicle.columnVisible).toBe(false);
+    }
+    expect(vehicle.angle).toBeGreaterThan(0);
+  });
+
   it("matches the dinosaur's maximum dimension and preserves the original textured material", async () => {
     const { mesh, material } = uploadedModel();
     const originalTexture = material.map;

@@ -85,5 +85,10 @@ export const uiEnglish: Record<string, string> = {
   '大きな旅人に、\nまた会いに行こう。': 'Come meet this great\ntraveler again.',
   '海の記録を、\n博物館へ。': 'Bring the ocean\nto the museum.',
   '言語': 'Language',
+  '車をタップ': 'Tap the car',
+  '車で次のゲームの案内を見る': 'See the next game notice with the car',
+  '車をタップするか、車のボタンにフォーカスしてEnterまたはSpaceで次のゲームの案内を表示します。': 'Tap the car, or focus its button and press Enter or Space to see the next game notice.',
+  '次のゲームは開発中です。': 'The next game is in development.',
+  '閉じる': 'Close',
   '恐竜とシダが暮らす、ピクセルアートの小さな世界': 'A small pixel-art world with dinosaurs and ferns',
 };

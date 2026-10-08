@@ -59,8 +59,9 @@ export class RevealEffects {
   private column = lightColumn();
   private sparkles: Points<BufferGeometry, ShaderMaterial>;
 
-  constructor() {
-    this.object3D.name = "DinosaurEffectRoot";
+  constructor(name = "Dinosaur") {
+    this.object3D.name = `${name}EffectRoot`;
+    this.column.name = `${name}LightColumn`;
     this.glow.rotation.x = this.flare.rotation.x = -Math.PI / 2;
     this.glow.position.y = 0.002;
     this.flare.position.y = 0.003;
@@ -116,4 +117,6 @@ export class RevealEffects {
     this.sparkles.geometry.dispose();
     this.sparkles.material.dispose();
   }
+
+  get columnVisible() { return this.object3D.visible && this.column.visible; }
 }

@@ -3,17 +3,23 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { FloatingEarthWorld } from "~/experiences/floating-earth/FloatingEarthWorld";
 import { prepareDinosaurAudio } from "~/game/dinosaur/audio-context";
 import { preloadDinosaurGame, discardDinosaurPreload } from "~/game/dinosaur/preload";
+import { cybertruckUnlock } from "~/experiences/floating-earth/cybertruck-unlock";
 
 const root = ref<HTMLElement>();
 const control = ref<HTMLButtonElement>();
 const canvas = ref<HTMLCanvasElement>();
 const dinosaurControl = ref<HTMLButtonElement>();
+const cybertruckControl = ref<HTMLButtonElement>();
+const gameNotice = ref<HTMLDialogElement>();
+const carUnlocked = ref(false);
 const ready = ref(false);
 const pending = ref(true);
 const { locale, t, setLocale } = useLanguage();
 const tipIndex = ref(0);
-const tips = ["スクロールで回す", "ブラキオサウルスをタップ"];
-const tip = computed(() => t(tips[tipIndex.value]));
+const tips = computed(() => carUnlocked.value
+  ? ["スクロールで回す", "ブラキオサウルスをタップ", "車をタップ"]
+  : ["スクロールで回す", "ブラキオサウルスをタップ"]);
+const tip = computed(() => t(tips.value[tipIndex.value]));
 let tipsTimer: ReturnType<typeof setInterval> | undefined;
 let world: FloatingEarthWorld | undefined;
 let loading: AbortController | undefined;
@@ -22,7 +28,7 @@ let entering = false;
 watch(ready, visible => {
   clearInterval(tipsTimer);
   if (visible) tipsTimer = setInterval(() => {
-    if (!document.hidden) tipIndex.value = (tipIndex.value + 1) % tips.length;
+    if (!document.hidden) tipIndex.value = (tipIndex.value + 1) % tips.value.length;
   }, 5500);
 });
 
@@ -34,6 +40,10 @@ function prepareGameEntry() {
 function startDinosaur() {
   prepareGameEntry();
   void navigateTo({ path: "/dinosaur", query: { play: "1" } });
+}
+
+function showNextGame() {
+  if (gameNotice.value && !gameNotice.value.open) gameNotice.value.showModal();
 }
 
 function fallback() {
@@ -50,9 +60,15 @@ onMounted(async () => {
   const signal = loading.signal;
   try {
     const { FloatingEarthWorld } = await import("~/experiences/floating-earth/FloatingEarthWorld");
-    if (signal.aborted || !canvas.value || !control.value || !root.value || !dinosaurControl.value) return;
+    if (signal.aborted || !canvas.value || !control.value || !root.value || !dinosaurControl.value || !cybertruckControl.value) return;
+    const cybertruckEntry = cybertruckUnlock.entry(key => localStorage.getItem(key));
+    carUnlocked.value = cybertruckEntry !== "locked";
     world = await FloatingEarthWorld.create(canvas.value, control.value, root.value, signal,
-      { fallback, activateDinosaur: startDinosaur, dinosaurControl: dinosaurControl.value });
+      {
+        fallback, activateDinosaur: startDinosaur, dinosaurControl: dinosaurControl.value,
+        cybertruckEntry, cybertruckControl: cybertruckControl.value, activateCybertruck: showNextGame,
+        cybertruckAppeared: () => cybertruckUnlock.appeared(),
+      });
     if (signal.aborted) { world.dispose(); return; }
     root.value.dataset.renderer = "webgl";
     ready.value = true;
@@ -93,6 +109,7 @@ onBeforeUnmount(() => {
         <canvas ref="canvas" class="earth-home__canvas" aria-hidden="true" />
       </button>
       <button ref="dinosaurControl" class="earth-home__dinosaur" data-testid="dinosaur-control" type="button" hidden disabled :aria-label="t('ブラキオサウルスで恐竜ゲームをはじめる')" @click="startDinosaur" />
+      <button ref="cybertruckControl" class="earth-home__cybertruck" data-testid="cybertruck-control" type="button" hidden disabled :aria-label="t('車で次のゲームの案内を見る')" @click="showNextGame" />
     </div>
 
     <footer class="earth-home__footer">
@@ -101,10 +118,15 @@ onBeforeUnmount(() => {
           <span :key="`${locale}-${tipIndex}`" class="earth-home__tip" data-testid="earth-tip" aria-hidden="true">{{ tip }}</span>
         </Transition>
         <span class="earth-home__sr">{{ t('ゆっくり自転する地球。スクロール、地球のタップ、Enter、Spaceで回転。ドラッグ、矢印キーで向きを変更。Homeで元の向きに戻ります。ブラキオサウルスをタップするか、ブラキオサウルスのボタンにフォーカスしてEnterまたはSpaceで恐竜ゲームを開始します。') }}</span>
+        <span v-if="carUnlocked" class="earth-home__sr">{{ t('車をタップするか、車のボタンにフォーカスしてEnterまたはSpaceで次のゲームの案内を表示します。') }}</span>
       </p>
       <NuxtLink v-if="!pending && !ready" to="/dinosaur?play=1" no-prefetch class="earth-home__fallback-link" @click="prepareGameEntry">{{ t('恐竜ゲームをはじめる') }}</NuxtLink>
       <noscript><a class="earth-home__fallback-link" href="/dinosaur">{{ t('恐竜ゲームをはじめる') }}</a></noscript>
     </footer>
+    <dialog ref="gameNotice" class="earth-home__game-notice" aria-labelledby="cybertruck-notice-title" @click.self="gameNotice?.close()">
+      <h2 id="cybertruck-notice-title">{{ t('次のゲームは開発中です。') }}</h2>
+      <button type="button" @click="gameNotice?.close()">{{ t('閉じる') }}</button>
+    </dialog>
   </main>
 </template>
 
@@ -137,8 +159,13 @@ onBeforeUnmount(() => {
 .earth-home__language { display: grid; place-items: center; flex-shrink: 0; min-width: 60px; min-height: 40px; padding: 8px 12px; border: 1px solid #ffffff24; border-radius: 24px; background: transparent; color: #dce0e8; font-family: inherit; font-size: 12px; line-height: 1.2; cursor: pointer; touch-action: manipulation; }
 .earth-home__language:hover { border-color: #ffffff60; color: #fff; }
 .earth-home__language:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
-.earth-home__dinosaur { position: absolute; z-index: 1; padding: 0; border: 0; border-radius: 5px; background: transparent; pointer-events: none; }
-.earth-home__dinosaur:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.earth-home__dinosaur, .earth-home__cybertruck { position: absolute; z-index: 1; padding: 0; border: 0; border-radius: 5px; background: transparent; pointer-events: none; }
+.earth-home__dinosaur:focus-visible, .earth-home__cybertruck:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.earth-home__game-notice { width: min(340px, calc(100vw - 40px)); box-sizing: border-box; padding: 28px 24px 24px; border: 1px solid #ffffff40; border-radius: 16px; background: #10131a; color: #f4f7ff; text-align: center; font-family: inherit; }
+.earth-home__game-notice::backdrop { background: #0009; }
+.earth-home__game-notice h2 { margin: 0 0 24px; font-size: 18px; font-weight: 500; line-height: 1.7; }
+.earth-home__game-notice button { min-width: 104px; min-height: 44px; padding: 10px 24px; border: 1px solid #ffffff40; border-radius: 24px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.earth-home__game-notice button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 .earth-home__fallback-link { color: #bbc4d0; font-size: 13px; text-underline-offset: 5px; }
 .earth-home__loading { position: absolute; z-index: 2; bottom: 12px; display: flex; gap: 10px; align-items: center; color: #d9e7ff; font-size: 13px; letter-spacing: .08em; }
 .earth-home__loading span { width: 14px; height: 14px; border: 1px solid #ffffff30; border-top-color: #a5deff; border-radius: 50%; animation: earth-loading 1s linear infinite; }

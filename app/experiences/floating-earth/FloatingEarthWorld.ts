@@ -10,6 +10,7 @@ import {
   NoToneMapping,
   OrthographicCamera,
   PlaneGeometry,
+  PMREMGenerator,
   Raycaster,
   Scene,
   ShaderMaterial,
@@ -17,7 +18,9 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
+  type WebGLRenderTarget,
 } from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { QualityManager } from "../landing/QualityManager";
 import { EarthInteraction } from "./interaction";
 import { loadPhotographicEarth, disposeEarthObjects } from "./model";
@@ -26,11 +29,16 @@ import { DinosaurBloom } from "./DinosaurGlow";
 import { CybertruckVehicle } from "./CybertruckVehicle";
 import { EARTH_DISPLAY_EXTENT, EARTH_VIEW_EXTENT } from "./entities";
 import { picksVisibleEntity, projectBounds } from "./selection";
+import type { CybertruckEntry } from "./cybertruck-unlock";
 
 interface EarthActions {
   fallback(): void;
   activateDinosaur(): void;
   dinosaurControl: HTMLButtonElement;
+  cybertruckControl: HTMLButtonElement;
+  activateCybertruck(): void;
+  cybertruckEntry: CybertruckEntry;
+  cybertruckAppeared(): void;
 }
 
 /** One scene, one canvas and one clock; the museum's game runtimes are independent. */
@@ -44,6 +52,9 @@ export class FloatingEarthWorld {
   private entityLayer = new Group();
   private dinosaur?: DinosaurReveal;
   private cybertruck?: CybertruckVehicle;
+  private vehicleEnvironment?: WebGLRenderTarget;
+  private introductionsReady = false;
+  private cybertruckAppearanceReported = false;
   private dinosaurBloom = new DinosaurBloom();
   private earth?: Group;
   private ray = new Raycaster();
@@ -52,7 +63,7 @@ export class FloatingEarthWorld {
   private cameraForward = new Vector3();
   private entityBounds = new Box3();
   private projectedBounds = new Box2();
-  private dinosaurPressed = false;
+  private pressedEntity: "dinosaur" | "cybertruck" | null = null;
   private entering = false;
   private hoverTime = 0;
   private interaction = new EarthInteraction();
@@ -99,8 +110,13 @@ export class FloatingEarthWorld {
       if (world.disposed) throw new Error("Earth rendering unavailable");
       world.root.dataset.earthReady = "true";
       world.root.dataset.earthObject = earth.uuid;
-      world.beginDinosaurReveal();
-      world.beginCybertruckDrive();
+      // Both introductions share a clock after their optional models are ready.
+      // The globe is already interactive while these assets load independently.
+      void Promise.allSettled([world.beginDinosaurReveal(), world.beginCybertruckDrive()]).then(() => {
+        if (world.disposed) return;
+        world.introductionsReady = true;
+        world.requestFrame();
+      });
       world.requestFrame();
       return world;
     } catch (error) {
@@ -126,6 +142,7 @@ export class FloatingEarthWorld {
     this.renderer.toneMapping = NoToneMapping;
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.debug.onShaderError = () => { this.shaderFailed = true; };
+    root.dataset.cybertruckEntry = actions.cybertruckEntry;
     // Expand the canvas with the camera's framing without shrinking the globe.
     root.style.setProperty("--earth-frame-scale", String(EARTH_VIEW_EXTENT / EARTH_DISPLAY_EXTENT));
     this.camera.position.z = 5;
@@ -163,17 +180,35 @@ export class FloatingEarthWorld {
   private beginDinosaurReveal() {
     this.dinosaur = new DinosaurReveal();
     this.entityLayer.add(this.dinosaur.object3D);
-    void this.dinosaur.load().catch(() => {
+    return this.dinosaur.load().catch(() => {
       // Optional asset loading cannot turn the Earth into a static fallback.
     });
   }
 
-  private beginCybertruckDrive() {
-    this.cybertruck = new CybertruckVehicle();
+  private async beginCybertruckDrive() {
+    if (this.actions.cybertruckEntry === "locked") {
+      this.root.dataset.cybertruckSource = "locked";
+      this.root.dataset.cybertruckState = "locked";
+      this.root.dataset.cybertruckVisible = "false";
+      this.root.dataset.cybertruckColumn = "false";
+      return;
+    }
+    this.cybertruck = new CybertruckVehicle(this.actions.cybertruckEntry === "reveal");
     this.entityLayer.add(this.cybertruck.object3D);
-    void this.cybertruck.load().catch(() => {
+    await this.cybertruck.load().catch(() => {
       // Loading or cancelling the vehicle never interrupts the globe.
     });
+    if (this.disposed || this.cybertruck.source !== "glb") return;
+    // Prepare the optional reflections after loading, keeping Earth readiness fast.
+    const studio = new RoomEnvironment();
+    const reflections = new PMREMGenerator(this.renderer);
+    try {
+      this.vehicleEnvironment = reflections.fromScene(studio, 0.04);
+    } finally {
+      studio.dispose();
+      reflections.dispose();
+    }
+    this.cybertruck.setEnvironment(this.vehicleEnvironment.texture);
   }
 
   private createHalo() {
@@ -250,8 +285,11 @@ export class FloatingEarthWorld {
     this.elapsed += delta;
     this.autoYaw = (this.autoYaw + delta * 0.035) % (Math.PI * 2);
     this.interaction.update(delta);
-    this.dinosaur?.update(Math.min(rawDelta, 0.25), this.motion.matches, this.renderer.getPixelRatio());
-    this.cybertruck?.update(delta, this.motion.matches);
+    if (this.introductionsReady) {
+      const revealDelta = Math.min(rawDelta, 0.25);
+      this.dinosaur?.update(revealDelta, this.motion.matches, this.renderer.getPixelRatio());
+      this.cybertruck?.update(delta, this.motion.matches, this.renderer.getPixelRatio(), revealDelta);
+    }
     if (!this.motion.matches) this.floating.position.y = Math.sin(this.elapsed * 0.85) * 0.022;
     if (this.quality.sample(rawDelta)) {
       if (this.quality.tier === "static") { this.fail(); return; }
@@ -275,22 +313,28 @@ export class FloatingEarthWorld {
     if (this.cybertruck) {
       this.cybertruck.updateVisibility(this.cameraForward);
       this.root.dataset.cybertruckSource = this.cybertruck.source;
+      this.root.dataset.cybertruckState = this.cybertruck.source === "unavailable" ? "unavailable" : this.cybertruck.state;
       this.root.dataset.cybertruckAngle = this.cybertruck.angle.toFixed(5);
       this.root.dataset.cybertruckVisible = String(this.cybertruck.visible);
+      this.root.dataset.cybertruckColumn = String(this.cybertruck.columnVisible);
+      if (!this.cybertruckAppearanceReported && this.cybertruck.state === "settled" && this.cybertruck.visible) {
+        this.cybertruckAppearanceReported = true;
+        this.actions.cybertruckAppeared();
+      }
     }
     this.renderer.render(this.scene, this.camera);
     this.dinosaurBloom.render(this.renderer, this.scene, this.camera);
-    this.updateDinosaurControl();
+    this.updateEntityControl(this.actions.dinosaurControl, this.dinosaur);
+    this.updateEntityControl(this.actions.cybertruckControl, this.cybertruck);
     if (this.shaderFailed) this.fail();
   }
 
-  private updateDinosaurControl() {
-    const button = this.actions.dinosaurControl;
-    const visible = !this.entering && this.dinosaur?.visible;
+  private updateEntityControl(button: HTMLButtonElement, entity?: DinosaurReveal | CybertruckVehicle) {
+    const visible = !this.entering && entity?.visible;
     button.hidden = !visible;
     button.disabled = !visible;
-    if (!visible || !this.dinosaur) return;
-    projectBounds(this.dinosaur.getWorldBounds(this.entityBounds), this.camera, this.projectedBounds);
+    if (!visible || !entity) return;
+    projectBounds(entity.getWorldBounds(this.entityBounds), this.camera, this.projectedBounds);
     const rect = this.canvas.getBoundingClientRect();
     const space = this.control.parentElement!.getBoundingClientRect();
     const { min, max } = this.projectedBounds;
@@ -305,17 +349,27 @@ export class FloatingEarthWorld {
     this.scene.updateMatrixWorld(true);
     this.camera.getWorldDirection(this.cameraForward);
     if (!this.dinosaur.isFrontFacing(this.cameraForward)) return false;
+    return this.picksEntity(event, this.dinosaur.entityRoot);
+  }
+
+  private picksCybertruck(event: PointerEvent) {
+    if (this.entering || !this.cybertruck?.visible || !this.earth) return false;
+    this.scene.updateMatrixWorld(true);
+    return this.picksEntity(event, this.cybertruck.entityRoot);
+  }
+
+  private picksEntity(event: PointerEvent, entity: Group) {
     const rect = this.canvas.getBoundingClientRect();
     this.pointerPosition.set((event.clientX - rect.left) / rect.width * 2 - 1,
       1 - (event.clientY - rect.top) / rect.height * 2);
     const padding = event.pointerType === "touch" ? 10 : 6;
     this.pickTolerance.set(padding * 2 / rect.width, padding * 2 / rect.height);
     return picksVisibleEntity(this.ray, this.pointerPosition, this.pickTolerance,
-      this.camera, this.dinosaur.entityRoot, this.earth);
+      this.camera, entity, this.earth!);
   }
 
   private wheel = (event: WheelEvent) => {
-    if (!this.ready || this.entering || event.ctrlKey || event.target instanceof Element && event.target.closest("a")) return;
+    if (!this.ready || this.entering || event.ctrlKey || event.target instanceof Element && event.target.closest("a, dialog")) return;
     event.preventDefault();
     const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.control.clientHeight : 1;
     const movement = (event.deltaY || event.deltaX) * unit;
@@ -327,7 +381,7 @@ export class FloatingEarthWorld {
     if (!this.ready || this.entering || !event.isPrimary || event.button !== 0 || this.pointer !== null) return;
     this.pointer = event.pointerId;
     this.interaction.begin(event.clientX, event.clientY, event.timeStamp / 1000);
-    this.dinosaurPressed = this.picksDinosaur(event);
+    this.pressedEntity = this.picksDinosaur(event) ? "dinosaur" : this.picksCybertruck(event) ? "cybertruck" : null;
     this.control.setPointerCapture(event.pointerId);
     this.root.dataset.dragging = "true";
     this.requestFrame();
@@ -337,7 +391,7 @@ export class FloatingEarthWorld {
     if (this.pointer === null) {
       if (event.pointerType !== "touch" && event.timeStamp - this.hoverTime > 50) {
         this.hoverTime = event.timeStamp;
-        this.control.style.cursor = this.picksDinosaur(event) ? "pointer" : "";
+        this.control.style.cursor = this.picksDinosaur(event) || this.picksCybertruck(event) ? "pointer" : "";
       }
       return;
     }
@@ -350,14 +404,15 @@ export class FloatingEarthWorld {
     if (event.pointerId !== this.pointer) return;
     // Include the last sample even on devices that coalesce the final move.
     this.pointerMove(event);
-    const activate = this.dinosaurPressed && !this.interaction.dragging && this.picksDinosaur(event);
-    if (activate) this.interaction.cancel();
+    const dinosaur = this.pressedEntity === "dinosaur" && !this.interaction.dragging && this.picksDinosaur(event);
+    const cybertruck = this.pressedEntity === "cybertruck" && !this.interaction.dragging && this.picksCybertruck(event);
+    if (dinosaur || cybertruck) this.interaction.cancel();
     else this.interaction.end(event.timeStamp / 1000);
     this.releasePointer();
-    if (activate) {
+    if (dinosaur) {
       this.entering = true;
       this.actions.activateDinosaur();
-    }
+    } else if (cybertruck) this.actions.activateCybertruck();
     this.requestFrame();
   };
 
@@ -370,7 +425,7 @@ export class FloatingEarthWorld {
   private releasePointer() {
     const pointer = this.pointer;
     this.pointer = null;
-    this.dinosaurPressed = false;
+    this.pressedEntity = null;
     this.root.dataset.dragging = "false";
     if (pointer !== null && this.control.hasPointerCapture(pointer)) this.control.releasePointerCapture(pointer);
   }
@@ -432,8 +487,11 @@ export class FloatingEarthWorld {
     this.root.removeEventListener("wheel", this.wheel);
     this.actions.dinosaurControl.hidden = true;
     this.actions.dinosaurControl.disabled = true;
+    this.actions.cybertruckControl.hidden = true;
+    this.actions.cybertruckControl.disabled = true;
     this.dinosaur?.dispose();
     this.cybertruck?.dispose();
+    this.vehicleEnvironment?.dispose();
     FloatingEarthWorld.disposeObjects(this.scene);
     this.dinosaurBloom.dispose();
     this.renderer.dispose();
