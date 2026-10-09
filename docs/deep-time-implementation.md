@@ -1,5 +1,8 @@
 # 恐竜ゲーム — Stage 1 implementation
 
+> **2026-10-09 更新:** エンジン選定・フル3D化・11ゲーム構成は [Babylon.js / フル3D共通仕様](babylon-full3d-spec.md) を優先する。本書のThree.js / Phaser / TresJSおよび2D描画の記述は移行前の設計・実装記録であり、新規実装の採用指示ではない。既存のゲーム固有要件は共通仕様と矛盾しない範囲で維持する。記載された過去のテスト結果はBabylon.js版の検証結果ではない。
+
+
 一次仕様は [dinosaur-stage1.md](dinosaur-stage1.md)。実装範囲はStage 1のみ。Stage 2のレベルや起動導線は追加していない。現在の画面では旧タイトル、ステージ名、experience番号を表示しない。
 
 ## 起動と操作
