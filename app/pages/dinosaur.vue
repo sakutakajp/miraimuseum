@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DeepTimeGame from "~/components/games/deep-time/DeepTimeGame.client.vue";
-import { GAME_SAVE_KEY, parseGameProgress, recordGameResult } from "~/games/progress";
+import { GAME_SAVE_KEY, savedGameResult } from "~/games/progress";
 import type { ClearResult } from "~/game/dinosaur/types";
 import { cybertruckUnlock } from "~/experiences/floating-earth/cybertruck-unlock";
 const { locale, initializeLanguage } = useLanguage();
@@ -15,10 +15,9 @@ useHead(() => ({ title: "MIRAI MUSEUM", meta: [
 function saveClear(value: ClearResult) {
   cybertruckUnlock.cleared();
   try {
-    const progress = parseGameProgress(localStorage.getItem(GAME_SAVE_KEY));
-    localStorage.setItem(GAME_SAVE_KEY, JSON.stringify(recordGameResult(progress, {
+    localStorage.setItem(GAME_SAVE_KEY, savedGameResult(localStorage.getItem(GAME_SAVE_KEY), {
       game: "dinosaur-run", stage: 1, cleared: true, score: value.score, health: 1, elapsed: 76.8,
-    })));
+    }));
   } catch { /* The game also keeps its independent record and reports unavailable storage. */ }
 }
 </script>

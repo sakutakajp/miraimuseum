@@ -1,51 +1,14 @@
-import { Euler, Object3D, Quaternion, Vector3 } from "three";
-
-export interface FloatingEarthEntityDefinition {
-  id: string;
-  modelUrl: string;
-  targetRoute: string;
-  size: number;
-  surfaceOffset: number;
-  normal: Vector3;
-  modelRotation: Euler;
-}
-
-const initialEarthPose = new Quaternion().setFromEuler(new Euler(
-  12 * Math.PI / 180, 100 * Math.PI / 180, 0, "XYZ",
-));
-
-export const DINOSAUR: FloatingEarthEntityDefinition = {
-  id: "dinosaur",
-  modelUrl: "/floating-earth/dinosaur.glb",
-  targetRoute: "/dinosaur",
-  size: 0.5616,
-  surfaceOffset: 0.008,
-  // Let the upright silhouette and rising light read against the black sky.
-  normal: new Vector3(0.32, 0.82, 0.48).normalize().applyQuaternion(initialEarthPose.clone().invert()),
-  modelRotation: new Euler(0, -Math.PI / 3, 0),
-};
-
-export const CYBERTRUCK = {
-  modelUrl: "/floating-earth/cybertruck.glb",
-  size: DINOSAUR.size,
-  surfaceOffset: DINOSAUR.surfaceOffset,
-  orbitSpeed: 0.25,
-  // A great circle perpendicular to the dinosaur's normal stays 90° away
-  // from it throughout the entire drive, including while Earth is rotated.
-  orbitAxis: DINOSAUR.normal.clone(),
-  initialNormal: new Vector3(-0.85, 0.3, 0.65)
-    .applyQuaternion(initialEarthPose.clone().invert())
-    .projectOnPlane(DINOSAUR.normal).normalize(),
-  // This GLB faces -X; the surface anchor drives toward its local +Z.
-  modelRotation: new Euler(0, Math.PI / 2, 0),
-};
-
+import { Quaternion, Vector3 } from "@babylonjs/core";
+export const INITIAL_EARTH_POSE = Quaternion.RotationAxis(Vector3.Right(), 12 * Math.PI / 180).multiply(Quaternion.RotationAxis(Vector3.Up(), 100 * Math.PI / 180));
+const localNormal = (x: number, y: number, z: number) => new Vector3(x, y, z).normalize().applyRotationQuaternion(INITIAL_EARTH_POSE.conjugate());
+export const DINOSAUR = { id: "dinosaur", modelUrl: "/floating-earth/dinosaur.glb", size: 0.5616, surfaceOffset: 0.008, normal: localNormal(0.32, 0.82, 0.48), yaw: -Math.PI / 3 };
+const carNormal = localNormal(-0.85, 0.3, 0.65);
+export const CYBERTRUCK = { id: "cybertruck", modelUrl: "/floating-earth/cybertruck.glb", size: DINOSAUR.size, surfaceOffset: 0.008,
+  orbitSpeed: 0.25, orbitAxis: DINOSAUR.normal, initialNormal: carNormal.subtract(DINOSAUR.normal.scale(Vector3.Dot(carNormal, DINOSAUR.normal))).normalize(), yaw: Math.PI / 2 };
+export const STATUE = { id: "statue", modelUrl: "/floating-earth/statue-of-liberty-optimized.glb", size: DINOSAUR.size, surfaceOffset: 0.008, normal: localNormal(-0.5, 0.8, 0.32), yaw: 0 };
 export const EARTH_DISPLAY_EXTENT = 1.52;
-export const EARTH_VIEW_EXTENT = Math.max(EARTH_DISPLAY_EXTENT, 1 + DINOSAUR.size + DINOSAUR.surfaceOffset + 0.08);
-
-/** Position an entity's feet on the logical sphere without modifying its visual. */
-export function placeOnSphere(root: Object3D, normal: Vector3, radius: number, offset: number) {
-  const outward = normal.clone().normalize();
-  root.position.copy(outward).multiplyScalar(radius + offset);
-  root.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), outward);
+export const EARTH_VIEW_EXTENT = 1 + DINOSAUR.size + DINOSAUR.surfaceOffset + 0.08;
+export function surfaceOrientation(normal: Vector3) {
+  const axis = Vector3.Cross(Vector3.Up(), normal);
+  return axis.lengthSquared() < 1e-9 ? Quaternion.Identity() : Quaternion.RotationAxis(axis.normalize(), Math.acos(Math.max(-1, Math.min(1, normal.y))));
 }

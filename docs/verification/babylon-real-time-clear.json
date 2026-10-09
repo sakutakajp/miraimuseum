@@ -1,0 +1,26 @@
+{
+  "result": {
+    "stageId": "cretaceous-last-day",
+    "progress": 1,
+    "score": 100000,
+    "sync": 1,
+    "rank": "S",
+    "attempts": 1
+  },
+  "ticks": 18432,
+  "metrics": {
+    "meshes": 156,
+    "activeMeshes": 9,
+    "materials": 14,
+    "textures": 4,
+    "drawCalls": 8,
+    "fps": 15.829463908820724,
+    "frameMs": 0.6000000005587935,
+    "estimatedGeometryBytes": 1082808,
+    "estimatedTextureBytes": 1749461,
+    "audioSources": 1,
+    "quality": "low",
+    "hips": 4
+  },
+  "syncError": -0.1219897959183811
+}

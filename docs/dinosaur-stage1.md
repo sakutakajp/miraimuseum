@@ -1,5 +1,6 @@
 # MIRAI: DEEP TIME — Stage 1 "CRETACEOUS // LAST DAY" 実装仕様
 
+> 2026-10-09: エンジン・現行構成は [Babylon.js一次仕様](babylon-full3d-spec.md) と [実装記録](deep-time-implementation.md) を優先する。本書のPhaser / Three.js / TresJS構成・旧ファイルパス・旧検証件数は移行前の記録。ゲームの操作・音楽・美術方針は変更理由を記した箇所以外維持する。
 > **2026-10-09 更新:** エンジン選定・フル3D化・11ゲーム構成は [Babylon.js / フル3D共通仕様](babylon-full3d-spec.md) を優先する。本書のThree.js / Phaser / TresJSおよび2D描画の記述は移行前の設計・実装記録であり、新規実装の採用指示ではない。既存のゲーム固有要件は共通仕様と矛盾しない範囲で維持する。記載された過去のテスト結果はBabylon.js版の検証結果ではない。
 
 

@@ -14,19 +14,21 @@
     "build-storybook": "storybook build --disable-telemetry",
     "preview-storybook": "vite preview --outDir storybook-static --host 0.0.0.0 --port 6006 --strictPort",
     "test:storybook": "npm run build-storybook && playwright test --config playwright.storybook.config.ts",
-    "test:deep-time": "playwright test --config playwright.deep-time.config.ts"
+    "generate": "nuxt generate",
+    "test:browser": "playwright test",
+    "test:browser:static": "playwright test --config playwright.offline.config.ts",
+    "test:runtime": "playwright test --config playwright.runtime.config.ts"
   },
   "dependencies": {
     "nuxt": "4.5.2",
-    "phaser": "3.90.0",
-    "three": "^0.186.1",
-    "vue": "3.5.43"
+    "vue": "3.5.43",
+    "@babylonjs/core": "^8.56.0",
+    "@babylonjs/loaders": "^8.56.0"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
     "@storybook-vue/nuxt": "^10.0.0",
     "@storybook/addon-docs": "^10.6.1",
-    "@types/three": "^0.186.0",
     "storybook": "^10.6.1",
     "typescript": "5.9.3",
     "vitest": "3.2.4",

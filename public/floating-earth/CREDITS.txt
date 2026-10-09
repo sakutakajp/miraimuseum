@@ -10,3 +10,7 @@ dinosaur.glb: derived from the user-supplied Meshy_AI_Character_output.glb.
 Changes: simplified from 190,698 to 24,790 triangles with meshoptimizer; JPEG textures resized to 1024x1024.
 The original 42-bone rig is preserved; no animation clips were supplied.
 The supplied file contains no license metadata.
+
+Statue of Liberty: statue-of-liberty-optimized.glb supplied by the user, copied unchanged. No separate source URL or license was supplied. The Earth Apache-2.0 license does not apply to user-supplied models.
+
+Cybertruck: cybertruck.glb is the unchanged user-supplied Meshy_AI_Cybertruck_Front_View_1008044326_texture.glb (7,909,020 bytes). No license metadata or separate source URL was supplied. Runtime transforms, lighting and reflections are separate from the original file.

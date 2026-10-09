@@ -1,7 +1,10 @@
 import { MUSIC_STEMS, type SoundName } from "../config/audio";
 import { takeDinosaurAudio } from "../audio-context";
 import { loadDinosaurAudioBuffers } from "../audio-assets";
+import { runtimeResources } from "../../../three-d/diagnostics";
 export class AudioDirector {
+  private volume = 0.8;
+  private compressor?: DynamicsCompressorNode;
   private ctx?: AudioContext;
   private master?: GainNode;
   private music?: GainNode;
@@ -25,17 +28,19 @@ export class AudioDirector {
     if (!this.ctx) {
       const audio = takeDinosaurAudio();
       this.ctx = audio?.context ?? new AudioContext();
+      if (!audio) runtimeResources.audioContexts++;
       this.preparedBuffers = audio?.buffers;
       if (audio) this.abort = audio.abort;
       this.master = this.ctx.createGain();
       this.music = this.ctx.createGain();
       this.sfx = this.ctx.createGain();
       const compressor = this.ctx.createDynamicsCompressor();
+      this.compressor = compressor;
       compressor.threshold.value = -14;
       compressor.ratio.value = 4;
       this.music.gain.value = 0.78;
       this.sfx.gain.value = 0.42;
-      this.master.gain.value = this.muted ? 0 : 0.8;
+      this.master.gain.value = this.muted ? 0 : this.volume;
       this.music.connect(compressor);
       this.sfx.connect(compressor);
       compressor.connect(this.master);
@@ -128,11 +133,12 @@ export class AudioDirector {
     this.muted = value;
     if (this.ctx && this.master)
       this.master.gain.setTargetAtTime(
-        value ? 0 : 0.8,
+        value ? 0 : this.volume,
         this.ctx.currentTime,
         0.015,
       );
   }
+  setVolume(value: number) { this.volume = Math.max(0, Math.min(1, value)); this.setMuted(this.muted); }
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
@@ -141,6 +147,7 @@ export class AudioDirector {
     for (const s of this.sources) this.stop(s);
     this.sources.clear();
     this.buffers.clear();
-    void this.ctx?.close();
+    this.master?.disconnect(); this.music?.disconnect(); this.sfx?.disconnect(); this.compressor?.disconnect();
+    if (this.ctx) { runtimeResources.audioContexts--; void this.ctx.close().catch(() => {}); this.ctx = undefined; }
   }
 }

@@ -1,6 +1,5 @@
 import type { Preview } from "@storybook/vue3";
 import "../app/assets/css/main.css";
-import "../app/assets/css/v2.css";
 import "../app/assets/css/deep-time.css";
 const preview: Preview = {
   globalTypes: {
@@ -26,14 +25,14 @@ const preview: Preview = {
         return {};
       },
       template:
-        '<div class="v2-shell" style="min-height:0;padding:24px"><story /></div>',
+        '<story />',
     }),
   ],
   parameters: {
     layout: "fullscreen",
     controls: { expanded: true },
     options: {
-      storySort: { order: ["UI", "Characters", "Objects", "Backgrounds"] },
+      storySort: { order: ["Babylon"] },
     },
   },
 };

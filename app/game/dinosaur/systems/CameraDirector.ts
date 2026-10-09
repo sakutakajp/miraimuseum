@@ -10,7 +10,7 @@ export interface Composition {
 export class CameraDirector {
   private impulseAt = -100;
   private strength = 0;
-  constructor(readonly reduced: boolean) {}
+  constructor(readonly reduced: boolean, readonly layout = { height: 800, playerFraction: 0.28, floorFraction: 0.755 }) {}
   impulse(at: number, strength: number) {
     this.impulseAt = at;
     this.strength = strength;
@@ -23,7 +23,7 @@ export class CameraDirector {
     safe: { top: number; bottom: number } = { top: 0, bottom: 0 },
   ): Composition {
     const availableHeight = Math.max(1, height - safe.top - safe.bottom);
-    const baseScale = Math.min(1.28, availableHeight / 800, width < 700 ? width / 420 : 1.28);
+    const baseScale = Math.min(1.28, availableHeight / this.layout.height, width < 700 ? width / 420 : 1.28);
     const ending =
       section === "boundary" ? Math.max(0, Math.min(1, (t - 70) / 5)) : 0;
     const scale =
@@ -43,9 +43,9 @@ export class CameraDirector {
       width,
       height,
       scale,
-      floor: safe.top + availableHeight * 0.755,
+      floor: safe.top + availableHeight * this.layout.floorFraction,
       playerX:
-        width * (0.28 - pressure * 0.025 - (section === "fallout" ? 0.02 : 0)) +
+        width * (this.layout.playerFraction - pressure * 0.025 - (section === "fallout" ? 0.02 : 0)) +
         recoil,
       recoil,
     };

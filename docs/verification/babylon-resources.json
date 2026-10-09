@@ -1,0 +1,67 @@
+{
+  "before": {
+    "meshes": 156,
+    "activeMeshes": 13,
+    "materials": 14,
+    "textures": 4,
+    "drawCalls": 14,
+    "fps": 8.992035625590916,
+    "frameMs": 2.2000000001862645,
+    "estimatedGeometryBytes": 1082808,
+    "estimatedTextureBytes": 1749461,
+    "audioSources": 2,
+    "quality": "high",
+    "hips": 4
+  },
+  "retries": {
+    "metrics": {
+      "meshes": 156,
+      "activeMeshes": 13,
+      "materials": 14,
+      "textures": 4,
+      "drawCalls": 14,
+      "fps": 8.992035625590916,
+      "frameMs": 2.2000000001862645,
+      "estimatedGeometryBytes": 1082808,
+      "estimatedTextureBytes": 1749461,
+      "audioSources": 2,
+      "quality": "high",
+      "hips": 4
+    },
+    "attempts": 12,
+    "resources": {
+      "engines": 1,
+      "scenes": 1,
+      "loops": 1,
+      "listeners": 7,
+      "assetLoads": 0,
+      "audioContexts": 1
+    }
+  },
+  "visits": [
+    {
+      "engines": 1,
+      "scenes": 1,
+      "loops": 1,
+      "listeners": 10,
+      "assetLoads": 0,
+      "audioContexts": 0
+    },
+    {
+      "engines": 1,
+      "scenes": 1,
+      "loops": 1,
+      "listeners": 10,
+      "assetLoads": 0,
+      "audioContexts": 0
+    },
+    {
+      "engines": 1,
+      "scenes": 1,
+      "loops": 1,
+      "listeners": 10,
+      "assetLoads": 0,
+      "audioContexts": 0
+    }
+  ]
+}

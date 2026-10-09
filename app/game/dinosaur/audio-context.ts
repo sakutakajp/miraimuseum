@@ -1,3 +1,4 @@
+import { runtimeResources } from "../../three-d/diagnostics";
 import { loadDinosaurAudioBuffers } from "./audio-assets";
 
 export interface PreparedDinosaurAudio {
@@ -12,6 +13,7 @@ let expiry: ReturnType<typeof setTimeout> | undefined;
 function preparedAudio() {
   if (!prepared || prepared.context.state === "closed") {
     prepared = { context: new AudioContext(), abort: new AbortController() };
+    runtimeResources.audioContexts++;
   }
   return prepared;
 }
@@ -53,6 +55,6 @@ export function discardDinosaurAudio() {
   if (expiry) clearTimeout(expiry);
   expiry = undefined;
   prepared?.abort.abort();
-  void prepared?.context.close().catch(() => {});
+  if (prepared) { runtimeResources.audioContexts--; void prepared.context.close().catch(() => {}); }
   prepared = undefined;
 }

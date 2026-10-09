@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { prepareDinosaurAudio, takeDinosaurAudio, preloadDinosaurAudio, discardDinosaurAudio } from "../app/game/dinosaur/audio-context";
 import { AudioDirector } from "../app/game/dinosaur/systems/AudioDirector";
+import { clearAudioCache } from "../app/three-d/audio";
 
 class GestureAudioContext {
   state = "suspended";
@@ -8,13 +9,14 @@ class GestureAudioContext {
   close = vi.fn(async () => { this.state = "closed"; });
   decodeAudioData = vi.fn(async () => ({ duration: 76.8 }) as AudioBuffer);
   destination = {};
-  createGain = vi.fn(() => ({ gain: { value: 0 }, connect: vi.fn() }));
+  createGain = vi.fn(() => ({ gain: { value: 0 }, connect: vi.fn(), disconnect: vi.fn() }));
   createDynamicsCompressor = vi.fn(() => ({
-    threshold: { value: 0 }, ratio: { value: 0 }, connect: vi.fn(),
+    threshold: { value: 0 }, ratio: { value: 0 }, connect: vi.fn(), disconnect: vi.fn(),
   }));
 }
 
 beforeEach(() => {
+  clearAudioCache();
   vi.useFakeTimers();
   vi.stubGlobal("AudioContext", GestureAudioContext);
   vi.stubGlobal("Audio", class { canPlayType() { return "probably"; } });
