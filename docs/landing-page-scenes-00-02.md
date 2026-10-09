@@ -1,5 +1,8 @@
 # MIRAI MUSEUM — Landing Page Scenes 00–02 Implementation Specification
 
+> **2026-10-09 更新:** エンジン選定・フル3D化・11ゲーム構成は [Babylon.js / フル3D共通仕様](babylon-full3d-spec.md) を優先する。本書のThree.js / Phaser / TresJSおよび2D描画の記述は移行前の設計・実装記録であり、新規実装の採用指示ではない。既存のゲーム固有要件は共通仕様と矛盾しない範囲で維持する。記載された過去のテスト結果はBabylon.js版の検証結果ではない。
+
+
 Version: 1.0  
 Date: 2026-10-06  
 Status: Ready for implementation  
@@ -13,7 +16,6 @@ The target is not a conventional hero section. The first 15–20 seconds must al
 
 If existing README visual guidance conflicts with this document, this document takes precedence for the landing page and brand shell. Existing game usability requirements remain valid.
 
-This phase deliberately stops after Scene 02. Do not build exhibition portals, the STAR DIVE feature section, archive, or manifesto in this pass.
 
 ---
 

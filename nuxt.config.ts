@@ -1,10 +1,35 @@
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-05",
   devtools: { enabled: false },
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) =>
+        /^Tres[A-Z]/.test(tag) &&
+        !["TresCanvas", "TresCanvasContext", "TresPortal"].includes(tag),
+    },
+  },
   // Prebundle the lazy game dependency so Vite does not reload the page when
   // the first expedition starts in a fresh development container.
-  vite: { optimizeDeps: { include: ["phaser"] } },
-  css: ["~/assets/css/main.css"],
+  vite: {
+    optimizeDeps: {
+      include: [
+        "phaser",
+        "three",
+        "three/examples/jsm/environments/RoomEnvironment.js",
+        "three/examples/jsm/postprocessing/EffectComposer.js",
+        "three/examples/jsm/postprocessing/RenderPass.js",
+        "three/examples/jsm/postprocessing/UnrealBloomPass.js",
+        "three/examples/jsm/postprocessing/ShaderPass.js",
+        "three/examples/jsm/postprocessing/OutputPass.js",
+      ],
+    },
+  },
+  css: [
+    "~/assets/css/main.css",
+    "~/assets/css/v2.css",
+    "~/assets/css/deep-time.css",
+    "~/assets/css/landing.css",
+  ],
   app: {
     head: {
       htmlAttrs: { lang: "ja" },
@@ -21,7 +46,13 @@ export default defineNuxtConfig({
           content: "width=device-width, initial-scale=1, viewport-fit=cover",
         },
       ],
-      link: [{ rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
+      link: [
+        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "anonymous" },
+        { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@700&display=swap" },
+      ],
     },
   },
 });

@@ -1,4 +1,5 @@
 // Small original score, synthesized locally. No external assets or autoplay.
+import type { WorldId } from "../data/worlds";
 class MuseumAudio {
   private context?: AudioContext;
   private timer?: ReturnType<typeof setInterval>;
@@ -6,6 +7,7 @@ class MuseumAudio {
   private step = 0;
   muted = false;
   private running = false;
+  private theme: WorldId = "dinosaur";
   async unlock() {
     if (typeof window === "undefined") return;
     try {
@@ -53,18 +55,23 @@ class MuseumAudio {
     }
     this.notes.clear();
   }
-  start() {
+  start(theme: WorldId = this.theme) {
     this.stop();
     this.running = true;
     this.step = 0;
-    const melody = [64, 67, 69, 0, 67, 64, 62, 0, 60, 64, 67, 0, 62, 64, 60, 0];
+    this.theme = theme;
+    const melody = {
+      dinosaur: [64, 67, 69, 0, 67, 64, 62, 0, 60, 64, 67, 0, 62, 64, 60, 0],
+      space: [69, 76, 0, 81, 0, 76, 74, 0, 72, 0, 79, 0, 76, 74, 69, 0],
+      ocean: [62, 65, 69, 0, 67, 65, 62, 0, 60, 62, 65, 0, 69, 67, 62, 0],
+    }[theme];
     this.timer = setInterval(() => {
       const note = melody[this.step % melody.length]!;
       if (note) this.tone(440 * 2 ** ((note - 69) / 12), 0.29, 0.025);
       if (this.step % 4 === 0)
         this.tone(this.step % 16 < 8 ? 130.81 : 174.61, 0.38, 0.018, "sine");
       this.step++;
-    }, 290);
+    }, theme === "space" ? 380 : theme === "ocean" ? 330 : 290);
   }
   pause() {
     if (this.timer) clearInterval(this.timer);
@@ -88,6 +95,11 @@ class MuseumAudio {
       if (this.running) this.tone(783.99, 0.24);
     }, 90);
   }
+  impact(combo = 1) {
+    this.tone(80, .18, .055, 'sawtooth');
+    this.tone(440 + Math.min(combo, 10)*55, .1, .03, 'square');
+  }
+  spark() { this.tone(1100, .055, .018, 'triangle'); }
   bump() {
     this.tone(130, 0.17, 0.045, "triangle");
   }

@@ -1,0 +1,12 @@
+Earth-Vivid-Rotating.glb: generated for MIRAI MUSEUM, October 2026.
+Earth Clouds texture: Solar System Scope / INOVE.
+https://www.solarsystemscope.com/textures/
+Licensed under CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+Changes: resized to 4096x2048, cloud opacity and contrast adjusted, embedded in GLB.
+Surface and specular source: Three.js examples/planets (NASA-derived Earth imagery).
+Web rendering adds directional lighting, cloud-layer shadow sampling and blue atmospheric scattering approximation.
+
+dinosaur.glb: derived from the user-supplied Meshy_AI_Character_output.glb.
+Changes: simplified from 190,698 to 24,790 triangles with meshoptimizer; JPEG textures resized to 1024x1024.
+The original 42-bone rig is preserved; no animation clips were supplied.
+The supplied file contains no license metadata.

@@ -2,7 +2,6 @@ import Phaser from "phaser";
 import { sprites, palette, spriteSize } from "../data/sprites";
 import {
   Expedition,
-  obstacles,
   collectibles,
   STAGE_LENGTH,
   phaseAt,
@@ -10,22 +9,12 @@ import {
 } from "./expedition";
 import { museumAudio } from "./audio";
 import type { DiscoveryId } from "../data/discoveries";
-export interface GameState {
-  phase: Phase;
-  distance: number;
-  found: DiscoveryId[];
-  paused: boolean;
-}
-export interface SceneHooks {
-  state: (state: GameState) => void;
-  discover: (id: DiscoveryId) => void;
-  cue: (message: string) => void;
-  finish: (ids: DiscoveryId[]) => void;
-}
+import type { SceneHooks } from "./scene-types";
 const W = 420,
   PLAYER_X = 106;
 export class DinosaurScene extends Phaser.Scene {
-  readonly expedition = new Expedition();
+  readonly expedition: Expedition;
+  initialPaused = false;
   private art!: Phaser.GameObjects.Graphics;
   private foreground!: Phaser.GameObjects.Graphics;
   private player!: Phaser.GameObjects.Image;
@@ -37,14 +26,16 @@ export class DinosaurScene extends Phaser.Scene {
   private endingSprite!: Phaser.GameObjects.Image;
   private elapsed = 0;
   private endTime = 0;
+  private endingCaption = "";
   private phase: Phase = "present";
   private lastState = 0;
   private notified = false;
   private endingSoundPlayed = false;
   private hasJumped = false;
   private stopped = false;
-  constructor(private hooks: SceneHooks) {
+  constructor(private hooks: SceneHooks, level = 1, competitive = false) {
     super("dinosaur");
+    this.expedition = new Expedition(level, competitive);
   }
   private get height() {
     return this.scale.height;
@@ -104,7 +95,7 @@ export class DinosaurScene extends Phaser.Scene {
           )
           .setScale(item.id === "fossil" ? 2.8 : 2.5),
       );
-    this.rockImages = obstacles.map(() =>
+    this.rockImages = this.expedition.obstacles.map(() =>
       this.add.image(0, FLOOR, "rock").setOrigin(0.5, 1),
     );
     this.player = this.add
@@ -143,19 +134,22 @@ export class DinosaurScene extends Phaser.Scene {
       event.preventDefault();
       if (!event.repeat) this.jump();
     });
-    this.input.keyboard?.on("keydown-ESC", () => this.setPaused(!this.stopped));
+    if (!this.expedition.competitive)
+      this.input.keyboard?.on("keydown-ESC", () => this.setPaused(!this.stopped));
     this.scale.on(Phaser.Scale.Events.RESIZE, this.resizeWorld, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, this.resizeWorld, this);
     });
     this.resizeWorld();
-    museumAudio.start();
+    museumAudio.start("dinosaur");
     this.hooks.state({
       phase: this.phase,
       distance: 0,
       found: [],
       paused: false,
+      endingCaption: this.endingCaption,
     });
+    if (this.initialPaused) this.setPaused(true);
   }
   private resizeWorld() {
     this.endingSprite.setY(this.height / 2 - 20);
@@ -179,6 +173,7 @@ export class DinosaurScene extends Phaser.Scene {
       distance: this.expedition.x / STAGE_LENGTH,
       found: [...this.expedition.found],
       paused,
+      endingCaption: this.endingCaption,
     });
   }
   override update(_time: number, delta: number) {
@@ -198,6 +193,12 @@ export class DinosaurScene extends Phaser.Scene {
     for (const id of result.found) {
       museumAudio.discover();
       this.hooks.discover(id);
+    }
+    if (this.expedition.competitive && this.expedition.finished && !this.notified) {
+      this.notified = true;
+      this.stopped = true;
+      this.hooks.finish([...this.expedition.found]);
+      return;
     }
     const next = phaseAt(this.expedition.x);
     if (next !== this.phase) {
@@ -221,6 +222,7 @@ export class DinosaurScene extends Phaser.Scene {
         distance: Math.min(1, this.expedition.x / STAGE_LENGTH),
         found: [...this.expedition.found],
         paused: false,
+        endingCaption: this.endingCaption,
       });
     }
   }
@@ -290,8 +292,8 @@ export class DinosaurScene extends Phaser.Scene {
           .fillRect(sx, FLOOR - 6, 4, 8)
           .fillRect(sx + 4, FLOOR - 10, 4, 12);
     }
-    for (let i = 0; i < obstacles.length; i++) {
-      const obstacle = obstacles[i]!,
+    for (let i = 0; i < this.expedition.obstacles.length; i++) {
+      const obstacle = this.expedition.obstacles[i]!,
         sprite = this.rockImages[i]!;
       sprite
         .setPosition(PLAYER_X + obstacle.x - x, FLOOR)
@@ -357,7 +359,7 @@ export class DinosaurScene extends Phaser.Scene {
       );
     // A pulsing finger demonstrates tapping without a text tutorial.
     this.tutor
-      .setVisible(!this.hasJumped && x > 440 && x < 940)
+      .setVisible(!this.hasJumped && x > 264 && x < 564)
       .setY(FLOOR - 129 + Math.sin(this.elapsed * 6) * 12);
     if (this.phase === "rewind") {
       f.fillStyle(0xf5dfa6, 0.5).fillRect(0, 0, W, H);
@@ -391,7 +393,8 @@ export class DinosaurScene extends Phaser.Scene {
       .setTexture(slide.sprite)
       .setScale(slide.sprite === "rex" ? 6 : 7)
       .setAlpha(Math.min(1, (this.endTime % 1.6) * 4));
-    this.endingText.setVisible(true).setText(slide.text);
+    this.endingText.setVisible(false);
+    this.endingCaption = slide.text;
     if (this.endTime >= 8 && !this.endingSoundPlayed) {
       this.endingSoundPlayed = true;
       museumAudio.finish();
