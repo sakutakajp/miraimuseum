@@ -10,3 +10,8 @@ test-results/
 .DS_Store
 
 storybook-static/
+
+# Enlarged pixel previews are reproducible; comparison HTML/report are tracked.
+docs/pixel-previews/fine/
+docs/pixel-previews/standard/
+docs/pixel-previews/coarse/

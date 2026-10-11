@@ -1,0 +1,556 @@
+:root {
+  --museum-ink: #0b1429;
+  --museum-panel: #15213a;
+  --museum-gold: #eac483;
+  --museum-paper: #f8ecd5;
+  --museum-cyan: #86d9d2;
+  color: var(--museum-paper);
+  background: var(--museum-ink);
+}
+.museum-exterior,
+.museum-hall,
+.museum-library,
+.museum-about {
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+.museum-exterior a,
+.museum-hall a,
+.museum-library a,
+.museum-about a {
+  color: inherit;
+  text-decoration: none;
+}
+.museum-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 56px;
+  min-width: 56px;
+  padding: 0.75rem 1.4rem;
+  border: 1px solid var(--museum-gold);
+  border-radius: 4px;
+  background: #1b2e4c;
+  color: var(--museum-paper);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow:
+    inset 0 0 0 3px #0c1a33,
+    0 4px 0 #060f18;
+  line-height: 1.35;
+}
+.museum-button:hover {
+  background: #284263;
+}
+.museum-button:disabled {
+  opacity: 0.5;
+}
+.museum-button--gold {
+  background: #e8c48a;
+  color: #242e32;
+  box-shadow:
+    inset 0 0 0 3px #c59b65,
+    0 4px 0 #060f18;
+}
+.museum-button--small {
+  min-height: 48px;
+  padding: 0.5rem 0.9rem;
+}
+.museum-menu-button {
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  min-height: 48px;
+  background: #0b1429d9;
+  color: var(--museum-paper);
+  border: 1px solid #d4ad7355;
+  border-radius: 4px;
+  font-size: 1.25rem;
+}
+.museum-wordmark {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.museum-wordmark ruby rt {
+  font-size: 0.5em;
+}
+.museum-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1180px;
+  margin: auto;
+  padding: 1rem 1.5rem;
+}
+.museum-exterior {
+  position: relative;
+  min-height: 38rem;
+  height: 100vh;
+  height: 100dvh;
+  isolation: isolate;
+  overflow: clip;
+  background: #061629;
+}
+.museum-exterior-art {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  z-index: -2;
+}
+.museum-exterior::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    #06142388,
+    transparent 24%,
+    transparent 72%,
+    #05152544
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+.museum-exterior-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: clamp(1.25rem, 4vw, 3rem);
+  padding-top: max(env(safe-area-inset-top), clamp(1.25rem, 4vw, 3rem));
+  gap: 1rem;
+}
+.museum-exterior-header h1 {
+  margin: 0;
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: clamp(1.8rem, 3.2vw, 3rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #f7dfac;
+  text-shadow: 0 2px 8px #03111e;
+}
+.museum-exterior-header rt {
+  font-family: sans-serif;
+  font-weight: 500;
+  font-size: 0.3em;
+  letter-spacing: 0.15em;
+}
+.museum-entrance {
+  position: absolute;
+  left: 50%;
+  top: 73%;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 0;
+}
+.museum-entrance .ru-sprite {
+  margin-top: -2rem;
+}
+.museum-enter {
+  min-width: 160px;
+  font-size: 1.25rem;
+  background: #152642ed;
+  box-shadow:
+    inset 0 0 0 3px #0c1a33,
+    0 5px 0 #081620,
+    0 0 24px #e9c68422;
+}
+.museum-dialog {
+  max-width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  color: var(--museum-paper);
+  background: #12203a;
+  border: 1px solid var(--museum-gold);
+  border-radius: 8px;
+  padding: 1.2rem;
+  overflow: auto;
+  line-height: 1.7;
+}
+.museum-dialog::backdrop {
+  background: #020d17bd;
+  backdrop-filter: blur(4px);
+}
+.museum-dialog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.museum-dialog h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+.museum-menu-links {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.museum-menu-links a {
+  color: var(--museum-paper);
+  padding: 0.7rem 1rem;
+  min-height: 48px;
+  background: #1c2d49;
+  text-decoration: none;
+  border: 1px solid #43616a;
+}
+.museum-hall {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse at 50% 22%, #24365366, transparent 70%),
+    linear-gradient(90deg, #081927 0%, #15243e 50%, #081927 100%);
+  padding-bottom: max(env(safe-area-inset-bottom), 1.5rem);
+}
+.museum-hall-heading {
+  position: relative;
+  max-width: 1050px;
+  margin: 2rem auto 0;
+  padding: 0 2rem 1rem;
+  border-bottom: 1px solid #987b4d55;
+}
+.museum-small-label {
+  color: var(--museum-gold);
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+}
+.museum-hall-heading h1 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 500;
+  margin: 0.7rem 0;
+}
+.museum-hall-heading .ru-sprite {
+  position: absolute;
+  right: 2rem;
+  bottom: 1rem;
+}
+.museum-exhibits {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  max-width: 1050px;
+  margin: 2.5rem auto;
+  padding: 0 2rem;
+}
+.museum-exhibit {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+  border-bottom: 1px solid #d3b47c77;
+  padding-bottom: 1.5rem;
+}
+.museum-exhibit-display {
+  position: relative;
+  height: 270px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(#06172788, #25545533 75%, #0b1726);
+  border-radius: 110px 110px 0 0;
+  border: 1px solid #8a9c9244;
+  overflow: hidden;
+}
+.museum-exhibit-display svg {
+  width: 90%;
+  max-width: 220px;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 10px #f5d29622);
+}
+.museum-exhibit-glow {
+  position: absolute;
+  width: 90%;
+  height: 80%;
+  background: radial-gradient(ellipse, #e5ba6a33, transparent 67%);
+}
+.museum-plinth {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 12%;
+  height: 12px;
+  background: #b6a084;
+  border-bottom: 5px solid #5d6260;
+  box-shadow:
+    0 14px 0 #233a42,
+    0 20px 0 #152a37;
+}
+.museum-exhibit-caption {
+  padding: 1rem 0.2rem 0;
+}
+.museum-exhibit-caption small {
+  display: block;
+  font-size: 0.7rem;
+  color: #acbfc2;
+  letter-spacing: 0.04em;
+}
+.museum-exhibit-caption h2 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 1rem 0;
+  line-height: 1.65;
+}
+.museum-exhibit-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--museum-gold);
+  min-height: 48px;
+  border: 1px solid #e3c28b88;
+  padding: 0.5rem 0.8rem;
+  border-radius: 4px;
+}
+.museum-exhibit:hover .museum-exhibit-action {
+  background: #32605d;
+}
+.museum-exhibit:hover .museum-exhibit-display {
+  border-color: #dbbc7c;
+}
+.museum-future-object {
+  font-family: serif;
+  font-size: 6rem;
+  color: #668487;
+}
+.museum-exhibit--waiting {
+  color: #a8b8ba;
+}
+.museum-exhibit--waiting .museum-exhibit-caption > span {
+  display: block;
+  font-size: 0.85rem;
+  min-height: 48px;
+  padding: 0.7rem 0;
+}
+.museum-clear-mark {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.7rem;
+  color: var(--museum-cyan);
+}
+.museum-hall-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1050px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+.museum-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 48px;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #8eb5b380;
+}
+.museum-library,
+.museum-about {
+  min-height: 100dvh;
+  background: radial-gradient(ellipse at top, #233354, #0b1429 75%);
+  padding-bottom: 3rem;
+}
+.museum-page-intro {
+  max-width: 900px;
+  margin: 1.5rem auto;
+  padding: 0 1.5rem;
+}
+.museum-page-intro h1 {
+  font-size: 1.8rem;
+}
+.museum-page-intro p {
+  line-height: 1.8;
+  color: #b8c9c7;
+}
+.nap-list {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+.nap-spot {
+  position: relative;
+  aspect-ratio: 3/2;
+  overflow: hidden;
+  background: #1c2b45;
+  border: 1px solid #dfbd78;
+  border-radius: 4px;
+}
+.nap-spot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.nap-spot .ru-sprite {
+  position: absolute;
+  left: 50%;
+  top: 59%;
+  transform: translateX(-50%);
+}
+.nap-entry h2 {
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+.nap-entry p {
+  font-size: 0.8rem;
+  color: #bfd0cd;
+}
+.nap-empty {
+  padding: 2rem;
+  border: 1px dashed #799b9b;
+  grid-column: 1/-1;
+  line-height: 2;
+}
+.history-box {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border-left: 2px solid #b79564;
+  line-height: 1.9;
+  background: #15243d;
+}
+.history-box h2 {
+  font-size: 1.25rem;
+}
+.history-box h3 {
+  font-size: 1rem;
+  color: #dfc08d;
+}
+.history-box a {
+  color: #9adfda;
+  text-decoration: underline;
+}
+.history-box li {
+  margin: 0.65rem 0;
+}
+.history-box p {
+  color: #d3dfdc;
+}
+.museum-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.museum-exterior :focus-visible,
+.museum-hall :focus-visible,
+.museum-library :focus-visible,
+.museum-about :focus-visible,
+.museum-dialog :focus-visible {
+  outline: 3px solid #95eee4;
+  outline-offset: 4px;
+}
+@media (max-width: 760px) {
+  .museum-exhibits {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.75rem 1.25rem;
+    padding: 0 1.25rem;
+    margin-top: 1.5rem;
+  }
+  .museum-exhibit-display {
+    height: 200px;
+  }
+  .museum-hall-heading {
+    padding: 0 1.25rem 1rem;
+    margin-top: 1.5rem;
+  }
+  .museum-exhibit-caption h2 {
+    font-size: 1rem;
+  }
+  .museum-header {
+    padding: 1rem 1.25rem;
+  }
+  .museum-hall-footer {
+    padding: 0 1.25rem;
+  }
+  .museum-exterior-art {
+    object-position: 50% 50%;
+  }
+  .museum-exterior-header {
+    padding: 1.25rem;
+  }
+  .museum-exterior-header h1 {
+    font-size: 1.5rem;
+    letter-spacing: 0.07em;
+  }
+  .museum-entrance {
+    top: 460px;
+  }
+  .museum-entrance .ru-sprite {
+    width: 96px;
+    height: 96px;
+    margin-top: -1rem;
+  }
+  .nap-list {
+    grid-template-columns: 1fr;
+  }
+  .history-box {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  .museum-wordmark {
+    font-size: 1rem;
+  }
+}
+@media (max-height: 550px) and (min-width: 600px) {
+  .museum-exterior {
+    min-height: 22rem;
+  }
+  .museum-entrance {
+    top: 223px;
+    left: 53%;
+  }
+  .museum-entrance .ru-sprite {
+    width: 96px;
+    height: 96px;
+  }
+  .museum-exterior-header {
+    padding: 1rem;
+  }
+  .museum-exterior-header h1 {
+    font-size: 1.6rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+.museum-button--gold:hover {
+  background: #f2d7a8;
+  color: #242e32;
+}
+
+.museum-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.museum-music-button {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: #0b1429df;
+  color: #f3dfba;
+  border: 1px solid #d4ad7355;
+  border-radius: 4px;
+  font-size: 1.25rem;
+}
+.museum-music-button[aria-pressed="true"] {
+  border-color: #94dad2;
+  background: #223856;
+}
+.sunny-game a.museum-button--gold,
+.ru-run a.museum-button--gold {
+  color: #242e32;
+}

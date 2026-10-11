@@ -1,3 +1,5 @@
+> 履歴：この文書は全面刷新前の実装を記録しています。現在の仕様は [みらい博物館](museum-renewal.md) を参照してください。
+
 # DEEP TIME — Babylon.jsフル3D Stage 1
 
 2026-10-09。エンジン・フル3Dの一次仕様は `babylon-full3d-spec.md`、操作・音楽・美術の方針は `dinosaur-stage1.md`。今回の完成範囲はStage 1。

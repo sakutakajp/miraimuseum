@@ -1,3 +1,5 @@
+> 履歴：この文書は全面刷新前の実装を記録しています。現在の仕様は [みらい博物館](museum-renewal.md) を参照してください。
+
 # MIRAI MUSEUM — Landing Page Experience Specification
 
 > 2026-10-09: エンジン・現行構成は [Babylon.js一次仕様](babylon-full3d-spec.md) と [実装記録](deep-time-implementation.md) を優先する。本書のPhaser / Three.js / TresJS構成・旧ファイルパス・旧検証件数は移行前の記録。ゲームの操作・音楽・美術方針は変更理由を記した箇所以外維持する。

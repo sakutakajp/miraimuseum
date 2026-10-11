@@ -17,7 +17,8 @@
     "generate": "nuxt generate",
     "test:browser": "playwright test",
     "test:browser:static": "playwright test --config playwright.offline.config.ts",
-    "test:runtime": "playwright test --config playwright.runtime.config.ts"
+    "test:runtime": "playwright test --config playwright.runtime.config.ts",
+    "assets:pixel": "node scripts/pixel-assets.mjs"
   },
   "dependencies": {
     "nuxt": "4.5.2",

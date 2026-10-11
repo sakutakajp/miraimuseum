@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "pixelSize": 2,
+  "assets": {
+    "exterior-phone": {
+      "src": "/museum/pixel/standard/exterior-phone.png",
+      "width": 180,
+      "height": 320,
+      "pixelSize": 2
+    },
+    "exterior-wide": {
+      "src": "/museum/pixel/standard/exterior-wide.png",
+      "width": 720,
+      "height": 450,
+      "pixelSize": 2
+    },
+    "exterior-landscape": {
+      "src": "/museum/pixel/standard/exterior-landscape.png",
+      "width": 480,
+      "height": 180,
+      "pixelSize": 2
+    },
+    "courtyard-phone": {
+      "src": "/museum/pixel/standard/courtyard-phone.png",
+      "width": 168,
+      "height": 112,
+      "pixelSize": 2
+    },
+    "courtyard-wide": {
+      "src": "/museum/pixel/standard/courtyard-wide.png",
+      "width": 480,
+      "height": 320,
+      "pixelSize": 2
+    },
+    "nap-phone": {
+      "src": "/museum/pixel/standard/nap-phone.png",
+      "width": 168,
+      "height": 112,
+      "pixelSize": 2
+    },
+    "nap-wide": {
+      "src": "/museum/pixel/standard/nap-wide.png",
+      "width": 480,
+      "height": 320,
+      "pixelSize": 2
+    },
+    "forest-phone": {
+      "src": "/museum/pixel/standard/forest-phone.png",
+      "width": 183,
+      "height": 294,
+      "pixelSize": 2
+    },
+    "forest-wide": {
+      "src": "/museum/pixel/standard/forest-wide.png",
+      "width": 550,
+      "height": 330,
+      "pixelSize": 2
+    },
+    "ru-idle-96": {
+      "src": "/museum/pixel/standard/ru-idle-96.png",
+      "width": 48,
+      "height": 48,
+      "pixelSize": 2
+    },
+    "ru-walk-96": {
+      "src": "/museum/pixel/standard/ru-walk-96.png",
+      "width": 48,
+      "height": 48,
+      "pixelSize": 2
+    },
+    "ru-sleep-96": {
+      "src": "/museum/pixel/standard/ru-sleep-96.png",
+      "width": 48,
+      "height": 48,
+      "pixelSize": 2
+    },
+    "ru-idle-128": {
+      "src": "/museum/pixel/standard/ru-idle-128.png",
+      "width": 64,
+      "height": 64,
+      "pixelSize": 2
+    },
+    "ru-walk-128": {
+      "src": "/museum/pixel/standard/ru-walk-128.png",
+      "width": 64,
+      "height": 64,
+      "pixelSize": 2
+    },
+    "ru-sleep-128": {
+      "src": "/museum/pixel/standard/ru-sleep-128.png",
+      "width": 64,
+      "height": 64,
+      "pixelSize": 2
+    }
+  }
+}

@@ -1,18 +1,43 @@
 <script setup lang="ts">
-import FloatingEarthExperience from "~/components/landing/FloatingEarthExperience.vue";
-const { locale } = useLanguage();
-useHead(() => ({
-  title: "MIRAI MUSEUM",
-  meta: [
+import PixelArt from "~/components/museum/PixelArt.vue";
+import RuSprite from "~/components/museum/RuSprite.vue";
+import MusicToggle from "~/components/museum/MusicToggle.vue";
+import MuseumMenu from "~/components/museum/MuseumMenu.vue";
+import ReadableText from "~/components/games/caesar/ReadableText.vue";
+useHead({
+  title: "みらい博物館",
+  htmlAttrs: { lang: "ja" },
+  link: [
     {
-      name: "description",
-      content:
-        locale.value === "ja"
-          ? "浮かぶ地球に触れて、世界を回そう。恐竜の冒険が待つ、みらい博物館。"
-          : "Touch a floating Earth and turn the world. A dinosaur adventure awaits at MIRAI MUSEUM.",
+      rel: "preload",
+      as: "image",
+      href: "/museum/pixel/standard/exterior-phone.png",
+      media: "(max-width: 699px)",
     },
-    { name: "theme-color", content: "#000000" },
   ],
-}));
+});
 </script>
-<template><FloatingEarthExperience /></template>
+<template>
+  <main class="museum-exterior" lang="ja" data-testid="museum-exterior">
+    <header class="museum-exterior-header">
+      <h1><ReadableText text="みらい博物館" /></h1>
+      <div class="museum-header-actions"><MusicToggle /><MuseumMenu /></div>
+    </header>
+    <PixelArt
+      class="museum-exterior-art"
+      asset="exterior-phone"
+      wide-asset="exterior-wide"
+      landscape-asset="exterior-landscape"
+      alt="星空の下、あたたかな窓とガラスのドームが光る石造りの博物館"
+      priority
+    >
+      <div class="museum-entrance">
+        <RuSprite pose="idle" :scale="3" /><NuxtLink
+          class="museum-button museum-enter"
+          to="/games/caesar"
+          >はいる <span aria-hidden="true">⌑</span></NuxtLink
+        >
+      </div>
+    </PixelArt>
+  </main>
+</template>

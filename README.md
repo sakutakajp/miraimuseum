@@ -1,36 +1,35 @@
-# MIRAI MUSEUM
+# みらい博物館
 
-黒い空間の青い地球から、恐竜時代の76.8秒の冒険へ。
+博物館に暮らす黒猫ルゥが、展示品の向こうへ旅をして、気持ちのよい寝床を探すゲームです。Nuxt 4 / Vue 3 / TypeScriptの構成を継続しています。
 
-ホームと恐竜ランStage 1は **Babylon.js 8 / TypeScript** で実装しています。暗号の遺跡Stage 1・2はファンタジーのイラスト背景にBabylon.jsの動きを重ねています。Nuxt 4 / Vueはページ、メニュー、HUDを担当します。ホームと恐竜ランは日英表示、暗号の遺跡は日本語表示です。Phaser・Three.js・TresJSの旧描画コードと依存は整理済みです。
+トップの「はいる」から「ひだまりの部屋」へ直接進みます。展示室の選択画面はありません。メニューから「時空ねこの もりラン」と「おひるねずかん」を開けます。音楽は利用者がオンにしたときだけ再生し、読み上げはありません。ルゥは短毛の黒猫で、セリフに「にゃ」は使いません。
 
 ```sh
 npm ci
-npm run dev
+npm run dev       # http://localhost:3000/
 npm run typecheck
 npm test
 npm run build
 npm run preview
-npm run test:browser     # 本番ビルドが必要
-npm run test:browser:static # prerender済み本番素材を直接ブラウザ検証
-npm run test:runtime     # dev限定の決定論・リソース検証
-npm run generate         # Capacitor向けに使用できる静的Webアセット
+npm run test:browser  # 本番ビルド後
+npm run test:runtime  # 開発環境の資源・退出確認
 ```
 
-一次仕様: [Babylon.js / フル3D共通仕様](docs/babylon-full3d-spec.md)。実装詳細: [共通基盤](docs/babylon-runtime.md)、[3Dホーム](docs/floating-earth.md)、[恐竜ラン](docs/deep-time-implementation.md)。検証結果は [検証記録](docs/verification/babylon-migration.md) に記載します。
+| URL | 内容 |
+| --- | --- |
+| `/` | 博物館の外観。「はいる」で暗号ゲームへ |
+| `/games/caesar/` | ひらがなの文字をずらし、日なたの扉を開く |
+| `/dinosaur` | 旧URLを維持した時空ねこのランゲーム |
+| `/naps` | このブラウザで見つけた2種類の寝床 |
+| `/about` | 史実・推定・創作、参考資料、保護者向け補足 |
+| `/games` | トップへ誘導。以前の直リンクも維持 |
 
-`/` はGLBの地球と展示物。恐竜のタップまたはフォーカス後Enterで `/dinosaur?play=1` を開始します。地球はドラッグ・ホイール・矢印キーで回転、Homeで向きを復元します。恐竜ランは自動前進、タップ・Space・↑でジャンプ、Escapeで一時停止。失敗から760msで自動リトライします。クリア後は再走またはホームへ戻れます。
+現在の仕様・素材・画面例は [リニューアル仕様](docs/museum-renewal.md)、教材の問題と変換は [暗号ゲーム](docs/caesar-game.md)、確認結果は [検証記録](docs/verification/museum-renewal.md) を参照してください。
 
-車は既存の恐竜クリア記録で解放します。初回クリア後にホームへ戻ると恐竜と同じ光柱で登場し、次のアクセスでも演出を再生します。同一訪問中の再クリアでは繰り返しません。車を選ぶと開発中の案内を表示します。自由の女神は常設の展示です。提供GLBは変更していません。地球の出典・ライセンスは `public/floating-earth/` に保存しています。
+描画はドット絵の背景、独立したルゥの画像、HTMLの文字盤と軽いCSSアニメーションです。現在のページでWebGLは必要ありません。従来のBabylon.js共通基盤・資産・単体テストは保管していますが、トップと2つのゲームは読み込みません。新しい3D依存は追加していません。
 
-`app/three-d` がEngine / Scene、素材・音声、入力、品質・設定を管理します。`app/games/dinosaur` は3D表示とStage 1の制御・配置データ、`app/game/dinosaur` は引き継いだ240Hzの判定・150 BPMの時刻・得点・音声を管理します。毎フレームの状態はVueへ送りません。ステージ追加は部品・配置・ルールを変更し、他ジャンルへ同じ形式を強制しません。
+クリア状況はバージョン付きのローカル保存です。破損・保存拒否でも遊べます。旧教材の保存を新しい問題の正解として読み替えません。ログイン、別端末への同期、本番デプロイは今回の実装に含みません。
 
-`app/games/catalog.ts` に11ゲームのID・日英名称・展示物・実装状態・起動先を定義しています。`/games` は遊べるゲームの一覧です。恐竜ランStage 1と、ロゼッタストーンの暗号ゲーム「暗号の遺跡」Stage 1・2が遊べます。残る9ゲームのSceneや仮の起動先は用意していません。地形・恐竜の周囲モデルは再利用する3D部品で構成し、T. rex・トリケラトプスは手続き的な仮モデルです。美術用GLBと制作済みの歩行クリップの追加は残作業です。
+型チェック・ビルド・開発サーバーはNuxtの生成物を共有するため、同時実行しないでください。従来の3D版やミイの冒険を記した仕様書は履歴です。現在の仕様は上記3文書です。
 
-暗号の遺跡: `/games/caesar`。アクセス時に目的と遊び方を説明する導入画面を表示し、「冒険をはじめる」でStage 1へ進みます。クイズは「こねこ」「こいぬ」「えほん」を使う日本語で、46文字のひらがなをずらして解きます。低学年向けの案内と漢字のルビ、ひらがなのならびを確認する表を付けています。3本の連動文字帯を右ドラッグ／右キーで戻し、橋をつなぎます。通信機では解読・暗号化・1文字修正の3問に挑戦します。時間制限・減点・ログインはなく、ヒントと初回正誤・実行回数をブラウザに保存します。詳しくは [暗号ゲームの実装と検証](docs/caesar-game.md)。
-
-保存キー `mirai-museum:deep-time:v1`、`mirai-museum:v2`、`mirai-museum:language` を維持します。旧 `mirai-museum:v1` の記録は削除せず、ミュート設定を引き継ぎます。品質・音量は `mirai-museum:settings:v1`。保存を拒否された場合もプレイを続けられます。
-
-WebGL2が必要です。ホームは描画不能時に静止画とゲームへのリンクを提示し、ゲームは再読み込み・ホームへの復帰を提示します。端末の画質設定とreduced motionに対応します。モバイルのブラウザエミュレーションと実機検証は別です。iOS / Android / Capacitor実機、GPUメモリの直接計測、ネイティブ公開は未実施です。
-
-Storybook: `npm run storybook` / `npm run build-storybook`。旧ピクセルアートの原本は `source-art/pixel/`、地球素材の生成元とライセンスは保持しています。
+素材の粒度をそろえる共通ツール：`npm run assets:pixel`。Nodeの標準ライブラリとFFmpegを使い、元画像を残して3段階を出力します。設定は `assets/pixel-art.config.json`。実行コマンド・設定例・背景と透過猫の比較・制約は [画像変換ツール](docs/pixel-assets.md) を参照してください。
