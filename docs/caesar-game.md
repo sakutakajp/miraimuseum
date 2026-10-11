@@ -9,7 +9,7 @@ npm ci
 npm run dev
 ```
 
-ホームの「ゲーム一覧」→ `/games` →「暗号の遺跡」→ `/games/caesar`。Stage 1から開始。「ステージ選択へ」からStage 1・2をいつでも選択できる。追加のAPI・ログイン・環境変数は不要。両ページは本番ビルドでprerenderする。
+ホームの「ゲーム一覧」→ `/games` →「暗号の遺跡」→ `/games/caesar`。アクセス時は導入画面で、橋と通信機を直す目的・2つのステージ・文字帯の動かし方をルビ付きで説明する。「冒険をはじめる」でStage 1へ進み、操作の案内へフォーカスを移す。再アクセス・再読み込みでも導入を表示し、保存した学習記録は保持する。開始後は「ステージ選択へ」からStage 1・2を選択できる。追加のAPI・ログイン・環境変数は不要。両ページは本番ビルドでprerenderする。
 
 ## 実装
 
@@ -19,9 +19,9 @@ npm run dev
 | 問題種別・入力・期待結果・通信記録 | `app/games/caesar/questions.ts` |
 | 日本語の案内・ラベル・ヒント | `app/games/caesar/copy.ts` |
 | 漢字の読み、ネイティブruby表示 | `app/games/caesar/readings.ts` / `ReadableText.vue` |
-| 入力・実行・誤答・演出・次問待ちの状態遷移 | `app/games/caesar/state.ts` |
+| 導入・開始・入力・実行・誤答・演出・次問待ちの状態遷移 | `app/games/caesar/state.ts` |
 | 初回正誤・実行数・ヒント数、version 1の保存 | `app/games/caesar/progress.ts` |
-| UI・同期ドラッグ・復習欄 | `app/components/games/caesar/` |
+| 導入画面・UI・同期ドラッグ・復習欄 | `app/components/games/caesar/` |
 | 背景のファンタジーイラスト＋橋・探検者・光の動き | `app/games/caesar/scene.ts` / `geometry.ts` |
 | 共通のEngine・Scene・描画・visibility・解放 | 既存の `app/three-d/runtime.ts` |
 
@@ -45,11 +45,11 @@ npm run build
 ./node_modules/.bin/playwright test --config playwright.runtime.config.ts tests/runtime-browser/caesar.spec.ts
 ```
 
-ロジックの単体検証は `tests/caesar.test.ts`。ルビの読み・文脈・漢字の網羅は `tests/caesar-readings.test.ts`。本番ブラウザ検証は `tests/browser/caesar.spec.ts`。資源とcontext lossの検証は `tests/runtime-browser/caesar.spec.ts`。本番のブラウザテストでは既存ホーム・恐竜への遷移も合わせて確認する。橋・通信機・終了・ゲーム一覧の実際のDOMでも、漢字にルビがあることを確認する。
+ロジックの単体検証は `tests/caesar.test.ts`。ルビの読み・文脈・漢字の網羅は `tests/caesar-readings.test.ts`。本番ブラウザ検証は `tests/browser/caesar.spec.ts`。資源とcontext lossの検証は `tests/runtime-browser/caesar.spec.ts`。本番のブラウザテストでは既存ホーム・恐竜への遷移も合わせて確認する。導入・橋・通信機・終了・ゲーム一覧の実際のDOMでも、漢字にルビがあることを確認する。導入からキーボード・タッチで開始でき、再入場・再読み込み後も記録が残ることを検証する。
 
 確認対象はLinux ChromiumのPC 1440×1000、スマホ縦390×844・幅320、タッチのエミュレーション、キーボードのみ、reduced motion。実行前の結果非表示、誤答・ヒント・同値解・修正位置変更・再挑戦・保存拒否・描画不能を検証する。画面画像はPlaywrightの `test-results/production` に出力する。資源の測定結果は `test-results/runtime` に出力する。
 
-2026-10-11の検証: 型チェック・本番ビルド成功、単体77件、本番ブラウザ8件、描画資源のブラウザ検証1件が通過。PCの両ステージ・橋の接続・終了・一覧、スマホ縦の両ステージのスクリーンショットを作成した。
+2026-10-11の導入画面追加後の検証: 型チェック・本番ビルド成功、単体78件、本番ブラウザ10件、描画資源のブラウザ検証1件が通過。PC・スマホ縦の導入画面、PCの両ステージ・橋の接続・終了・一覧、スマホ縦の両ステージのスクリーンショットを作成した。
 
 10回のやり直し前後で17メッシュ・6マテリアルを維持（Stage 1初期の描画5回）。3回のSPA退出ごとにEngine・Scene・描画ループ・listenerがすべて0、再入場で1・1・1・2に復帰した。タブ非表示でループ0、復帰で1。context loss後に資源0へ解放し、新しいcanvasで再表示できた。FPSはソフトウェアWebGLと自動操作の影響を受けるため、実機の性能値として扱わない。
 

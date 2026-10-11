@@ -5,7 +5,7 @@ import { questions } from "./questions";
 export type Phase = "editing" | "executing" | "incorrect" | "celebrating" | "waiting";
 export type Direction = "backward" | "forward";
 export interface GameState {
-  view: "bridge" | "machine" | "complete" | "menu";
+  view: "intro" | "bridge" | "machine" | "complete" | "menu";
   phase: Phase;
   bridgeShift: number;
   guideDone: boolean;
@@ -33,7 +33,7 @@ export type Action =
   | { type: "next" };
 
 export function createState(progress = emptyProgress()): GameState {
-  return { view: "bridge", phase: "editing", bridgeShift: 0, guideDone: false, questionIndex: 0, direction: null, amount: 0, selectedLetter: null, replacement: null, result: null, correct: null, progress };
+  return { view: "intro", phase: "editing", bridgeShift: 0, guideDone: false, questionIndex: 0, direction: null, amount: 0, selectedLetter: null, replacement: null, result: null, correct: null, progress };
 }
 export const bridgeWord = (state: GameState) => shiftWord("FDW", state.bridgeShift);
 export const editable = (state: GameState) => state.phase === "editing" || state.phase === "incorrect";
@@ -50,7 +50,7 @@ const hideResult = (state: GameState): GameState => ({ ...state, phase: "editing
 export function transition(state: GameState, action: Action): GameState {
   if (action.type === "start") {
     const next = createState(state.progress);
-    return action.stage === 1 ? next : { ...next, view: "machine", progress: { ...next.progress, machineCleared: false, records: emptyRecords() } };
+    return action.stage === 1 ? { ...next, view: "bridge" } : { ...next, view: "machine", progress: { ...next.progress, machineCleared: false, records: emptyRecords() } };
   }
   if (action.type === "menu") return { ...state, view: "menu", phase: "editing" };
   if (action.type === "bridge-shift") {

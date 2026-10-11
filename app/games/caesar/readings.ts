@@ -26,7 +26,7 @@ const readings: Record<string, string> = {
   済: "ず", 送: "おく", 自分: "じぶん", 作: "つく", 番: "ばん", 間違: "まちが",
   手: "て", 起動: "きどう", 起: "お", 少: "すこ", 日: "ひ", 走: "はし",
   万: "まん", 秒: "びょう", 受: "う", 文: "ぶん", 字: "じ", 呼: "よ",
-  後: "ご", 所: "しょ", 変: "か", 操作: "そうさ",
+  後: "ご", 所: "しょ", 変: "か", 操作: "そうさ", 力: "ちから", 冒険: "ぼうけん",
 };
 const keys = Object.keys(readings).sort((a, b) => b.length - a.length);
 export interface ReadingPart { text: string; reading?: string }

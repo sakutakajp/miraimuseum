@@ -11,6 +11,8 @@ test("Caesar resets reuse the scene, visibility stops rendering, and route/conte
   await page.evaluate(() => { (window as any).__caesarCounters = (window as any).__caesar3d.resources; });
   const resources = () => page.evaluate(() => ({ ...(window as any).__caesarCounters }));
   const original = await page.evaluate(() => (window as any).__caesar3d.metrics());
+  await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
+  expect(await resources()).toMatchObject({ engines: 1, scenes: 1, loops: 1, listeners: 2 });
   for (let i = 0; i < 10; i++) {
     await page.getByRole("button", { name: "1文字もどす" }).click();
     await page.getByRole("button", { name: "このステージをやり直す" }).click();

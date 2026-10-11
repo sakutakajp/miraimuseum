@@ -8,6 +8,7 @@ import { questions } from "~/games/caesar/questions";
 import { bridgeWord, canExecute, createState, editable, repairWord, transition, type Action } from "~/games/caesar/state";
 import type { WorldState } from "~/games/caesar/scene";
 import LetterBands from "./LetterBands.vue";
+import Introduction from "./Introduction.vue";
 import RuinWorld from "./RuinWorld.client.vue";
 import StudyReview from "./StudyReview.vue";
 
@@ -24,11 +25,12 @@ const currentRecord = computed(() => state.value.progress.records[question.value
 const locked = computed(() => !editable(state.value));
 const repaired = computed(() => Object.values(state.value.progress.records).filter(record => record.solved).length);
 const world = computed<WorldState>(() => ({
-  stage: state.value.view === "bridge" || state.value.view === "menu" ? 1 : 2,
+  stage: state.value.view === "machine" || state.value.view === "complete" ? 2 : 1,
   bridgeSolved: state.value.view === "bridge" && state.value.progress.bridgeCleared && locked.value,
   repaired: repaired.value, complete: state.value.view === "complete",
 }));
 const stageNumber = computed(() => world.value.stage);
+const worldTitle = computed(() => state.value.view === "intro" || state.value.view === "complete" ? copy.title : stageNumber.value === 1 ? copy.stage1 : copy.stage2);
 const bridgeMessage = computed(() => locked.value ? copy.bridgeConnected : !state.value.guideDone ? copy.dragGuide : state.value.bridgeShift === 25 ? copy.oneBack : copy.bridgeGoal);
 const equivalent = computed(() => state.value.correct && state.value.amount === 23 ? (question.value.id === "decrypt" ? copy.equivalentBack : copy.equivalentForward) : "");
 const wrongMessage = computed(() => question.value.id === "repair" ? copy.repairHint : question.value.id === "decrypt" && state.value.direction === "forward" && state.value.amount === 3 ? copy.reverseHint : copy.retryHint);
@@ -60,7 +62,7 @@ function dispatch(action: Action) {
   if (state.value.view === "complete" && previous.view !== "complete") saveMuseumClear(2);
   if (state.value.phase === "executing" && previous.phase !== "executing") later({ type: "resolve" }, 240);
   if (state.value.phase === "celebrating" && previous.phase !== "celebrating") later({ type: "settle" }, state.value.view === "bridge" ? 3300 : 950);
-  if (action.type === "next" || action.type === "start") nextTick(() => questionHeading.value?.focus({ preventScroll: true }));
+  if (action.type === "next" || action.type === "start") nextTick(() => questionHeading.value?.focus({ preventScroll: previous.view !== "intro" }));
 }
 function shiftBridge(amount: number) {
   if (locked.value) return;
@@ -91,11 +93,11 @@ onBeforeUnmount(cancelTimers);
   <main class="caesar" :data-view="state.view" :data-phase="state.phase">
     <header class="caesar-topbar">
       <NuxtLink to="/games" class="caesar-brand">MIRAI <span>MUSEUM</span></NuxtLink>
-      <nav :aria-label="copy.games"><NuxtLink to="/games" :aria-label="`← ${copy.games}`">← <ReadableText :text="copy.games" /></NuxtLink><button :aria-label="copy.chooseStage" v-if="state.view !== 'menu'" @click="dispatch({ type: 'menu' })"><ReadableText :text="copy.chooseStage" /></button></nav>
+      <nav :aria-label="copy.games"><NuxtLink to="/games" :aria-label="`← ${copy.games}`">← <ReadableText :text="copy.games" /></NuxtLink><button :aria-label="copy.chooseStage" v-if="state.view !== 'intro' && state.view !== 'menu'" @click="dispatch({ type: 'menu' })"><ReadableText :text="copy.chooseStage" /></button></nav>
     </header>
 
     <RuinWorld :state="world" :light="lightQuality">
-      <div class="caesar-world__heading"><span class="caesar-eyebrow">THE CIPHER RUINS <i /> STAGE 0{{ stageNumber }}</span><h1 :aria-label="state.view === 'complete' ? copy.title : stageNumber === 1 ? copy.stage1 : copy.stage2"><ReadableText :text="state.view === 'complete' ? copy.title : stageNumber === 1 ? copy.stage1 : copy.stage2" /></h1><div class="caesar-title-rule"><span>◇</span></div></div>
+      <div class="caesar-world__heading"><span class="caesar-eyebrow">THE CIPHER RUINS <template v-if="state.view !== 'intro'"><i /> STAGE 0{{ stageNumber }}</template></span><h1 :aria-label="worldTitle"><ReadableText :text="worldTitle" /></h1><div class="caesar-title-rule"><span>◇</span></div></div>
       <template v-if="state.view === 'bridge'">
         <div class="caesar-world__letters" :class="{ solved: locked }" :aria-label="`${copy.bridgeLetters}: ${word}`"><span v-for="(letter, index) in word" :key="index">{{ letter }}</span></div>
         <div class="caesar-world__goal"><ReadableText :text="copy.catHint" /></div>
@@ -104,7 +106,9 @@ onBeforeUnmount(cancelTimers);
       <label class="caesar-quality"><ReadableText :text="copy.quality" /><select v-model="lightQuality"><option :value="false">{{ copy.standard }}</option><option :value="true">{{ copy.light }}</option></select></label>
     </RuinWorld>
 
-    <section v-if="state.view === 'bridge'" class="caesar-console caesar-console--bridge" aria-labelledby="bridge-prompt">
+    <Introduction v-if="state.view === 'intro'" @start="dispatch({ type: 'start', stage: 1 })" />
+
+    <section v-else-if="state.view === 'bridge'" class="caesar-console caesar-console--bridge" aria-labelledby="bridge-prompt">
       <div class="caesar-console__corners" aria-hidden="true" />
       <div class="caesar-console__heading"><span class="caesar-eyebrow">01 / DISCOVER THE KEY</span><h2 :aria-label="bridgeMessage" id="bridge-prompt" ref="questionHeading" tabindex="-1"><ReadableText :text="bridgeMessage" /></h2></div>
       <div class="caesar-original"><span><ReadableText :text="copy.originalCipher" /></span><div class="caesar-word caesar-word--gold"><b v-for="(letter, index) in 'FDW'" :key="index">{{ letter }}</b></div></div>

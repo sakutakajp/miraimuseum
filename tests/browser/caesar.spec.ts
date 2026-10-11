@@ -5,9 +5,11 @@ import { SAVE_KEY } from "../../app/games/caesar/progress";
 test.beforeEach(async ({ page }) => {
   await page.route("https://fonts.googleapis.com/**", route => route.fulfill({ body: "", contentType: "text/css" }));
 });
-async function open(page: Page) {
+async function open(page: Page, keyboard = false) {
   await page.goto("/games/caesar");
   await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", "webgl", { timeout: 30000 });
+  if (keyboard) await keyboardButton(page, "冒険をはじめる");
+  else await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
 }
 async function expectAllKanjiHaveReadings(page: Page) {
   const unread = await page.locator("main").evaluate(main => {
@@ -48,6 +50,38 @@ async function keyboardButton(page: Page, name: string) {
   await tabTo(page, page.getByRole("button", { name, exact: true }));
   await page.keyboard.press("Enter");
 }
+
+test("entry, return and reload show the illustrated introduction without losing saved records", async ({ page }, info) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/games/caesar");
+  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
+  await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", "webgl", { timeout: 30000 });
+  await expect(page.getByRole("heading", { name: "暗号の遺跡", exact: true })).toBeVisible();
+  await expectReadable(page, ".caesar-intro", "橋をつなぎ、壊れた通信機を直そう！");
+  await expectReadable(page, ".caesar-intro", "帯を右に引くと1文字もどり、左に引くと1文字すすむよ。");
+  await expectAllKanjiHaveReadings(page);
+  await expect(page.locator(".caesar-intro")).not.toContainText(/FDW|CAT|GRJ|DOG|ERA/);
+  await expect(page.locator(".caesar-band")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "ステージ選択へ", exact: true })).toHaveCount(0);
+  await page.screenshot({ path: info.outputPath("intro-desktop.png"), fullPage: true });
+  await keyboardButton(page, "冒険をはじめる");
+  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "bridge");
+  await expect(page.getByTestId("bridge-output")).toHaveText("FDW");
+  await expect(page.locator("#bridge-prompt")).toBeFocused();
+  await expect(page.locator("canvas")).toHaveCount(1);
+  await machine(page);
+  await page.getByRole("button", { name: /ヒントを見る/ }).click();
+  const saved = await page.evaluate(key => localStorage.getItem(key), SAVE_KEY);
+  expect(JSON.parse(saved!)).toMatchObject({ records: { decrypt: { hints: 1 } } });
+  await page.getByRole("link", { name: /ゲーム一覧/ }).first().click();
+  await page.getByRole("link", { name: /暗号の遺跡/ }).click();
+  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
+  await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
+  expect(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).toBe(saved);
+  await page.reload();
+  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
+  expect(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).toBe(saved);
+});
 
 test("linked drag, bridge completion, wrong answers, equivalent keys and one-slot repair", async ({ page }, info) => {
   const errors: string[] = [];
@@ -139,6 +173,7 @@ test("linked drag, bridge completion, wrong answers, equivalent keys and one-slo
   await page.screenshot({ path: info.outputPath("games-desktop.png"), fullPage: true });
   await page.reload();
   await page.getByRole("link", { name: /暗号の遺跡/ }).click();
+  await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
   await page.getByRole("button", { name: "ステージ選択へ", exact: true }).click();
   await expectReadable(page, ".caesar-review", "ヒントを使って解けた");
   expect(errors).toEqual([]);
@@ -146,7 +181,7 @@ test("linked drag, bridge completion, wrong answers, equivalent keys and one-slo
 
 test("both stages can be completed with only the keyboard and reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await open(page);
+  await open(page, true);
   await tabTo(page, page.locator(".caesar-band").first());
   await page.keyboard.press("ArrowLeft");
   await expect(page.getByTestId("bridge-output")).toHaveText("GEX");
@@ -175,6 +210,21 @@ test("both stages can be completed with only the keyboard and reduced motion", a
 
 test.describe("portrait touch", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  test("the introduction fits portrait screens and starts the adventure by touch", async ({ page }, info) => {
+    await page.goto("/games/caesar");
+    await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
+    await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", "webgl", { timeout: 30000 });
+    await expectAllKanjiHaveReadings(page);
+    const start = page.getByRole("button", { name: "冒険をはじめる", exact: true });
+    expect((await start.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: info.outputPath("intro-mobile.png"), fullPage: true });
+    await page.setViewportSize({ width: 320, height: 740 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await start.tap();
+    await expect(page.getByTestId("bridge-output")).toHaveText("FDW");
+    await expect(page.locator("#bridge-prompt")).toBeFocused();
+  });
   test("horizontal touch drags synchronize, vertical touch still scrolls, and panels fit", async ({ page }, info) => {
     await open(page);
     const band = page.locator(".caesar-band").first();
@@ -218,6 +268,8 @@ test("corrupt/blocked storage and unavailable WebGL keep the game usable", async
   }, SAVE_KEY);
   await page.goto("/games/caesar");
   await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", "fallback");
+  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
+  await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
   await page.getByRole("button", { name: "1文字もどす" }).click();
   await expect(page.getByTestId("bridge-output")).toHaveText("ECV");
   await machine(page);

@@ -26,8 +26,21 @@ describe("Caesar transformations", () => {
 });
 
 describe("Caesar game progression", () => {
+  it("shows the introduction on entry and preserves learning records when starting the bridge", () => {
+    const progress = solve(start(), "backward", 3).progress;
+    const intro = createState(progress);
+    expect(intro.view).toBe("intro");
+    expect(canExecute(intro)).toBe(false);
+    expect(transition(intro, { type: "bridge-shift", shift: -3 })).toBe(intro);
+    expect(transition(intro, { type: "hint" })).toBe(intro);
+    const bridge = transition(intro, { type: "start", stage: 1 });
+    expect(bridge.view).toBe("bridge");
+    expect(bridgeWord(bridge)).toBe("FDW");
+    expect(bridge.progress).toBe(progress);
+    expect(createState(bridge.progress).view).toBe("intro");
+  });
   it("moves all three bridge letters together, wraps, and locks only the snapped solution", () => {
-    let state = createState();
+    let state = transition(createState(), { type: "start", stage: 1 });
     for (const expected of ["ECV", "DBU", "CAT"]) {
       state = transition(state, { type: "bridge-shift", shift: -1 });
       expect(bridgeWord(state)).toBe(expected);
