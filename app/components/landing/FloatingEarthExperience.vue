@@ -126,6 +126,7 @@ onBeforeUnmount(() => {
       <p v-if="!pending && !ready" class="earth-home__failure">{{ locale === "ja" ? "3D表示を読み込めませんでした。" : "The 3D view could not be loaded." }} <button type="button" @click="retryHome">{{ locale === "ja" ? "再読み込み" : "Reload" }}</button></p>
       <NuxtLink v-if="!pending && !ready" to="/dinosaur?play=1" no-prefetch class="earth-home__fallback-link" @click="prepareGameEntry">{{ t('恐竜ゲームをはじめる') }}</NuxtLink>
       <noscript><a class="earth-home__fallback-link" href="/dinosaur">{{ t('恐竜ゲームをはじめる') }}</a></noscript>
+      <NuxtLink to="/games" no-prefetch class="earth-home__games" :aria-label="locale === 'ja' ? 'ゲーム一覧 ↗' : 'Games ↗'"><template v-if="locale === 'ja'">ゲーム<ruby>一覧<rt aria-hidden="true">いちらん</rt></ruby></template><template v-else>Games</template> ↗</NuxtLink>
     </footer>
     <dialog ref="gameNotice" class="earth-home__game-notice" aria-labelledby="cybertruck-notice-title" @click.self="gameNotice?.close()">
       <h2 id="cybertruck-notice-title">{{ t('次のゲームは開発中です。') }}</h2>
@@ -161,6 +162,8 @@ onBeforeUnmount(() => {
 }
 .earth-home__title { margin: 0; color: inherit; font-family: "M PLUS Rounded 1c", sans-serif; font-size: clamp(16px, 2vw, 22px); font-weight: 700; letter-spacing: .06em; line-height: 1.5; }
 .earth-home__actions { display: flex; align-items: center; gap: 10px; }
+.earth-home__games { position: absolute; right: max(20px, env(safe-area-inset-right)); bottom: max(4px, env(safe-area-inset-bottom)); display: inline-flex; align-items: center; min-height: 44px; color: #bbc4d0; font-size: 11px; text-decoration: none; white-space: nowrap; }
+.earth-home__games rt { font-size: 9px; line-height: 1; }
 .earth-home__quality select { background: #080c13; color: #bbc4d0; border: 1px solid #ffffff24; border-radius: 20px; padding: 8px; font: 11px inherit; }
 .earth-home__language { display: grid; place-items: center; flex-shrink: 0; min-width: 60px; min-height: 40px; padding: 8px 12px; border: 1px solid #ffffff24; border-radius: 24px; background: transparent; color: #dce0e8; font-family: inherit; font-size: 12px; line-height: 1.2; cursor: pointer; touch-action: manipulation; }
 .earth-home__language:hover { border-color: #ffffff60; color: #fff; }

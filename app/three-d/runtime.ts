@@ -15,9 +15,9 @@ export class SceneRuntime {
   private previous = 0;
   private frame?: (dt: number) => void;
   private quality: Quality;
-  constructor(readonly canvas: HTMLCanvasElement, quality: Quality, onFailure: (error: unknown) => void) {
+  constructor(readonly canvas: HTMLCanvasElement, quality: Quality, onFailure: (error: unknown) => void, options: { transparent?: boolean } = {}) {
     this.quality = quality;
-    this.engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: true, powerPreference: "high-performance", audioEngine: false });
+    this.engine = new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: true, powerPreference: "high-performance", audioEngine: false, ...(options.transparent ? { alpha: true, premultipliedAlpha: false } : {}) });
     if (this.engine.webGLVersion < 2) { this.engine.dispose(); throw new Error("WebGL2 is required"); }
     runtimeResources.engines++;
     this.scene = new Scene(this.engine);

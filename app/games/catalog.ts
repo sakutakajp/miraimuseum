@@ -7,7 +7,7 @@ export const games: readonly GameDefinition[] = [
   { id: "dinosaur-run", name: { ja: "恐竜ラン", en: "Dinosaur run" }, exhibit: "dinosaur", status: "playable", route: "/dinosaur", stages: [{ id: 1, title: "Stage 1" }] },
   { id: "human-hunt", name: { ja: "人類の狩猟", en: "Human hunting" }, exhibit: "mammoth", status: "planned", stages: [] },
   { id: "farm", name: { ja: "農場", en: "Farm" }, exhibit: "farm", status: "planned", stages: [] },
-  { id: "rosetta", name: { ja: "ロゼッタストーン", en: "Rosetta Stone" }, exhibit: "rosetta-stone", status: "planned", stages: [] },
+  { id: "rosetta", name: { ja: "暗号の遺跡", en: "The Cipher Ruins" }, exhibit: "rosetta-stone", status: "playable", route: "/games/caesar", stages: [{ id: 1, title: "暗号の橋" }, { id: 2, title: "壊れた通信機" }] },
   { id: "castle", name: { ja: "中世の城", en: "Medieval castle" }, exhibit: "castle", status: "planned", stages: [] },
   { id: "sailing", name: { ja: "帆船", en: "Sailing" }, exhibit: "sailboat", status: "planned", stages: [] },
   { id: "factory", name: { ja: "工場", en: "Factory" }, exhibit: "factory", status: "planned", stages: [] },

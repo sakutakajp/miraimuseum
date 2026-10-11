@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   ssr: true,
   vite: { optimizeDeps: { include: ["@babylonjs/core", "@babylonjs/loaders/glTF"] } },
-  nitro: { prerender: { routes: ["/", "/dinosaur"] } },
+  nitro: { prerender: { routes: ["/", "/dinosaur", "/games", "/games/caesar"] } },
   compatibilityDate: "2026-10-05",
   devtools: { enabled: false },
   css: [

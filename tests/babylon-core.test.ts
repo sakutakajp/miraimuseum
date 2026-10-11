@@ -14,9 +14,9 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 const events = (): RunEvents => ({ mode: vi.fn(), record: vi.fn(), failed: vi.fn(), cleared: vi.fn(), cue: vi.fn(), jump: vi.fn(), land: vi.fn(), retry: vi.fn() });
 describe("Babylon migration: rules and saved data", () => {
-  it("composes all fifty challenges in six typed sections, with a single implemented game", () => {
+  it("composes all fifty challenges in six typed sections and routes only implemented games", () => {
     expect(games).toHaveLength(11); expect(new Set(games.map(g => g.id)).size).toBe(11);
-    expect(games.filter(g => g.status === "playable").map(g => g.route)).toEqual(["/dinosaur"]);
+    expect(games.filter(g => g.status === "playable").map(g => g.route)).toEqual(["/dinosaur", "/games/caesar"]);
     expect(games.filter(g => g.status === "planned").every(g => !g.route && !g.stages.length)).toBe(true);
     const placements = DINOSAUR_STAGE_1.sections.flatMap(s => s.placements);
     expect(new Set(placements.map(p => p.id)).size).toBe(DINOSAUR_STAGE_1.rules.obstacles.length);
