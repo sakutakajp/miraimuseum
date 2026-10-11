@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shiftWord, replaceLetter } from "../app/games/caesar/cipher";
+import { KANA, LETTER_COUNT, shiftWord, replaceLetter } from "../app/games/caesar/cipher";
 import { emptyProgress, feedback, parseProgress, readProgress, saveProgress } from "../app/games/caesar/progress";
 import { bridgeWord, canExecute, createState, repairWord, transition, type GameState } from "../app/games/caesar/state";
 
@@ -12,16 +12,26 @@ const next = (state: GameState) => transition(transition(state, { type: "settle"
 
 describe("Caesar transformations", () => {
   it.each([
-    ["FDW", -1, "ECV"], ["FDW", -2, "DBU"], ["FDW", -3, "CAT"],
-    ["GRJ", -3, "DOG"], ["GRJ", 23, "DOG"], ["BOX", 3, "ERA"], ["BOX", -23, "ERA"],
-    ["CAT", 3, "FDW"], ["A", -1, "Z"], ["Z", 1, "A"], ["ABC", -52, "ABC"],
+    ["すひす", -1, "しはし"], ["すひす", -2, "さのさ"], ["すひす", -3, "こねこ"],
+    ["すおは", -3, "こいぬ"], ["すおは", 43, "こいぬ"], ["えほん", 3, "きむう"], ["えほん", -43, "きむう"],
+    ["こねこ", 3, "すひす"], ["あ", -1, "ん"], ["ん", 1, "あ"], ["あいう", -92, "あいう"],
   ])("transforms %s by %i to %s", (input, shift, expected) => expect(shiftWord(input, shift)).toBe(expected));
   it("rejects invalid input and replaces only one position", () => {
-    expect(() => shiftWord("cat", 3)).toThrow();
-    expect(() => shiftWord("CAT", 1.5)).toThrow();
-    expect(shiftWord("CAT", 3)).not.toBe("FDY");
-    expect(replaceLetter("FDY", 2, "W")).toBe("FDW");
-    expect(replaceLetter("FDY", 9, "W")).toBe("FDY");
+    for (const word of ["CAT", "が", "ゃ", "ア", "", "こねこ!"]) expect(() => shiftWord(word, 3)).toThrow();
+    expect(() => shiftWord("こねこ", 1.5)).toThrow();
+    expect(shiftWord("こねこ", 3)).not.toBe("すひそ");
+    expect(replaceLetter("すひそ", 2, "す")).toBe("すひす");
+    expect(replaceLetter("すひそ", 9, "す")).toBe("すひそ");
+    for (const letter of ["", "すひ", "W", "が"]) expect(replaceLetter("すひそ", 2, letter)).toBe("すひそ");
+  });
+  it("cycles through 46 distinct hiragana and reverses shifts for every letter", () => {
+    expect(LETTER_COUNT).toBe(46);
+    expect(new Set(KANA).size).toBe(46);
+    for (const letter of KANA) {
+      expect(shiftWord(letter, 46)).toBe(letter);
+      expect(shiftWord(shiftWord(letter, 3), -3)).toBe(letter);
+      expect(shiftWord(letter, 43)).toBe(shiftWord(letter, -3));
+    }
   });
 });
 
@@ -35,13 +45,13 @@ describe("Caesar game progression", () => {
     expect(transition(intro, { type: "hint" })).toBe(intro);
     const bridge = transition(intro, { type: "start", stage: 1 });
     expect(bridge.view).toBe("bridge");
-    expect(bridgeWord(bridge)).toBe("FDW");
+    expect(bridgeWord(bridge)).toBe("すひす");
     expect(bridge.progress).toBe(progress);
     expect(createState(bridge.progress).view).toBe("intro");
   });
   it("moves all three bridge letters together, wraps, and locks only the snapped solution", () => {
     let state = transition(createState(), { type: "start", stage: 1 });
-    for (const expected of ["ECV", "DBU", "CAT"]) {
+    for (const expected of ["しはし", "さのさ", "こねこ"]) {
       state = transition(state, { type: "bridge-shift", shift: -1 });
       expect(bridgeWord(state)).toBe(expected);
     }
@@ -49,8 +59,8 @@ describe("Caesar game progression", () => {
     expect(state.progress.bridgeCleared).toBe(true);
     expect(transition(state, { type: "bridge-shift", shift: 1 })).toBe(state);
     state = transition(state, { type: "start", stage: 1 });
-    expect(transition(state, { type: "bridge-shift", shift: 26 }).bridgeShift).toBe(0);
-    expect(bridgeWord(state)).toBe("FDW");
+    expect(transition(state, { type: "bridge-shift", shift: 46 }).bridgeShift).toBe(0);
+    expect(bridgeWord(state)).toBe("すひす");
   });
   it("requires a direction, hides results until execution, and clears obsolete results", () => {
     let state = start();
@@ -64,15 +74,15 @@ describe("Caesar game progression", () => {
     expect(transition(pending, { type: "execute" })).toBe(pending);
     expect(transition(pending, { type: "amount", amount: 3 })).toBe(pending);
     state = transition(pending, { type: "resolve" });
-    expect(state.result).toBe("GRJ");
+    expect(state.result).toBe("すおは");
     expect(state.phase).toBe("incorrect");
     expect(transition(state, { type: "direction", direction: "backward" }).result).toBeNull();
     expect(transition(state, { type: "amount", amount: 3 }).result).toBeNull();
     state = solve(state, "backward", 3);
-    expect(state.result).toBe("DOG");
+    expect(state.result).toBe("こいぬ");
     expect(state.progress.records.decrypt).toEqual({ attempts: 2, hints: 0, firstCorrect: false, solved: true });
   });
-  it.each([[["backward", 3], ["forward", 3]], [["forward", 23], ["backward", 23]]] as const)("accepts equivalent keys %j", (decrypt, encrypt) => {
+  it.each([[["backward", 3], ["forward", 3]], [["forward", 43], ["backward", 43]]] as const)("accepts equivalent keys %j", (decrypt, encrypt) => {
     let state = solve(start(), decrypt[0], decrypt[1]);
     expect(state.correct).toBe(true);
     expect(transition(state, { type: "next" })).toBe(state);
@@ -82,21 +92,22 @@ describe("Caesar game progression", () => {
     expect(state.amount).toBe(0);
     expect(state.result).toBeNull();
     state = solve(state, encrypt[0], encrypt[1]);
-    expect(state.result).toBe("ERA");
+    expect(state.result).toBe("きむう");
     expect(state.correct).toBe(true);
   });
   it("resets previous repairs when choosing another position, and validates the complete word", () => {
     let state = next(solve(next(solve(start(), "backward", 3)), "forward", 3));
     expect(canExecute(state)).toBe(false);
     state = transition(state, { type: "select-letter", index: 0 });
-    state = transition(state, { type: "replace", letter: "G" });
-    expect(repairWord(state)).toBe("GDY");
+    state = transition(state, { type: "replace", letter: "せ" });
+    expect(repairWord(state)).toBe("せひそ");
     expect(transition(state, { type: "select-letter", index: 0 })).toBe(state);
     state = transition(state, { type: "select-letter", index: 2 });
-    expect(repairWord(state)).toBe("FDY");
+    expect(repairWord(state)).toBe("すひそ");
+    for (const letter of ["", "すひ", "W", "が"]) expect(transition(state, { type: "replace", letter })).toBe(state);
     state = execute(state);
     expect(state.correct).toBe(false);
-    state = transition(state, { type: "replace", letter: "W" });
+    state = transition(state, { type: "replace", letter: "す" });
     expect(state.result).toBeNull();
     state = execute(state);
     expect(state.correct).toBe(true);

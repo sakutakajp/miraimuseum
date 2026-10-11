@@ -1,6 +1,6 @@
-import { replaceLetter, shiftWord, wrap26 } from "./cipher";
+import { isKanaLetter, replaceLetter, shiftWord, wrapShift } from "./cipher";
 import { emptyProgress, emptyRecords, type CaesarProgress } from "./progress";
-import { questions } from "./questions";
+import { bridgePuzzle, questions } from "./questions";
 
 export type Phase = "editing" | "executing" | "incorrect" | "celebrating" | "waiting";
 export type Direction = "backward" | "forward";
@@ -35,7 +35,7 @@ export type Action =
 export function createState(progress = emptyProgress()): GameState {
   return { view: "intro", phase: "editing", bridgeShift: 0, guideDone: false, questionIndex: 0, direction: null, amount: 0, selectedLetter: null, replacement: null, result: null, correct: null, progress };
 }
-export const bridgeWord = (state: GameState) => shiftWord("FDW", state.bridgeShift);
+export const bridgeWord = (state: GameState) => shiftWord(bridgePuzzle.input, state.bridgeShift);
 export const editable = (state: GameState) => state.phase === "editing" || state.phase === "incorrect";
 export function canExecute(state: GameState): boolean {
   return state.view === "machine" && editable(state) && (questions[state.questionIndex]!.id === "repair" ? state.selectedLetter !== null && state.replacement !== null : state.direction !== null);
@@ -55,8 +55,8 @@ export function transition(state: GameState, action: Action): GameState {
   if (action.type === "menu") return { ...state, view: "menu", phase: "editing" };
   if (action.type === "bridge-shift") {
     if (state.view !== "bridge" || !editable(state)) return state;
-    const bridgeShift = wrap26(state.bridgeShift + action.shift);
-    const solved = shiftWord("FDW", bridgeShift) === "CAT";
+    const bridgeShift = wrapShift(state.bridgeShift + action.shift);
+    const solved = shiftWord(bridgePuzzle.input, bridgeShift) === bridgePuzzle.expected;
     return { ...state, bridgeShift, guideDone: true, phase: solved ? "celebrating" : "editing", progress: solved ? { ...state.progress, bridgeCleared: true } : state.progress };
   }
   if (action.type === "settle") return state.phase === "celebrating" ? { ...state, phase: "waiting" } : state;
@@ -77,9 +77,9 @@ export function transition(state: GameState, action: Action): GameState {
   if (!editable(state)) return state;
   switch (action.type) {
     case "direction": return question.id === "repair" ? state : { ...hideResult(state), direction: action.direction };
-    case "amount": return question.id === "repair" ? state : { ...hideResult(state), amount: wrap26(action.amount) };
+    case "amount": return question.id === "repair" ? state : { ...hideResult(state), amount: wrapShift(action.amount) };
     case "select-letter": return question.id !== "repair" || !Number.isInteger(action.index) || action.index < 0 || action.index >= question.input.length || action.index === state.selectedLetter ? state : { ...hideResult(state), selectedLetter: action.index, replacement: question.input[action.index]! };
-    case "replace": return question.id !== "repair" || state.selectedLetter === null || !/^[A-Z]$/.test(action.letter) ? state : { ...hideResult(state), replacement: action.letter };
+    case "replace": return question.id !== "repair" || state.selectedLetter === null || !isKanaLetter(action.letter) ? state : { ...hideResult(state), replacement: action.letter };
     case "hint": {
       const record = state.progress.records[question.id];
       return record.hints >= question.hints.length ? state : { ...state, progress: { ...state.progress, records: { ...state.progress.records, [question.id]: { ...record, hints: record.hints + 1 } } } };

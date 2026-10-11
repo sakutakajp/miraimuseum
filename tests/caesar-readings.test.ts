@@ -4,7 +4,7 @@ import { readingParts } from "../app/games/caesar/readings";
 
 function playerTexts(value: unknown): string[] {
   if (typeof value === "string") return [value];
-  if (typeof value === "function") return [value(1, "F")];
+  if (typeof value === "function") return [value(1, "す")];
   if (value && typeof value === "object") return Object.values(value).flatMap(playerTexts);
   return [];
 }
@@ -15,7 +15,7 @@ describe("Caesar readings for younger children", () => {
   });
   it("preserves letters, numbers, punctuation and the original text", () => {
     for (const text of playerTexts(copy)) expect(readingParts(text).map(part => part.text).join("")).toBe(text);
-    expect(readingParts("FDW → CAT / 3 / 26")).toEqual([{ text: "FDW → CAT / 3 / 26" }]);
+    expect(readingParts("すひす → こねこ / 3 / 46")).toEqual([{ text: "すひす → こねこ / 3 / 46" }]);
   });
   it("uses readings for whole phrases whose individual characters would be misleading", () => {
     expect(readingParts("今度は世界を探索。再表示。" )).toContainEqual({ text: "今度", reading: "こんど" });

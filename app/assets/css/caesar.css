@@ -123,6 +123,15 @@
 .caesar-readable rt { font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; font-size: max(.52em, 9px); font-weight: 400; line-height: 1; letter-spacing: 0; }
 .caesar-topbar .caesar-readable, .caesar-button .caesar-readable { line-height: 1.8; }
 
+.caesar :is(.caesar-world__letters span, .caesar-word, .caesar-band__strip span, .caesar-readout-word, .caesar-record__letters b, .caesar-letter-mapping span) { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; }
+.caesar summary:focus-visible { outline: 3px solid var(--ruin-teal); outline-offset: 4px; }
+.caesar-kana-order { margin: -5px 0 20px; border: 1px solid #b88b454a; background: #09172150; }
+.caesar-kana-order summary { min-height: 44px; padding: 10px 16px; color: var(--ruin-gold); cursor: pointer; font-size: 12px; }
+.caesar-kana-order ol { list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 4px 16px 16px; }
+.caesar-kana-order li { display: flex; justify-content: center; gap: 8px; padding: 10px 5px; background: #57ddd409; border: 1px solid #57ddd427; font-size: 16px; }
+@media (min-width: 701px) and (max-width: 1000px) { .caesar-kana-order ol { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .caesar-kana-order ol { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }.caesar-kana-order li { gap: 6px; font-size: 15px; } }
+
 .caesar[data-view="intro"] .caesar-world { height: clamp(240px, 25vw, 360px); }
 .caesar-intro { padding: 28px 50px 30px; }
 .caesar-intro__story { max-width: 800px; margin: 0 auto; text-align: center; }

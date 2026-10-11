@@ -16,8 +16,9 @@ export interface Question {
   success: string;
 }
 
+export const bridgePuzzle = { input: "すひす", expected: "こねこ" };
 export const questions: Question[] = [
-  { id: "decrypt", input: "GRJ", expected: "DOG", clue: { original: "A", encrypted: "D" }, ...copy.questions.decrypt },
-  { id: "encrypt", input: "BOX", expected: "ERA", clue: { original: "A", encrypted: "D" }, ...copy.questions.encrypt },
-  { id: "repair", input: "FDY", expected: "FDW", source: "CAT", clue: { original: "A", encrypted: "D" }, ...copy.questions.repair },
+  { id: "decrypt", input: "すおは", expected: "こいぬ", clue: { original: "あ", encrypted: "え" }, ...copy.questions.decrypt },
+  { id: "encrypt", input: "えほん", expected: "きむう", clue: { original: "あ", encrypted: "え" }, ...copy.questions.encrypt },
+  { id: "repair", input: "すひそ", expected: bridgePuzzle.input, source: bridgePuzzle.expected, clue: { original: "あ", encrypted: "え" }, ...copy.questions.repair },
 ];
