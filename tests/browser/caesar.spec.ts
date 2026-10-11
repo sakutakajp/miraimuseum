@@ -1,316 +1,287 @@
 import { test, expect } from "./fixtures";
-import type { Locator, Page } from "@playwright/test";
+import type { Page, Locator } from "@playwright/test";
 import { SAVE_KEY } from "../../app/games/caesar/progress";
+import { writeFileSync } from "node:fs";
 
+const root = (page: Page) => page.locator(".caesar-adventure");
+const button = (page: Page, name: string | RegExp) => page.getByRole("button", { name, exact: typeof name === "string" });
+const ready = async (page: Page) => expect(root(page)).toHaveAttribute("data-phase", /editing|incorrect|waiting/);
 test.beforeEach(async ({ page }) => {
   await page.route("https://fonts.googleapis.com/**", route => route.fulfill({ body: "", contentType: "text/css" }));
+  await page.emulateMedia({ reducedMotion: "reduce" });
 });
-async function open(page: Page, keyboard = false) {
+async function open(page: Page, renderer = "webgl") {
   await page.goto("/games/caesar");
-  await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", "webgl", { timeout: 30000 });
-  if (keyboard) await keyboardButton(page, "冒険をはじめる");
-  else await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
+  await expect(root(page)).toHaveAttribute("data-view", "intro");
+  await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", renderer, { timeout: 60000 });
+  await ready(page);
 }
-async function expectAllKanjiHaveReadings(page: Page) {
-  const unread = await page.locator("main").evaluate(main => {
-    const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
-    const missing: string[] = [];
+async function tabTo(page: Page, locator: Locator) {
+  for (let i = 0; i < 35; i++) {
+    if (await locator.evaluate(element => document.activeElement === element)) return;
+    await page.keyboard.press("Tab");
+  }
+  throw new Error("A game control was unreachable by Tab");
+}
+async function click(page: Page, name: string | RegExp, keyboard = false) {
+  const target = button(page, name);
+  await expect(target).toBeEnabled();
+  if (keyboard) { await tabTo(page, target); await page.keyboard.press("Enter"); }
+  else await target.click();
+}
+async function next(page: Page, keyboard = false) {
+  await ready(page); await click(page, "つぎへ", keyboard); await ready(page);
+}
+const actionPositions = new WeakMap<Page, Map<string, number>>();
+async function fit(page: Page) {
+  const geometry = await page.evaluate(() => {
+    const game = document.querySelector(".caesar-adventure")!;
+    const visible = [...game.querySelectorAll<HTMLElement>("button, a")].filter(e => !e.closest("dialog") && e.getBoundingClientRect().width > 0);
+    return { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight,
+      targets: visible.map(e => { const b = e.getBoundingClientRect(); return { text: e.textContent?.trim(), x: b.x, y: b.y, width: b.width, height: b.height, right: b.right, bottom: b.bottom }; }),
+      current: [...game.querySelectorAll(".adventure-band-strip .is-current")].map(e => parseFloat(getComputedStyle(e).fontSize)),
+      controlsY: game.querySelector(".adventure-main-actions")!.getBoundingClientRect().y,
+      insetKey: [(game as HTMLElement).style.paddingTop, (game as HTMLElement).style.paddingBottom].join("/") };
+  });
+  expect(geometry.scrollHeight, "normal portrait/landscape needs no page scrolling").toBeLessThanOrEqual(geometry.height + 1);
+  expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.width + 1);
+  for (const target of geometry.targets) {
+    expect(target.height, JSON.stringify(target)).toBeGreaterThanOrEqual(48);
+    expect(target.width, JSON.stringify(target)).toBeGreaterThanOrEqual(48);
+    expect(target.y).toBeGreaterThanOrEqual(-1); expect(target.bottom).toBeLessThanOrEqual(geometry.height + 1);
+    expect(target.right).toBeLessThanOrEqual(geometry.width + 1);
+  }
+  expect(geometry.current.every(font => font >= 30)).toBe(true);
+  const key = `${geometry.width}/${geometry.height}/${geometry.insetKey}`;
+  const positions = actionPositions.get(page) || new Map<string, number>();
+  if (positions.has(key)) expect(geometry.controlsY, "main buttons stay in place across story, hints and success").toBeCloseTo(positions.get(key)!, 0);
+  else { positions.set(key, geometry.controlsY); actionPositions.set(page, positions); }
+  return geometry.controlsY;
+}
+async function safeInsets(page: Page) {
+  await root(page).evaluate(e => { (e as HTMLElement).style.paddingTop = "44px"; (e as HTMLElement).style.paddingBottom = "34px"; });
+  await fit(page);
+  await root(page).evaluate(e => { (e as HTMLElement).style.paddingTop = ""; (e as HTMLElement).style.paddingBottom = ""; });
+}
+async function expectChildText(page: Page) {
+  const kanji = await root(page).evaluate(main => {
+    const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT), missing: string[] = [];
     while (walker.nextNode()) {
-      const node = walker.currentNode;
-      if (/[一-龯]/.test(node.textContent || "") && !node.parentElement?.closest("ruby, rt, [aria-hidden=true], script, style")) missing.push(node.textContent!.trim());
+      const node = walker.currentNode, parent = node.parentElement;
+      if (parent && !parent.closest("dialog, [aria-hidden=true]") && parent.getBoundingClientRect().width && /[一-龯]/.test(node.textContent || "")) missing.push(node.textContent!);
     }
     return missing;
   });
-  expect(unread, "Every visible kanji should have a reading").toEqual([]);
+  expect(kanji).toEqual([]);
 }
-async function expectReadable(page: Page, selector: string, text: string) {
-  const area = page.locator(selector);
-  await expect(area).toBeVisible();
-  await expect.poll(() => area.evaluate(element => {
-    const clone = element.cloneNode(true) as HTMLElement;
-    clone.querySelectorAll("rt").forEach(reading => reading.remove());
-    return clone.textContent;
-  })).toContain(text);
+async function bridge(page: Page, check = fit, keyboard = false) {
+  await next(page, keyboard); await next(page, keyboard);
+  await expect(page.locator(".adventure-band")).toHaveCount(1);
+  await expect(page.locator(".adventure-hand")).toBeVisible();
+  await expect(button(page, /^1つ すすめる/)).toHaveCount(0);
+  await check(page); await click(page, /^1つ もどす/, keyboard); await ready(page); await check(page);
+  await expect(page.locator(".adventure-world-letters")).toHaveText("あ"); await next(page, keyboard);
+  await expect(page.locator(".adventure-hand")).toHaveCount(0);
+  const y = await check(page); await click(page, "コロの ヒント", keyboard); expect(await check(page)).toBeCloseTo(y, 0);
+  await click(page, /^1つ すすめる/, keyboard); await expect(page.locator(".adventure-world-letters")).toHaveText("え");
+  await click(page, /^1つ もどす/, keyboard); await click(page, /^1つ もどす/, keyboard); await ready(page); await check(page); await next(page, keyboard);
+  await expect(page.locator(".adventure-band")).toHaveCount(2);
+  await click(page, /^1つ もどす/, keyboard); await ready(page); await expect(page.locator(".adventure-world-letters")).toHaveText("いえ"); await check(page); await next(page, keyboard);
+  await expect(page.locator(".adventure-band")).toHaveCount(3); await expect(page.locator(".adventure-world-letters")).toHaveText("すひす");
 }
-async function machine(page: Page) {
-  await page.getByRole("button", { name: "ステージ選択へ", exact: true }).click();
-  await page.getByRole("button", { name: /STAGE 02 壊れた通信機/ }).click();
-}
-async function amount(page: Page, count: number, increase = true) {
-  for (let i = 0; i < count; i++) await page.getByRole("button", { name: increase ? "ずらす数を1ふやす" : "ずらす数を1へらす" }).click();
-}
-async function tabTo(page: Page, target: Locator) {
-  for (let i = 0; i < 45; i++) {
-    if (await target.evaluate(element => element === document.activeElement)) return;
-    await page.keyboard.press("Tab");
+async function finishBridgeAndTutorial(page: Page, check = fit, keyboard = false) {
+  for (const word of ["しはし", "さのさ", "こねこ"]) {
+    await click(page, /^1つ もどす/, keyboard); await expect(page.locator(".adventure-world-letters")).toHaveText(word); await check(page);
   }
-  throw new Error("Control was unreachable using Tab");
+  await ready(page); await next(page, keyboard);
+  await expect(root(page)).toHaveAttribute("data-view", "bridge-story");
+  await expect(page.locator(".adventure-conversation p")).toHaveText("ぜんぶ 3つ もどしたね");
+  await check(page); await next(page, keyboard); await check(page);
+  await expect(page.locator(".adventure-conversation p")).toHaveText("ずらす かずが、ひみつの かぎだよ");
+  await next(page, keyboard); await check(page); await next(page, keyboard);
+  for (const position of [0, 1, 2, 3, 3, 2, 1, 0]) {
+    await expect(root(page)).toHaveAttribute("data-view", "tutorial");
+    await expect(page.locator(".adventure-count strong")).toHaveText(String(position));
+    await check(page); await ready(page);
+    const target = page.locator(".adventure-main-actions > button");
+    if (keyboard) { await tabTo(page, target); await page.keyboard.press("Enter"); } else await target.click();
+    await ready(page);
+  }
+  await expect(root(page)).toHaveAttribute("data-view", "machine");
+  await expect(root(page)).toHaveAttribute("data-control", "direction");
+  await expect(page.locator(".adventure-result .adventure-word")).toHaveText("？？？");
 }
-async function keyboardButton(page: Page, name: string) {
-  await tabTo(page, page.getByRole("button", { name, exact: true }));
-  await page.keyboard.press("Enter");
+async function configure(page: Page, direction: string, amount: number, keyboard = false) {
+  await click(page, direction, keyboard); await ready(page);
+  await expect(page.locator(".adventure-number output")).toHaveText("0");
+  for (let i = 0; i < amount; i++) await click(page, "かずを 1つ ふやす", keyboard);
+  await click(page, "つぎへ", keyboard); await ready(page);
+}
+async function run(page: Page, keyboard = false) { await click(page, /^やってみる/, keyboard); await ready(page); }
+async function repair(page: Page, check = fit, keyboard = false) {
+  await expect(root(page)).toHaveAttribute("data-question", "repair");
+  await click(page, "2ばんめの もじ：せ", keyboard); await click(page, "たしかめる", keyboard); await ready(page);
+  await expect(page.locator(".adventure-guide p")).toHaveText("ここを もういちど みてみよう"); await check(page);
+  await click(page, "コロの ヒント", keyboard); await check(page);
+  await click(page, "1つ もどす", keyboard); await expect(page.locator(".adventure-word--select")).toHaveText("ひす");
+  await click(page, "1ばんめの もじ：ひ", keyboard); await expect(page.locator(".adventure-word--select")).toHaveText("ひせ");
+  await click(page, "2ばんめの もじ：せ", keyboard); await click(page, "1つ もどす", keyboard);
+  await click(page, "たしかめる", keyboard); await ready(page); await expect(page.locator(".adventure-result .adventure-word")).toHaveText("ひす"); await check(page); await next(page, keyboard);
 }
 
-test("entry, return and reload show the illustrated introduction without losing saved records", async ({ page }, info) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/games/caesar");
-  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
-  await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", "webgl", { timeout: 30000 });
-  await expect(page.getByRole("heading", { name: "暗号の遺跡", exact: true })).toBeVisible();
-  await expectReadable(page, ".caesar-intro", "橋をつなぎ、壊れた通信機を直そう！");
-  await expectReadable(page, ".caesar-intro", "帯を右に引くと1文字もどり、左に引くと1文字すすむよ。");
-  await expectAllKanjiHaveReadings(page);
-  await expect(page.locator(".caesar-intro")).not.toContainText(/すひす|こねこ|すおは|こいぬ|きむう/);
-  await expect(page.locator(".caesar-band")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "ステージ選択へ", exact: true })).toHaveCount(0);
-  await page.screenshot({ path: info.outputPath("intro-desktop.png"), fullPage: true });
-  await keyboardButton(page, "冒険をはじめる");
-  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "bridge");
-  await expect(page.getByTestId("bridge-output")).toHaveText("すひす");
-  await expect(page.locator("#bridge-prompt")).toBeFocused();
-  await expect(page.locator("canvas")).toHaveCount(1);
-  await machine(page);
-  await page.getByRole("button", { name: /ヒントを見る/ }).click();
-  const saved = await page.evaluate(key => localStorage.getItem(key), SAVE_KEY);
-  expect(JSON.parse(saved!)).toMatchObject({ records: { decrypt: { hints: 1 } } });
-  await page.getByRole("link", { name: /ゲーム一覧/ }).first().click();
-  await page.getByRole("link", { name: /暗号の遺跡/ }).click();
-  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
-  await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
-  expect(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).toBe(saved);
-  await page.reload();
-  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
-  expect(await page.evaluate(key => localStorage.getItem(key), SAVE_KEY)).toBe(saved);
-});
+for (const size of [{ width: 360, height: 640 }, { width: 375, height: 667 }, { width: 390, height: 844 }]) {
+  test(`entire silent adventure fits ${size.width}×${size.height}, including hints, retries and successes`, async ({ page }, info) => {
+    const errors: string[] = []; page.on("pageerror", error => errors.push(error.message));
+    const check = async (p: Page) => {
+      const position = await fit(p);
+      if (size.width === 375) await safeInsets(p);
+      return position;
+    };
+    await page.setViewportSize(size);
+    await page.addInitScript(() => Object.defineProperty(window, "speechSynthesis", { configurable: true, value: undefined }));
+    await open(page); await check(page); await expectChildText(page);
+    await page.screenshot({ path: info.outputPath("01-intro.png") });
+    await bridge(page, check); await check(page); if (size.width === 375) await safeInsets(page); await page.screenshot({ path: info.outputPath("02-bridge.png") });
+    if (size.width === 375) {
+      const band = page.locator(".adventure-band").first(), box = (await band.boundingBox())!;
+      const session = await page.context().newCDPSession(page);
+      const x = box.x + box.width / 2, y = box.y + box.height / 2;
+      await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+      await session.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x + box.width / 3, y }] });
+      await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      await expect(page.locator(".adventure-world-letters")).toHaveText("しはし");
+      await click(page, /^1つ すすめる/); await expect(page.locator(".adventure-world-letters")).toHaveText("すひす");
+      await session.detach();
+    }
+    await finishBridgeAndTutorial(page, check); await expectChildText(page);
+    await expect(page.locator(".adventure-puzzle")).not.toContainText("おうち");
+    await check(page); await page.screenshot({ path: info.outputPath("03-letter.png") });
+    await configure(page, "もどす", 3); await expect(page.locator(".adventure-result .adventure-word")).toHaveText("？？？"); await check(page);
+    await run(page); await expect(page.locator(".adventure-result .adventure-word")).toHaveText("おうち"); await check(page);
+    await page.screenshot({ path: info.outputPath("04-letter-read.png") }); await next(page);
+    await configure(page, "すすめる", 3); await run(page); await expect(page.locator(".adventure-receiver")).toContainText("ここ"); await check(page); await next(page);
+    await repair(page, check); if (size.width === 375) await safeInsets(page); await expect(page.locator(".adventure-clue")).toContainText("う");
+    await expect(page.locator(".adventure-progress")).toHaveText("さいごの とびら");
+    await configure(page, "もどす", size.width === 360 ? 3 : 2); await run(page);
+    if (size.width === 360) {
+      await check(page); await click(page, "かずを えらびなおす"); await ready(page);
+      await expect(page.locator(".adventure-number output")).toHaveText("3");
+      await expect(page.locator(".adventure-result .adventure-word")).toHaveText("？？");
+      await click(page, "かずを 1つ へらす"); await click(page, "つぎへ"); await ready(page); await run(page);
+    }
+    await expect(page.locator(".adventure-result .adventure-word")).toHaveText("いえ"); await check(page); await next(page);
+    for (let i = 0; i < 4; i++) { await check(page); await next(page); }
+    await expect(root(page)).toHaveAttribute("data-view", "complete"); await check(page); await expectChildText(page);
+    await page.screenshot({ path: info.outputPath("05-home.png") });
+    const saved = await page.evaluate(key => JSON.parse(localStorage.getItem(key)!), SAVE_KEY);
+    expect(saved).toMatchObject({ version: 2, curriculum: "mii-home-1", bridgeCleared: true, machineCleared: true, doorCleared: true,
+      records: { decrypt: { attempts: 1, hints: 0, firstCorrect: true }, repair: { attempts: 2, hints: 1, firstCorrect: false }, door: { attempts: size.width === 360 ? 2 : 1, hints: 0, firstCorrect: size.width !== 360 } } });
+    writeFileSync(info.outputPath("progress.json"), JSON.stringify(saved, null, 2));
+    await page.reload(); await expect(root(page)).toHaveAttribute("data-view", "intro");
+    expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)!), SAVE_KEY)).toEqual(saved);
+    expect(errors).toEqual([]);
+  });
+}
 
-test("linked drag, bridge completion, wrong answers, equivalent keys and one-slot repair", async ({ page }, info) => {
-  const errors: string[] = [];
-  page.on("pageerror", error => errors.push(error.message));
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await open(page);
-  await expect(page.getByTestId("bridge-output")).toHaveText("すひす");
-  await expect(page.getByRole("heading", { name: "暗号の橋", exact: true })).toBeVisible();
-  await expectAllKanjiHaveReadings(page);
-  await expect(page.locator("h1 rt").first()).toHaveText("あんごう");
-  await expect(page.locator("h1 rt").first()).toHaveAttribute("aria-hidden", "true");
-  await expect(page.locator(".caesar-console")).not.toContainText(/[A-Za-z]/);
-  await page.locator(".caesar-kana-order summary").click();
-  const rows = page.getByRole("list", { name: "ひらがなのならび" }).locator("li");
-  await expect(rows).toHaveCount(10);
-  await expect(rows.first()).toHaveText("あいうえお");
-  await expect(rows.last()).toHaveText("わをん");
-  await expect(rows.locator("span")).toHaveCount(46);
-  await page.locator(".caesar-kana-order summary").click();
-  await expect.poll(() => page.locator(".caesar-world__illustration").evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(1536);
-  const band = page.locator(".caesar-band").first();
-  const box = (await band.boundingBox())!;
+test("desktop linked drags match buttons; keyboard completes every part, with usable landscape and text enlargement", async ({ page }, info) => {
+  await page.setViewportSize({ width: 1280, height: 800 }); await open(page); await bridge(page, fit, true);
+  const band = page.locator(".adventure-band").first(), box = (await band.boundingBox())!;
   const x = box.x + box.width / 2, y = box.y + box.height / 2;
   await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + box.width / 5, y, { steps: 8 });
-  const transforms = await page.locator(".caesar-band__strip").evaluateAll(elements => elements.map(element => getComputedStyle(element).transform));
-  expect(new Set(transforms).size).toBe(1);
-  await expect(page.getByTestId("bridge-output")).toHaveText("すひす");
-  await page.mouse.up();
-  await expect(page.getByTestId("bridge-output")).toHaveText("しはし");
-  await expect(page.getByTestId("back-count")).toHaveText("1");
-  await expect(page.locator(".caesar-world__letters")).toHaveText("しはし");
-  await page.screenshot({ path: info.outputPath("stage1-desktop.png"), fullPage: true });
-  await page.getByRole("button", { name: "1文字もどす" }).click();
-  await expect(page.getByTestId("bridge-output")).toHaveText("さのさ");
-  await page.getByRole("button", { name: "1文字もどす" }).click();
-  await expect(page.getByTestId("bridge-output")).toHaveText("こねこ");
-  await expect(page.getByRole("button", { name: "1文字もどす" })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "通信機へ進む" })).toBeVisible();
-  await page.screenshot({ path: info.outputPath("bridge-connected-desktop.png"), fullPage: true });
-  await page.getByRole("button", { name: "通信機へ進む" }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("???");
-  await expect(page.getByRole("button", { name: "実行" })).toBeDisabled();
-  await expect(page.locator(".caesar-console")).not.toContainText("こいぬ");
-  await expectAllKanjiHaveReadings(page);
-  await expect(page.locator(".caesar-world__illustration")).toHaveAttribute("src", "/caesar/transmitter.webp");
-  await expect(page.locator(".caesar-record__letters")).toHaveText("あ→え");
-  await expect(page.locator(".caesar-word--stone")).toHaveText("すおは");
-  await expect(page.locator(".caesar-console")).not.toContainText(/[A-Za-z]/);
-  await expect.poll(() => page.locator(".caesar-world__illustration").evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(1536);
-  await page.screenshot({ path: info.outputPath("stage2-desktop.png"), fullPage: true });
-  await page.getByRole("button", { name: "すすめる", exact: false }).click();
-  await amount(page, 3);
-  await expect(page.getByTestId("machine-result")).toHaveText("???");
-  await page.getByRole("button", { name: "実行", exact: true }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("たくへ");
-  await expectReadable(page, ".caesar-feedback", "元に戻すときは、反対向きに動かしてみよう。");
-  await page.getByRole("button", { name: "もどす", exact: false }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("???");
-  await page.getByRole("button", { name: /ヒントを見る/ }).click();
-  await page.getByRole("button", { name: /ヒントを見る/ }).click();
-  await page.getByRole("button", { name: "実行", exact: true }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("こいぬ");
-  await page.getByRole("button", { name: "次へ" }).click();
-  await expect(page.getByTestId("shift-amount")).toHaveText("0");
-  await expect(page.locator(".caesar-word--stone")).toHaveText("えほん");
-  await expect(page.getByRole("button", { name: "実行", exact: true })).toBeDisabled();
-  await amount(page, 3, false); // 0 -> 45 -> 44 -> 43
-  await page.getByRole("button", { name: "もどす", exact: false }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("???");
-  await page.getByRole("button", { name: "実行", exact: true }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("きむう");
-  await expectReadable(page, ".caesar-feedback", "43文字戻すのは、3文字進めるのと同じ。");
-  await page.getByRole("button", { name: "次へ" }).click();
-  await page.getByRole("button", { name: "1文字目 す を直す" }).click();
-  await page.getByRole("button", { name: "次の文字にする" }).click();
-  await expect(page.locator(".caesar-word--repair")).toHaveText("せひそ");
-  await page.getByRole("button", { name: "3文字目 そ を直す" }).click();
-  await expect(page.getByLabel("置き換える文字を選ぶ").locator("option:not([disabled])")).toHaveCount(46);
-  await expect(page.locator(".caesar-word--repair")).toHaveText("すひそ");
-  await page.getByRole("button", { name: "確かめる" }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("すひそ");
-  await page.getByLabel("置き換える文字を選ぶ").selectOption("す");
-  await expect(page.getByTestId("machine-result")).toHaveText("???");
-  await page.getByRole("button", { name: "確かめる" }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("すひす");
-  await page.getByRole("button", { name: "通信機を起動する" }).click();
-  await expect(page.getByRole("heading", { name: "通信機が、目を覚ました。" })).toBeVisible();
-  await expectAllKanjiHaveReadings(page);
-  await expectReadable(page, ".caesar-review", "ヒントを使って解けた");
-  const record = await page.evaluate(key => JSON.parse(localStorage.getItem(key)!), SAVE_KEY);
-  expect(record).toMatchObject({ version: 1, bridgeCleared: true, machineCleared: true, records: { decrypt: { attempts: 2, hints: 2, firstCorrect: false }, encrypt: { attempts: 1, firstCorrect: true }, repair: { attempts: 2, firstCorrect: false } } });
-  await page.screenshot({ path: info.outputPath("complete-desktop.png"), fullPage: true });
-  await page.getByRole("button", { name: "もう一度遊ぶ" }).click();
-  await expect(page.getByTestId("bridge-output")).toHaveText("すひす");
-  await expect(page.locator("canvas")).toHaveCount(1);
-  await page.getByRole("link", { name: "ゲーム一覧", exact: false }).first().click();
-  await expect(page).toHaveURL(/\/games$/);
-  await expect(page.locator("canvas")).toHaveCount(0);
-  await expect(page.locator(".games-index__game")).toHaveCount(2);
-  await expect(page.locator(".games-index__game--dinosaur svg")).toBeVisible();
-  await expectAllKanjiHaveReadings(page);
-  await page.screenshot({ path: info.outputPath("games-desktop.png"), fullPage: true });
-  await page.reload();
-  await page.getByRole("link", { name: /暗号の遺跡/ }).click();
-  await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
-  await page.getByRole("button", { name: "ステージ選択へ", exact: true }).click();
-  await expectReadable(page, ".caesar-review", "ヒントを使って解けた");
-  expect(errors).toEqual([]);
+  const transforms = await page.locator(".adventure-band-strip").evaluateAll(elements => elements.map(e => getComputedStyle(e).transform));
+  expect(new Set(transforms).size).toBe(1); await expect(page.locator(".adventure-world-letters")).toHaveText("すひす");
+  await page.mouse.up(); await expect(page.locator(".adventure-world-letters")).toHaveText("しはし");
+  await tabTo(page, band); await page.keyboard.press("ArrowLeft"); await expect(page.locator(".adventure-world-letters")).toHaveText("すひす");
+  await page.setViewportSize({ width: 667, height: 375 }); await fit(page); await page.screenshot({ path: info.outputPath("landscape.png") });
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.evaluate(() => document.documentElement.style.fontSize = "200%");
+  expect(await page.evaluate(() => document.documentElement.scrollHeight > innerHeight)).toBe(true);
+  await button(page, /^1つ もどす/).scrollIntoViewIfNeeded(); await expect(button(page, /^1つ もどす/)).toBeInViewport();
+  await page.evaluate(() => document.documentElement.style.fontSize = ""); await page.evaluate(() => scrollTo(0, 0));
+  await fit(page); await page.setViewportSize({ width: 1280, height: 800 }); await finishBridgeAndTutorial(page, fit, true);
+  await configure(page, "すすめる", 43, true); await run(page, true); await expect(page.locator(".adventure-result .adventure-word")).toHaveText("おうち"); await next(page, true);
+  await configure(page, "もどす", 43, true); await run(page, true); await next(page, true);
+  await repair(page, fit, true); await configure(page, "すすめる", 44, true); await run(page, true); await next(page, true);
+  for (let i = 0; i < 4; i++) await next(page, true);
+  await tabTo(page, page.getByRole("link", { name: "おしまい" })); await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/games\/?$/);
+  expect(await page.evaluate(() => getComputedStyle(document.body).overflowY)).not.toBe("hidden");
 });
 
-test("both stages can be completed with only the keyboard and reduced motion", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await open(page, true);
-  await tabTo(page, page.locator(".caesar-band").first());
-  await page.keyboard.press("ArrowLeft");
-  await expect(page.getByTestId("bridge-output")).toHaveText("せふせ");
-  await page.keyboard.press("ArrowRight");
-  for (let i = 0; i < 3; i++) await page.keyboard.press("ArrowRight");
-  await keyboardButton(page, "通信機へ進む →");
-  await keyboardButton(page, "« もどす");
-  await tabTo(page, page.getByRole("button", { name: "ずらす数を1ふやす" }));
-  for (let i = 0; i < 3; i++) await page.keyboard.press("Enter");
-  await keyboardButton(page, "実行");
-  await expect(page.getByTestId("machine-result")).toHaveText("こいぬ");
-  await keyboardButton(page, "次へ →");
-  await keyboardButton(page, "すすめる »");
-  await tabTo(page, page.getByRole("button", { name: "ずらす数を1ふやす" }));
-  for (let i = 0; i < 3; i++) await page.keyboard.press("Enter");
-  await keyboardButton(page, "実行");
-  await expect(page.getByTestId("machine-result")).toHaveText("きむう");
-  await keyboardButton(page, "次へ →");
-  await keyboardButton(page, "3文字目 そ を直す");
-  await tabTo(page, page.getByRole("button", { name: "前の文字にする" }));
-  await page.keyboard.press("Enter"); await page.keyboard.press("Enter");
-  await keyboardButton(page, "確かめる ◇");
-  await keyboardButton(page, "通信機を起動する →");
-  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "complete");
+test("modal chart preserves the puzzle, next spam is gated, and resizing follows viewport height", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("mirai-museum:language", "en"));
+  await page.setViewportSize({ width: 390, height: 844 }); await open(page);
+  await expect(root(page)).toHaveAttribute("lang", "ja");
+  await expectChildText(page);
+  await button(page, "つぎへ").evaluate(e => { (e as HTMLButtonElement).click(); (e as HTMLButtonElement).click(); });
+  await expect(page.locator(".adventure-conversation p")).toHaveText("はしを なおして、いっしょに いこう！");
+  await ready(page); await next(page); await click(page, "もじの ならび");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("list", { name: "46この もじの ならび" }).locator("span")).toHaveCount(46);
+  await page.keyboard.press("Escape"); await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(button(page, "もじの ならび")).toBeFocused(); await expect(page.locator(".adventure-world-letters")).toHaveText("い");
+  await page.setViewportSize({ width: 375, height: 667 });
+  await root(page).evaluate(e => { (e as HTMLElement).style.paddingTop = "44px"; (e as HTMLElement).style.paddingBottom = "34px"; });
+  await fit(page);
+  await root(page).evaluate(e => { (e as HTMLElement).style.paddingTop = ""; (e as HTMLElement).style.paddingBottom = ""; });
+  for (const height of [710, 640, 844]) { await page.setViewportSize({ width: 390, height }); await fit(page); }
+  await click(page, "メニュー"); await click(page, "この もんだいを やりなおす"); await click(page, "やりなおす"); await ready(page); await fit(page);
+  await expect(page.locator(".adventure-world-letters")).toHaveText("い");
 });
 
-test.describe("portrait touch", () => {
-  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
-  test("the introduction fits portrait screens and starts the adventure by touch", async ({ page }, info) => {
-    await page.goto("/games/caesar");
-    await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
-    await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", "webgl", { timeout: 30000 });
-    await expectAllKanjiHaveReadings(page);
-    const start = page.getByRole("button", { name: "冒険をはじめる", exact: true });
-    expect((await start.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: info.outputPath("intro-mobile.png"), fullPage: true });
-    await page.setViewportSize({ width: 320, height: 740 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await start.tap();
-    await expect(page.getByTestId("bridge-output")).toHaveText("すひす");
-    await expect(page.locator("#bridge-prompt")).toBeFocused();
-  });
-  test("horizontal touch drags synchronize, vertical touch still scrolls, and panels fit", async ({ page }, info) => {
-    await open(page);
-    const band = page.locator(".caesar-band").first();
-    await band.scrollIntoViewIfNeeded();
-    const bounds = (await band.boundingBox())!;
-    const client = await page.context().newCDPSession(page);
-    const x = bounds.x + bounds.width * .4, y = bounds.y + bounds.height / 2;
-    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
-    for (let step = 1; step <= 8; step++) await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x + bounds.width / 5 * step / 8, y }] });
-    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await expect(page.getByTestId("bridge-output")).toHaveText("しはし");
-    expect(await band.evaluate(element => getComputedStyle(element).touchAction)).toBe("pan-y");
-    await page.evaluate(() => window.scrollTo(0, 100));
-    const vertical = (await band.boundingBox())!;
-    const before = await page.evaluate(() => scrollY);
-    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: vertical.x + 90, y: vertical.y + 30 }] });
-    for (let step = 1; step <= 8; step++) await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: vertical.x + 90, y: vertical.y + 30 - step * 15 }] });
-    await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(before + 20);
-    await expect(page.getByTestId("bridge-output")).toHaveText("しはし");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: info.outputPath("stage1-mobile.png"), fullPage: true });
-    await machine(page);
-    await expect(page.getByTestId("machine-result")).toHaveText("???");
-    await page.locator(".caesar-kana-order summary").tap();
-    await expect(page.getByRole("list", { name: "ひらがなのならび" })).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: info.outputPath("stage2-mobile.png"), fullPage: true });
-    await page.setViewportSize({ width: 320, height: 740 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  });
-});
-
-test("corrupt/blocked storage and unavailable WebGL keep the game usable", async ({ page }) => {
-  await page.addInitScript(key => {
-    localStorage.setItem(key, "{broken");
-    Storage.prototype.setItem = () => { throw new Error("storage unavailable"); };
+test("missing WebGL retains illustration, movable feet and a playable puzzle without a technical banner", async ({ page }, info) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (type: string, ...args: unknown[]) {
-      if (type === "webgl2" || type === "webgl" || type === "experimental-webgl") return null;
-      return (original as (...args: unknown[]) => unknown).apply(this, [type, ...args]) as never;
-    } as typeof original;
-  }, SAVE_KEY);
-  await page.goto("/games/caesar");
-  await expect(page.locator(".caesar-world")).toHaveAttribute("data-renderer", "fallback");
-  await expect(page.locator(".caesar")).toHaveAttribute("data-view", "intro");
-  await page.getByRole("button", { name: "冒険をはじめる", exact: true }).click();
-  await page.getByRole("button", { name: "1文字もどす" }).click();
-  await expect(page.getByTestId("bridge-output")).toHaveText("しはし");
-  await machine(page);
-  await expectReadable(page, ".caesar-page-footer", "記録を保存できません。このまま遊べます。");
-  await page.getByRole("button", { name: "もどす", exact: false }).click();
-  await amount(page, 3);
-  await page.getByRole("button", { name: "実行", exact: true }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("こいぬ");
+    HTMLCanvasElement.prototype.getContext = function (type: string, ...args: any[]) { return type.includes("webgl") ? null : (original as any).call(this, type, ...args); } as any;
+  });
+  await open(page, "fallback"); await fit(page);
+  await expect(page.locator(".adventure-puzzle")).not.toContainText(/WebGL|演出|表示できません/);
+  expect(await page.locator(".caesar-world__illustration").evaluate(e => (e as HTMLImageElement).naturalWidth)).toBe(1536);
+  await next(page); await next(page); await click(page, /^1つ もどす/); await ready(page);
+  await expect(page.locator(".adventure-world-steps i.active")).toHaveCount(1); await fit(page);
+  await page.screenshot({ path: info.outputPath("fallback.png") });
+  await click(page, "メニュー"); await click(page, "おとなの かたへ");
+  await expect(page.getByRole("dialog")).toContainText(/この環境ではWebGL.*できません。/);
 });
 
-test("the circular decoding alternative is explained and a reset cancels pending execution", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+test("speech starts after a gesture, never overlaps, cancels on changes and offers off/repeat", async ({ page }, info) => {
+  await page.addInitScript(() => {
+    const log: any = { active: 0, max: 0, spoken: [], cancels: 0 };
+    (window as any).__voiceLog = log;
+    Object.defineProperty(window, "SpeechSynthesisUtterance", { configurable: true, value: class { text: string; constructor(text: string) { this.text = text; } } });
+    Object.defineProperty(window, "speechSynthesis", { configurable: true, value: {
+      getVoices: () => [{ name: "Test Japanese", lang: "ja-JP", localService: true }],
+      cancel: () => { log.active = 0; log.cancels++; },
+      speak: (u: any) => { log.active++; log.max = Math.max(log.max, log.active); log.spoken.push({ text: u.text, lang: u.lang }); },
+      addEventListener() {}, removeEventListener() {},
+    } });
+  });
   await open(page);
-  await machine(page);
-  await page.getByRole("button", { name: "すすめる", exact: false }).click();
-  await amount(page, 3, false);
-  await page.getByRole("button", { name: "実行", exact: true }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("こいぬ");
-  await expectReadable(page, ".caesar-feedback", "43文字進めるのは、3文字戻すのと同じ。");
-  await page.getByRole("button", { name: "このステージをやり直す" }).click();
-  await expect(page.getByTestId("machine-result")).toHaveText("???");
-  await expect(page.getByTestId("shift-amount")).toHaveText("0");
-  await page.getByRole("button", { name: "もどす", exact: false }).click();
-  await page.getByRole("button", { name: "実行", exact: true }).click();
-  await page.getByRole("button", { name: "ステージ選択へ", exact: true }).click();
-  await page.getByRole("button", { name: /STAGE 01 暗号の橋/ }).click();
-  await expect(page.getByTestId("bridge-output")).toHaveText("すひす");
-  await expect(page.locator(".caesar")).toHaveAttribute("data-phase", "editing");
+  expect(await page.evaluate(() => (window as any).__voiceLog.spoken)).toEqual([]);
+  await click(page, "もういちど きく");
+  expect(await page.evaluate(() => (window as any).__voiceLog.spoken.at(-1).text)).toBe("おうちに かえりたいな……");
+  await next(page); expect(await page.evaluate(() => (window as any).__voiceLog.spoken.at(-1).text)).toBe("はしを なおして、いっしょに いこう！");
+  await click(page, "メニュー"); expect(await page.evaluate(() => (window as any).__voiceLog.active)).toBe(0);
+  await click(page, "おと：オン"); await click(page, "とじて あそびに もどる");
+  const count = await page.evaluate(() => (window as any).__voiceLog.spoken.length); await next(page);
+  expect(await page.evaluate(() => (window as any).__voiceLog.spoken.length)).toBe(count);
+  await click(page, "おとを オンにする"); await click(page, "もういちど きく");
+  await click(page, /^1つ もどす/); await ready(page); await next(page);
+  const log = await page.evaluate(() => (window as any).__voiceLog); expect(log.max).toBe(1); expect(log.spoken.every((s: any) => s.lang === "ja-JP")).toBe(true);
+  writeFileSync(info.outputPath("simulated-speech.json"), JSON.stringify(log, null, 2));
+  await click(page, "メニュー"); await page.getByRole("link", { name: "ゲームを おわる" }).click();
+  expect(await page.evaluate(() => (window as any).__voiceLog.active)).toBe(0);
+});
+
+test("denied storage still allows the first practice and explains missing records in the menu", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  await page.addInitScript(() => {
+    Storage.prototype.getItem = () => { throw new Error("blocked storage"); };
+    Storage.prototype.setItem = () => { throw new Error("blocked storage"); };
+  });
+  await open(page); await next(page); await next(page); await click(page, /^1つ もどす/); await ready(page); await fit(page);
+  await expect(page.locator(".adventure-world-letters")).toHaveText("あ");
+  await click(page, "メニュー"); await click(page, "おとなの かたへ");
+  await expect(page.getByRole("dialog")).toContainText("この環境では記録を保存できません。遊びは続けられます。");
 });

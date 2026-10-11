@@ -23,3 +23,10 @@ describe("Caesar readings for younger children", () => {
     expect(readingParts("今度は世界を探索。再表示。" )).toContainEqual({ text: "再表示", reading: "さいひょうじ" });
   });
 });
+
+import { childCopy, introLines, bridgeLines, endingLines } from "../app/games/caesar/adventure-copy";
+import { bridgePuzzles, questions } from "../app/games/caesar/questions";
+it("keeps the new child's conversations and puzzle copy short and free of kanji", () => {
+  const texts = playerTexts([childCopy, introLines, bridgeLines, endingLines, bridgePuzzles, questions]);
+  expect(texts.filter(text => /[一-龯]/.test(text))).toEqual([]);
+});

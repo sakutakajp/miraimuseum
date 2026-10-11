@@ -1,37 +1,35 @@
-import type { QuestionKind } from "./questions";
+import { questions, type QuestionKind } from "./questions";
 
-export const SAVE_KEY = "mirai-museum:caesar:v1";
-export interface QuestionRecord {
-  attempts: number;
-  hints: number;
-  firstCorrect: boolean | null;
-  solved: boolean;
-}
+// v1 used different questions. Never interpret those results as this curriculum.
+export const SAVE_KEY = "mirai-museum:caesar:v2";
+export interface QuestionRecord { attempts: number; hints: number; firstCorrect: boolean | null; solved: boolean }
 export interface CaesarProgress {
-  version: 1;
+  version: 2;
+  curriculum: "mii-home-1";
   bridgeCleared: boolean;
   machineCleared: boolean;
+  doorCleared: boolean;
   records: Record<QuestionKind, QuestionRecord>;
 }
-const ids: QuestionKind[] = ["decrypt", "encrypt", "repair"];
 export function emptyRecords(): CaesarProgress["records"] {
-  return Object.fromEntries(ids.map(id => [id, { attempts: 0, hints: 0, firstCorrect: null, solved: false }])) as CaesarProgress["records"];
+  return Object.fromEntries(questions.map(({ id }) => [id, { attempts: 0, hints: 0, firstCorrect: null, solved: false }])) as CaesarProgress["records"];
 }
 export function emptyProgress(): CaesarProgress {
-  return { version: 1, bridgeCleared: false, machineCleared: false, records: emptyRecords() };
+  return { version: 2, curriculum: "mii-home-1", bridgeCleared: false, machineCleared: false, doorCleared: false, records: emptyRecords() };
 }
 export function parseProgress(raw: string | null): CaesarProgress {
   try {
     const data = JSON.parse(raw || "null");
-    if (!data || data.version !== 1 || !data.records) return emptyProgress();
+    if (data?.version !== 2 || data.curriculum !== "mii-home-1" || !data.records) return emptyProgress();
     const progress = emptyProgress();
     progress.bridgeCleared = data.bridgeCleared === true;
-    for (const id of ids) {
-      const value = data.records[id];
-      if (!value || !Number.isSafeInteger(value.attempts) || value.attempts < 0 || !Number.isInteger(value.hints) || value.hints < 0 || value.hints > 2) continue;
-      progress.records[id] = { attempts: value.attempts, hints: value.hints, firstCorrect: value.attempts > 0 && typeof value.firstCorrect === "boolean" ? value.firstCorrect : null, solved: value.attempts > 0 && value.solved === true };
+    for (const question of questions) {
+      const value = data.records[question.id];
+      if (!value || !Number.isSafeInteger(value.attempts) || value.attempts < 0 || !Number.isInteger(value.hints) || value.hints < 0 || value.hints > question.hints.length) continue;
+      progress.records[question.id] = { attempts: value.attempts, hints: value.hints, firstCorrect: value.attempts > 0 && typeof value.firstCorrect === "boolean" ? value.firstCorrect : null, solved: value.attempts > 0 && value.solved === true };
     }
-    progress.machineCleared = data.machineCleared === true && ids.every(id => progress.records[id].solved);
+    progress.machineCleared = data.machineCleared === true && questions.slice(0, 3).every(q => progress.records[q.id].solved);
+    progress.doorCleared = data.doorCleared === true && progress.machineCleared && progress.records.door.solved;
     return progress;
   } catch { return emptyProgress(); }
 }
