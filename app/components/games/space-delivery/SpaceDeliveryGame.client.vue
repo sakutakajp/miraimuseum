@@ -44,9 +44,11 @@ const canAim = computed(
   () => loaded.value && ["ready", "aiming"].includes(mode.value),
 );
 const audio = new DeliveryAudio();
+const museumMusic = useMuseumMusic();
+let releaseMuseumMusic: (() => void) | undefined;
 let runtime: DeliveryRuntime;
-let game: import("phaser").Game | undefined,
-  observer: ResizeObserver | undefined,
+let game:
+    import("~/game/space-delivery/DeliveryScene").DeliveryScene | undefined,
   disposed = false;
 let pointerId: number | undefined,
   pointerStart = { x: 0, y: 0 },
@@ -226,6 +228,7 @@ function key(e: KeyboardEvent) {
   }
 }
 onMounted(async () => {
+  releaseMuseumMusic = museumMusic.holdForGame();
   try {
     progress.value = parseProgress(localStorage.getItem(SAVE_KEY));
   } catch {
@@ -259,36 +262,17 @@ onMounted(async () => {
     { signal: lifetime.signal },
   );
   try {
-    const [{ default: Phaser }, { DeliveryScene }] = await Promise.all([
-      import("phaser"),
-      import("~/game/space-delivery/DeliveryScene"),
-    ]);
+    const { DeliveryScene } =
+      await import("~/game/space-delivery/DeliveryScene");
     if (disposed || !host.value) return;
-    game = new Phaser.Game({
-      type: Phaser.CANVAS,
-      parent: host.value,
-      width: 360,
-      height: 520,
-      backgroundColor: "#0c142c",
-      antialias: true,
-      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-      input: { mouse: false, touch: false, keyboard: false },
-      audio: { noAudio: true },
-      scene: [
-        new DeliveryScene(
-          runtime,
-          matchMedia("(prefers-reduced-motion: reduce)").matches,
-          () => {
-            loaded.value = true;
-          },
-        ),
-      ],
-    });
-    game.canvas.setAttribute("aria-hidden", "true");
-    observer = new ResizeObserver(() => {
-      game?.scale.refresh();
-    });
-    observer.observe(host.value);
+    game = new DeliveryScene(
+      host.value,
+      runtime,
+      matchMedia("(prefers-reduced-motion: reduce)").matches,
+      () => {
+        loaded.value = true;
+      },
+    );
     root.value?.focus({ preventScroll: true });
   } catch {
     fatal.value = true;
@@ -298,9 +282,9 @@ onBeforeUnmount(() => {
   disposed = true;
   cancelDrag();
   lifetime.abort();
-  observer?.disconnect();
   audio.dispose();
-  game?.destroy(true);
+  releaseMuseumMusic?.();
+  game?.dispose();
 });
 </script>
 <template>
@@ -594,6 +578,13 @@ onBeforeUnmount(() => {
   </main>
 </template>
 <style scoped>
+:where(.delivery) :where(p, h1, h2) {
+  margin: 0;
+}
+:where(.delivery) :where(button) {
+  border: 0;
+  background: none;
+}
 .delivery {
   height: 100dvh;
   min-height: 0;
@@ -605,7 +596,7 @@ onBeforeUnmount(() => {
   padding: env(safe-area-inset-top) max(12px, env(safe-area-inset-right))
     max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   overflow: hidden;
-  font-family: "M PLUS Rounded 1c", "Hiragino Kaku Gothic ProN", sans-serif;
+  font-family: "Helvetica Neue", "Hiragino Kaku Gothic ProN", sans-serif;
   outline: none;
   isolation: isolate;
 }

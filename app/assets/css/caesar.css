@@ -1,0 +1,171 @@
+.caesar, .games-index, .caesar-loading {
+  --ruin-ink: #102332; --ruin-dark: #091721; --ruin-gold: #e4c38b; --ruin-brass: #b88b45; --ruin-text: #f4ebd8; --ruin-muted: #b6c3c6; --ruin-teal: #57ddd4;
+  color: var(--ruin-text); background: var(--ruin-dark); font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; min-height: 100svh;
+}
+.caesar :is(a, button, select):focus-visible, .games-index :is(a, button):focus-visible, .caesar-band:focus-visible { outline: 3px solid var(--ruin-teal); outline-offset: 5px; }
+.caesar :is(h1, h2, h3), .games-index :is(h1, h2) { font-family: "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif; font-weight: 600; }
+.caesar :is(p, h1, h2, h3), .games-index :is(p, h1, h2, h3) { margin: 0; }
+:where(.caesar button) { background: none; border: 0; }
+.caesar a, .games-index a { color: inherit; text-decoration: none; }
+.caesar button:disabled { opacity: .44; }
+.caesar-topbar { position: relative; z-index: 3; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px max(24px, calc((100% - 1300px) / 2)); border-bottom: 1px solid #b88b453c; background: #091721; font-size: 12px; }
+.caesar-brand { letter-spacing: .18em; font-family: Georgia, serif; font-size: 18px; font-weight: 600; white-space: nowrap; }
+.caesar-brand span { color: var(--ruin-gold); }
+.caesar-topbar nav { display: flex; gap: 24px; align-items: center; }
+.caesar-topbar :is(nav a, nav button), .games-index .caesar-topbar > a:last-child { min-height: 44px; display: inline-flex; align-items: center; }
+.caesar-eyebrow { display: flex; align-items: center; gap: 16px; font-family: Georgia, serif; font-size: 11px; letter-spacing: .23em; color: var(--ruin-gold); }
+.caesar-eyebrow i { width: 22px; height: 1px; background: currentColor; }
+.caesar-world { position: relative; height: clamp(380px, 43vw, 620px); overflow: hidden; background: linear-gradient(150deg, #c3b896, #327681 65%, #102332); }
+.caesar-world__illustration { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
+.caesar-world__illustration.is-machine { object-position: 60% 38%; }
+.caesar-world canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.caesar-world__shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, #102332b3, transparent 55%), linear-gradient(0deg, #091721b3, transparent 32%); }
+.caesar-world__heading { position: absolute; top: 30px; left: max(32px, calc((100% - 1220px) / 2)); pointer-events: none; }
+.caesar-world__heading h1 { margin: 12px 0; color: #ffe0a4; font-size: clamp(30px, 4.3vw, 62px); letter-spacing: .13em; text-shadow: 0 2px 14px #10233290; }
+.caesar-title-rule { height: 16px; display: flex; align-items: center; width: 230px; color: var(--ruin-gold); gap: 8px; }
+.caesar-title-rule::before, .caesar-title-rule::after { content: ""; flex: 1; height: 1px; background: currentColor; }
+.caesar-world__letters { position: absolute; bottom: 12%; left: 34%; width: 44%; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; }
+.caesar-world__letters span { width: clamp(34px, 5vw, 66px); text-align: center; font: 600 clamp(25px, 3vw, 45px) Georgia, serif; color: #352d20; text-shadow: 0 1px 1px #ffecc4; background: linear-gradient(140deg, #e6cca0, #c3a476); border: 1px solid #a08660; box-shadow: 2px 3px 0 #836f51; padding: 3px 0; }
+.caesar-world__letters.solved span { color: #1e635f; border-color: var(--ruin-teal); box-shadow: 0 0 12px #57ddd438; }
+.caesar-world__goal { position: absolute; right: max(28px, calc((100% - 1150px) / 2)); bottom: 20px; font-size: 12px; padding: 7px 14px; border: 1px solid #e4c38b70; background: #102332d9; color: #f4ebd8; }
+.caesar-quality { position: absolute; bottom: 14px; left: max(24px, calc((100% - 1220px) / 2)); display: flex; align-items: center; gap: 10px; font-size: 10px; color: #f4ebd8; }
+.caesar-quality select { color: inherit; background: #102332b3; border: 1px solid #e4c38b65; padding: 6px; min-height: 44px; font: inherit; }
+.caesar-world__repair { position: absolute; bottom: 20px; right: max(24px, calc((100% - 1220px) / 2)); display: flex; align-items: center; gap: 12px; background: #102332c9; padding: 8px 14px; }
+.caesar-world__repair > span { color: #b6c3c6; font-size: 24px; }.caesar-world__repair > span.active { color: var(--ruin-teal); }
+.caesar-world__notice { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; background: #102332da; padding: 24px; text-align: center; font-size: 13px; z-index: 2; }
+.caesar-console { position: relative; max-width: 1260px; margin: 0 auto; padding: 25px 50px 14px; background: radial-gradient(ellipse at 50% 35%, #17334080, transparent 70%), linear-gradient(125deg, #112737, #0b1b29); border: 1px solid #b88b4575; border-top: 3px solid #b88b45; box-shadow: inset 0 0 0 5px #e4c38b07, 0 -6px 28px #07141a44; }
+.caesar-console__corners { position: absolute; inset: 8px; pointer-events: none; border: 1px solid #b88b453d; clip-path: polygon(0 0, 28px 0, 28px 3px, 3px 3px, 3px 28px, 0 28px, 0 0, 100% 0, 100% 28px, calc(100% - 3px) 28px, calc(100% - 3px) 3px, calc(100% - 28px) 3px, calc(100% - 28px) 0, 100% 0, 100% 100%, calc(100% - 28px) 100%, calc(100% - 28px) calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) calc(100% - 28px), 100% calc(100% - 28px), 100% 100%, 0 100%, 0 calc(100% - 28px), 3px calc(100% - 28px), 3px calc(100% - 3px), 28px calc(100% - 3px), 28px 100%, 0 100%); }
+.caesar-console__heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.caesar-console__heading h2 { font-family: inherit; font-size: 15px; font-weight: 500; line-height: 1.7; text-align: right; }
+.caesar-console__heading h2:focus { outline: 0; }
+.caesar-original { display: flex; align-items: center; justify-content: center; gap: 28px; margin: 0 auto 18px; font-family: "Yu Mincho", Georgia, serif; font-size: 21px; }
+.caesar-word { display: flex; align-items: center; justify-content: center; gap: 12px; font-family: Georgia, "Courier New", monospace; }
+.caesar-word > :is(b, button) { position: relative; display: grid; place-items: center; width: 70px; height: 74px; line-height: 1; font-size: 46px; font-weight: 500; border-radius: 4px; }
+.caesar-word--gold b { width: 53px; height: 55px; font-size: 37px; background: linear-gradient(140deg, #1d3847, #0c1d2c); color: var(--ruin-gold); border: 2px solid #c69851; box-shadow: inset 0 0 0 2px #d7be8833, 0 3px 0 #060c10; }
+.caesar-bridge-controls { display: grid; grid-template-columns: minmax(0, 660px) 210px; align-items: center; justify-content: center; gap: 64px; }
+.caesar-bands { position: relative; padding: 0 0 0 30px; user-select: none; }
+.caesar-bands__label { text-align: center; font-family: "Yu Mincho", Georgia, serif; font-size: 13px; margin-bottom: 10px; color: var(--ruin-text); }
+.caesar-bands__label > span[aria-hidden] { display: block; height: 8px; margin-top: 2px; color: var(--ruin-teal); }
+.caesar-bands__rows { position: relative; display: grid; gap: 12px; }
+.caesar-band { position: relative; overflow: hidden; height: 60px; border: 1px solid #657375; box-shadow: 0 3px 0 #06111a; background: #182d3b; cursor: grab; touch-action: pan-y; }
+.is-dragging .caesar-band { cursor: grabbing; }.is-locked .caesar-band { cursor: default; }
+.caesar-band__strip { display: grid; grid-template-columns: repeat(11, 1fr); width: 220%; height: 100%; transform: translateX(calc(-27.272727% + var(--band-drag, 0px))); will-change: transform; }
+.caesar-band__strip span { display: grid; place-items: center; border-right: 1px solid #06121a; box-shadow: inset 1px 1px #ffffff12; font-family: Georgia, "Courier New", monospace; font-size: 38px; line-height: 1; color: #c4cbcb; background: linear-gradient(145deg, #273c49, #142633); }
+.caesar-bands__selection { position: absolute; top: -4px; bottom: -4px; left: 40%; width: 20%; z-index: 1; pointer-events: none; border: 3px solid var(--ruin-teal); border-radius: 5px; box-shadow: 0 0 13px #57ddd457, inset 0 0 20px #57ddd419; background: #57ddd407; }
+.caesar-bands__link { position: absolute; top: 34px; left: 10px; width: 17px; height: 217px; background: linear-gradient(90deg, #695231, #c8a25b 55%, #7f653c); border: 1px solid #d5b176; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: space-around; box-shadow: -3px 0 #675235; }
+.caesar-bands__link i { display: block; width: 24px; height: 24px; border-radius: 50%; border: 3px double #d8b576; background: #977342; box-shadow: 0 2px 2px #08131b; }
+.caesar-linked-label { position: absolute; top: 135px; left: -20px; writing-mode: vertical-rl; font-size: 11px; letter-spacing: .06em; color: var(--ruin-gold); }
+.caesar-bands__instruction { font-size: 14px; text-align: center; margin: 19px -15px 0; }
+.caesar-bands__instruction small { display: block; margin: 8px auto 0; font-size: 10px; color: var(--ruin-muted); line-height: 1.6; }
+.caesar-drag-guide { display: flex; gap: 5px; align-items: center; justify-content: center; position: absolute; z-index: 2; right: 18%; top: 174px; color: var(--ruin-teal); font-size: 42px; pointer-events: none; text-shadow: 0 2px 5px #102332; animation: caesar-drag 1.7s ease-in-out 2; }
+.caesar-drag-guide span { color: var(--ruin-text); font-size: 57px; }
+@keyframes caesar-drag { 0%, 100% { transform: translateX(-15px); opacity: .3; } 70% { transform: translateX(25px); opacity: 1; } }
+.caesar-bridge-readout { display: grid; gap: 12px; padding-bottom: 24px; }
+.caesar-bridge-readout > div { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px; background: linear-gradient(135deg, #203746, #10202e); border: 1px solid #b88b457e; box-shadow: inset 0 0 0 3px #e4c38b09, 0 4px 0 #06121a; font-family: "Yu Mincho", Georgia, serif; }
+.caesar-bridge-readout span { font-size: 16px; }.caesar-bridge-readout strong { font: 43px Georgia, serif; color: var(--ruin-gold); }
+.caesar-readout-word { font: 38px "Courier New", monospace; letter-spacing: .15em; color: var(--ruin-text); padding-left: .15em; }
+.caesar-bridge-bottom { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 23px; }
+.caesar-trace small { font-size: 10px; color: var(--ruin-muted); }.caesar-trace p { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 7px; font: 15px "Courier New", monospace; }.caesar-trace p span { color: var(--ruin-gold); }
+.caesar-button { min-height: 48px; border: 1px solid #b88b458c; border-radius: 3px; background: linear-gradient(145deg, #233b4b, #112536); box-shadow: inset 0 0 0 3px #e4c38b08, 0 3px 0 #050f17; padding: 12px 20px; color: var(--ruin-text); font: inherit; font-size: 14px; transition: background .15s, border-color .15s; }
+.caesar-button:hover:not(:disabled) { border-color: var(--ruin-gold); background: #294958; }.caesar-button[aria-pressed="true"] { border-color: var(--ruin-teal); background: #18494e; box-shadow: inset 0 0 0 2px #57ddd42b, 0 3px 0 #050f17; }
+.caesar-button--primary { color: #081f26; background: linear-gradient(145deg, #75e8dd, #36aaa9); border: 2px solid #b9d6b6; box-shadow: inset 0 0 0 3px #173b4225, 0 4px 0 #06121a; font-weight: 700; }
+.caesar-button--primary:hover:not(:disabled) { background: #8ae9df; border-color: #d3f9df; }.caesar-button--primary:disabled { opacity: .45; }
+.caesar-button-pair { display: flex; gap: 12px; flex-shrink: 0; }
+.caesar-link-button { min-height: 44px; padding: 8px 0; color: var(--ruin-gold); font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
+.caesar-footnote { margin-top: 17px; color: var(--ruin-muted); text-align: center; font-size: 11px; line-height: 1.7; }
+.caesar-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-top: 1px solid #b88b452a; margin-top: 15px; font-size: 10px; color: var(--ruin-muted); }
+.caesar-page-footer { max-width: 1260px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)); font-size: 10px; color: var(--ruin-muted); }.caesar-page-footer a { color: var(--ruin-gold); display: inline-flex; align-items: center; min-height: 44px; }
+.caesar-machine-panels { display: grid; grid-template-columns: minmax(220px, .75fr) minmax(300px, 1.25fr); border: 1px solid #b88b4580; border-radius: 6px; background: #091b2a; box-shadow: 0 5px 0 #06121a; overflow: hidden; }
+.caesar-record { background: radial-gradient(ellipse at center, #e4cea4, #bd9f70); color: #342b20; padding: 0 24px 20px; border-right: 5px solid #8b7046; }
+.caesar-record h3 { margin: 0 -24px 18px; padding: 10px 16px; text-align: center; background: linear-gradient(135deg, #203140, #101f2b); border-bottom: 2px solid #8b7046; font-size: 17px; color: var(--ruin-gold); }
+.caesar-record__labels { display: flex; justify-content: space-between; gap: 20px; font-size: 12px; max-width: 260px; margin: 25px auto 12px; }.caesar-record__labels span { width: 95px; text-align: center; }
+.caesar-record__letters { display: flex; align-items: center; justify-content: center; gap: 18px; }.caesar-record__letters b { display: grid; place-items: center; width: 100px; height: 107px; border: 2px solid #8f6d3f; border-radius: 3px; font: 65px Georgia, serif; box-shadow: inset 0 0 0 3px #fff4d536, 2px 3px 0 #796449; background: linear-gradient(135deg, #ecd8b1, #c5a77d); }.caesar-record__letters > span { font-size: 29px; color: #664d2f; }
+.caesar-message-panel { text-align: center; padding: 18px 25px 20px; }.caesar-message-panel h3 { color: var(--ruin-gold); font-size: 14px; letter-spacing: .09em; margin-bottom: 13px; }.caesar-word--stone b, .caesar-word--repair button { background: linear-gradient(135deg, #e4cca3, #c0a07b); color: #342b20; border: 2px solid #af854e; box-shadow: inset 0 0 0 3px #fff4d53d, 2px 3px 0 #635138; }
+.caesar-message-panel .caesar-result-label { margin: 18px 0 10px; font-size: 12px; }
+.caesar-word--result b { height: 55px; font-size: 35px; color: #bec8c6; background: linear-gradient(145deg, #1a303d, #0c1b29); border: 1px solid #b88b457c; box-shadow: inset 0 0 0 3px #e4c38b07; }
+.caesar-word--repair button[aria-pressed="true"] { outline: 3px solid var(--ruin-teal); outline-offset: 3px; }.caesar-word--repair button:disabled { opacity: 1; }.caesar-word--source b { width: 34px; height: 34px; font-size: 27px; }.caesar-word--source { margin-bottom: 12px; }
+.caesar-instruction { position: relative; text-align: center; padding: 20px 10px; font-family: "Yu Mincho", Georgia, serif; font-size: 19px; line-height: 1.7; color: var(--ruin-gold); }.caesar-instruction::before, .caesar-instruction::after { content: "◇"; margin: 0 18px; font-size: 14px; }
+.caesar-question-count { letter-spacing: .05em; margin-left: 10px; font: 14px "Courier New", monospace; color: var(--ruin-text); }
+.caesar-machine-controls { display: grid; grid-template-columns: 1.2fr .8fr 1fr; gap: 25px; align-items: start; }
+.caesar-machine-controls fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }.caesar-machine-controls legend { font-size: 12px; color: var(--ruin-gold); margin-bottom: 10px; }.caesar-direction > div, .caesar-stepper > div { display: flex; gap: 10px; align-items: center; }.caesar-direction button { flex: 1; padding: 12px 9px; min-height: 57px; }
+.caesar-stepper button { width: 52px; height: 57px; border: 1px solid #b88b4580; border-radius: 3px; background: linear-gradient(135deg, #314650, #142633); box-shadow: 0 3px 0 #06121a; color: var(--ruin-gold); font-size: 26px; flex-shrink: 0; }
+.caesar-stepper output, .caesar-stepper select { display: grid; place-items: center; width: 62px; height: 57px; color: var(--ruin-text); font: 30px "Courier New", monospace; text-align: center; background: #091722; border: 1px solid #b88b4565; border-radius: 3px; }.caesar-stepper select { padding: 0 6px; width: 75px; }
+.caesar-execute { padding-top: 24px; }.caesar-execute button { width: 100%; min-height: 59px; font-family: "Yu Mincho", Georgia, serif; font-size: 25px; display: flex; align-items: center; justify-content: center; gap: 28px; }.caesar-execute small { display: block; font-size: 10px; margin-top: 9px; text-align: center; color: var(--ruin-muted); line-height: 1.6; }
+.caesar-machine-controls--repair > p { font-size: 12px; line-height: 1.9; align-self: center; }
+.caesar-feedback:empty { display: none; }.caesar-feedback { margin-top: 20px; padding: 15px 20px; border: 1px solid #b88b4570; border-left-width: 3px; background: #0817215e; text-align: center; font-size: 13px; line-height: 1.8; }.caesar-feedback.success { border-color: #57ddd47a; }.caesar-feedback.incorrect { border-color: #e2b479; }.caesar-feedback strong { font-size: 16px; color: var(--ruin-gold); }.caesar-feedback.success strong { color: var(--ruin-teal); }.caesar-feedback p { margin-top: 4px; }.caesar-feedback button { margin-top: 13px; }
+.caesar-letter-mapping { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }.caesar-letter-mapping span { padding: 8px 12px; background: #57ddd413; border: 1px solid #57ddd44a; color: var(--ruin-teal); font: 18px "Courier New", monospace; animation: caesar-mapping .55s ease both; animation-delay: var(--mapping-delay); }@keyframes caesar-mapping { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.caesar-hints { margin-top: 10px; }.caesar-hints button { text-decoration: none; }.caesar-hints button small { color: var(--ruin-muted); padding-left: 12px; font-size: 10px; }.caesar-hints ol { margin: 5px 0; padding: 12px 20px 12px 35px; background: #e4c38b0b; font-size: 12px; line-height: 1.9; }
+.caesar-complete, .caesar-stage-menu { padding: 40px 50px; }.caesar-complete > h2, .caesar-stage-menu > h2 { margin: 18px 0; font-size: 30px; color: var(--ruin-gold); letter-spacing: .04em; }.caesar-complete > p { font-size: 13px; color: var(--ruin-muted); line-height: 1.8; }
+.caesar-lessons { list-style: none; display: grid; gap: 10px; padding: 24px 0; margin: 0; }.caesar-lessons li { display: flex; align-items: center; gap: 20px; font-size: 15px; padding: 15px 20px; background: #57ddd409; border: 1px solid #57ddd42a; }.caesar-lessons li > span:first-child { font: 22px Georgia, serif; color: var(--ruin-teal); }
+.caesar-review { margin-top: 25px; }.caesar-review > h2 { font: 18px "Yu Mincho", Georgia, serif; margin-bottom: 18px; }.caesar-review__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }.caesar-review article { padding: 20px; border: 1px solid #b88b4550; background: #0a1b28; }.caesar-review article > small { font-size: 11px; line-height: 1.7; color: var(--ruin-muted); }.caesar-review article h3 { font-family: inherit; font-size: 15px; margin: 12px 0; color: var(--ruin-gold); }.caesar-review article p { font-size: 11px; line-height: 1.9; }.caesar-review article p:last-of-type { margin-bottom: 12px; }
+.caesar-complete__actions { display: flex; justify-content: center; gap: 16px; margin: 30px 0 10px; }.caesar-stage-menu__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 28px 0; }.caesar-stage-menu__grid button { padding: 26px; border: 1px solid #b88b4570; background: linear-gradient(145deg, #21394a, #102332); text-align: left; }.caesar-stage-menu__grid button small { color: var(--ruin-gold); font: 12px Georgia, serif; letter-spacing: .2em; }.caesar-stage-menu__grid button h3 { font-size: 26px; margin: 15px 0; }.caesar-stage-menu__grid button p { font-size: 12px; line-height: 1.9; color: var(--ruin-muted); }.caesar-stage-menu__grid button > span { display: block; margin-top: 18px; color: var(--ruin-teal); }
+.caesar-loading { display: grid; place-items: center; }
+.games-index { background: radial-gradient(ellipse at 20% 30%, #23443d40, transparent 55%), #091721; }.games-index__intro { max-width: 1200px; padding: 65px 30px 35px; margin: auto; }.games-index__intro h1 { font-size: 48px; letter-spacing: .1em; margin: 18px 0; }.games-index__intro p { font-size: 14px; color: var(--ruin-muted); }.games-index__grid { max-width: 1200px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin: auto; padding: 10px 30px 70px; }.games-index__game { overflow: hidden; border: 1px solid #b88b4560; background: #102332; transition: border-color .2s, transform .2s; }.games-index__game:hover { border-color: var(--ruin-gold); transform: translateY(-3px); }.games-index__art { position: relative; height: 260px; overflow: hidden; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 110%, #57ddd435, transparent 60%), linear-gradient(145deg, #587d72, #162e39); }.games-index__art > small { position: absolute; bottom: 18px; left: 24px; font: 10px Georgia, serif; letter-spacing: .25em; color: var(--ruin-gold); }.games-index__arch { position: absolute; top: 38px; width: 205px; height: 265px; border: 34px solid #c9ae7c; border-bottom: 0; border-radius: 110px 110px 0 0; transform: rotate(-5deg); box-shadow: inset 8px 3px 0 #897247, 10px 5px 0 #897247; }.games-index__tiles { position: relative; display: flex; gap: 10px; margin-top: 20px; transform: rotate(-5deg); }.games-index__tiles span { display: grid; place-items: center; width: 65px; height: 78px; font: 48px Georgia, serif; color: #f5d89f; background: #102332; border: 2px solid #b88b45; box-shadow: 5px 5px 0 #806844; }.games-index__info { padding: 28px; }.games-index__info h2 { font-size: 31px; margin: 18px 0 12px; }.games-index__info p { font-size: 14px; line-height: 1.8; }.games-index__info > small { display: block; font-size: 10px; margin-top: 15px; color: var(--ruin-muted); line-height: 1.8; }.games-index__info strong { display: flex; justify-content: space-between; padding-top: 22px; margin-top: 24px; border-top: 1px solid #b88b4535; font-size: 13px; color: var(--ruin-gold); }.games-index__game--dinosaur .games-index__art { background: #141813; }.games-index__art > svg { width: 100%; height: 100%; }
+@media (min-width: 1440px) { .caesar-console { margin-top: -1px; } }
+@media (max-width: 1000px) {
+  .caesar-console { padding: 24px 32px 14px; }.caesar-bridge-controls { grid-template-columns: minmax(0, 1fr) 165px; gap: 42px; }.caesar-bridge-readout > div { padding: 12px; }.caesar-readout-word { font-size: 31px; }.caesar-machine-controls { gap: 16px; grid-template-columns: 1.1fr .9fr .85fr; }.caesar-stepper > div { gap: 6px; }.caesar-stepper button { width: 45px; }.caesar-stepper output { width: 48px; }.caesar-instruction { font-size: 17px; }.caesar-instruction::before, .caesar-instruction::after { display: none; }
+}
+@media (max-width: 700px) {
+  .caesar-topbar { padding: 6px 16px; min-height: 60px; font-size: 10px; }.caesar-brand { font-size: 13px; letter-spacing: .12em; }.caesar-topbar nav { gap: 12px; }.caesar-topbar nav a { display: none; }.caesar-world { height: 260px; }.caesar-world__heading { top: 22px; left: 20px; }.caesar-world__heading h1 { font-size: 32px; margin: 10px 0; }.caesar-eyebrow { font-size: 9px; gap: 10px; letter-spacing: .15em; }.caesar-title-rule { width: 150px; }.caesar-world__letters { bottom: 32%; gap: 5px; }.caesar-world__letters span { width: 30px; font-size: 25px; }.caesar-quality { left: 16px; bottom: 7px; font-size: 9px; gap: 6px; }.caesar-world__goal { right: 12px; bottom: 15px; padding: 7px 9px; font-size: 10px; }.caesar-world__repair { right: 12px; bottom: 12px; padding: 5px 10px; gap: 7px; }.caesar-world__repair > span { font-size: 18px; }.caesar-world__repair small { font-size: 10px; }
+  .caesar-console { padding: 21px 20px 10px; border-left: 0; border-right: 0; }.caesar-console__heading { display: block; margin-bottom: 17px; }.caesar-console__heading h2 { text-align: left; font-size: 14px; margin-top: 12px; }.caesar-original { font-size: 17px; gap: 20px; margin-bottom: 21px; }.caesar-word--gold { gap: 8px; }.caesar-word--gold b { width: 45px; height: 47px; font-size: 32px; }
+  .caesar-bridge-controls { display: flex; flex-direction: column; gap: 20px; }.caesar-bands { width: 100%; padding-left: 26px; }.caesar-linked-label { left: -13px; top: 100px; font-size: 10px; }.caesar-band { height: 53px; }.caesar-band__strip span { font-size: 32px; }.caesar-bands__rows { gap: 10px; }.caesar-bands__link { left: 9px; top: 34px; height: 190px; width: 12px; }.caesar-bands__link i { width: 19px; height: 19px; }.caesar-bands__label { font-size: 11px; }.caesar-bands__instruction { margin: 17px 0 0; font-size: 13px; }.caesar-bands__instruction small { font-size: 10px; max-width: 270px; }.caesar-drag-guide { top: 152px; font-size: 32px; }.caesar-drag-guide span { font-size: 45px; }.caesar-bridge-readout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; width: 100%; padding: 0; }.caesar-bridge-readout > div { padding: 11px 13px; gap: 6px; }.caesar-bridge-readout span { font-size: 11px; }.caesar-bridge-readout strong { font-size: 31px; }.caesar-readout-word { font-size: 28px; }
+  .caesar-bridge-bottom { flex-direction: column-reverse; align-items: stretch; gap: 19px; margin-top: 18px; }.caesar-button-pair { gap: 10px; }.caesar-button-pair button { flex: 1; padding: 12px 8px; font-size: 12px; }.caesar-trace p { font-size: 13px; gap: 8px; }.caesar-footnote { font-size: 10px; margin-top: 14px; }.caesar-footer { gap: 10px; font-size: 9px; }.caesar-footer .caesar-link-button { font-size: 10px; }.caesar-page-footer { padding: 14px 20px; font-size: 9px; gap: 10px; align-items: start; }.caesar-page-footer > span { max-width: 70%; line-height: 1.8; padding-top: 12px; }
+  .caesar-machine-panels { display: flex; flex-direction: column; }.caesar-record { padding: 0 16px 15px; border-right: 0; border-bottom: 4px solid #8b7046; }.caesar-record h3 { margin: 0 -16px 10px; padding: 9px; font-size: 14px; }.caesar-record__labels { max-width: 225px; margin: 12px auto 8px; font-size: 10px; }.caesar-record__labels span { width: 75px; }.caesar-record__letters { gap: 43px; }.caesar-record__letters b { width: 75px; height: 65px; font-size: 45px; }.caesar-record__letters > span { margin: 0 -23px; font-size: 25px; }
+  .caesar-message-panel { padding: 17px 16px; }.caesar-message-panel h3 { font-size: 13px; }.caesar-word > :is(b, button) { width: 66px; height: 63px; font-size: 42px; }.caesar-word--result b { height: 48px; font-size: 30px; }.caesar-word--source b { width: 32px; height: 30px; font-size: 26px; }.caesar-instruction { padding: 19px 0; font-size: 16px; line-height: 1.8; }.caesar-machine-controls { display: grid; grid-template-columns: 1fr; gap: 18px; }.caesar-direction > div { gap: 12px; }.caesar-direction button { font-size: 16px; }.caesar-stepper > div { justify-content: center; gap: 14px; }.caesar-stepper button { width: 57px; height: 54px; }.caesar-stepper output { width: 77px; height: 54px; }.caesar-stepper select { width: 80px; height: 54px; }.caesar-execute { padding-top: 0; }.caesar-execute button { min-height: 60px; }.caesar-machine-controls--repair > p { order: -1; text-align: center; }.caesar-feedback { padding: 14px; font-size: 12px; }.caesar-hints ol { font-size: 11px; }
+  .caesar-complete, .caesar-stage-menu { padding: 30px 20px; }.caesar-complete > h2, .caesar-stage-menu > h2 { font-size: 25px; line-height: 1.5; }.caesar-lessons li { padding: 14px 12px; font-size: 13px; gap: 13px; }.caesar-review__grid { grid-template-columns: 1fr; gap: 12px; }.caesar-complete__actions { flex-direction: column; }.caesar-stage-menu__grid { grid-template-columns: 1fr; gap: 16px; }.caesar-stage-menu__grid button { padding: 20px; }.caesar-stage-menu__grid button h3 { font-size: 24px; }
+  .games-index__intro { padding: 42px 20px 24px; }.games-index__intro h1 { font-size: 36px; }.games-index__grid { grid-template-columns: 1fr; padding: 8px 20px 35px; gap: 24px; }.games-index__art { height: 210px; }.games-index__info { padding: 23px; }.games-index__info h2 { font-size: 28px; }.games-index__info p { font-size: 12px; }.games-index__arch { top: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .caesar *, .games-index * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* Keep readings visible on small screens; assistive names omit the repeated kana. */
+.caesar-readable { line-height: 2; }
+.caesar-readable ruby { ruby-position: over; ruby-align: center; }
+.caesar-readable rt { font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; font-size: max(.52em, 9px); font-weight: 400; line-height: 1; letter-spacing: 0; }
+.caesar-topbar .caesar-readable, .caesar-button .caesar-readable { line-height: 1.8; }
+
+.caesar :is(.caesar-world__letters span, .caesar-word, .caesar-band__strip span, .caesar-readout-word, .caesar-record__letters b, .caesar-letter-mapping span) { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; }
+.caesar summary:focus-visible { outline: 3px solid var(--ruin-teal); outline-offset: 4px; }
+.caesar-kana-order { margin: -5px 0 20px; border: 1px solid #b88b454a; background: #09172150; }
+.caesar-kana-order summary { min-height: 44px; padding: 10px 16px; color: var(--ruin-gold); cursor: pointer; font-size: 12px; }
+.caesar-kana-order ol { list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 4px 16px 16px; }
+.caesar-kana-order li { display: flex; justify-content: center; gap: 8px; padding: 10px 5px; background: #57ddd409; border: 1px solid #57ddd427; font-size: 16px; }
+@media (min-width: 701px) and (max-width: 1000px) { .caesar-kana-order ol { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .caesar-kana-order ol { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }.caesar-kana-order li { gap: 6px; font-size: 15px; } }
+
+.caesar[data-view="intro"] .caesar-world { height: clamp(240px, 25vw, 360px); }
+.caesar-intro { padding: 28px 50px 30px; }
+.caesar-intro__story { max-width: 800px; margin: 0 auto; text-align: center; }
+.caesar-intro__story .caesar-eyebrow { justify-content: center; font-family: inherit; letter-spacing: .12em; }
+.caesar-intro__story h2 { margin: 10px 0 12px; font-size: clamp(23px, 2.6vw, 32px); color: var(--ruin-gold); }
+.caesar-intro__story p { font-size: 14px; line-height: 2; }
+.caesar-intro__journey { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 24px 0 20px; padding: 0; }
+.caesar-intro__journey li { display: flex; align-items: center; gap: 20px; padding: 18px 22px; border: 1px solid #b88b4565; background: #e4c38b06; }
+.caesar-intro__journey svg { width: 76px; flex-shrink: 0; stroke: var(--ruin-gold); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.caesar-intro__spark { stroke: var(--ruin-teal); }
+.caesar-intro__journey small { font: 12px Georgia, serif; letter-spacing: .15em; color: var(--ruin-teal); }
+.caesar-intro__journey h3 { font-size: 22px; margin: 4px 0 8px; }
+.caesar-intro__journey p { font-size: 13px; line-height: 2; }
+.caesar-intro__guide { border-left: 2px solid var(--ruin-teal); background: #57ddd408; padding: 14px 22px; }
+.caesar-intro__guide h3 { font-family: inherit; font-size: 14px; color: var(--ruin-teal); margin-bottom: 6px; }
+.caesar-intro__guide p { font-size: 13px; line-height: 2; }
+.caesar-intro__start { display: flex; flex-direction: column; align-items: center; gap: 13px; margin-top: 23px; text-align: center; }
+.caesar-intro__start p { font-size: 12px; color: var(--ruin-muted); }
+.caesar-intro__start button { display: flex; justify-content: center; align-items: center; gap: 25px; min-width: 280px; font-size: 18px; padding: 14px 28px; }
+.caesar-intro__start small { font-size: 11px; color: var(--ruin-gold); }
+@media (max-width: 700px) {
+  .caesar[data-view="intro"] .caesar-world { height: 220px; }
+  .caesar-intro { padding: 24px 20px; }
+  .caesar-intro__story h2 { font-size: 23px; line-height: 1.9; }
+  .caesar-intro__story p { font-size: 13px; }
+  .caesar-intro__journey { grid-template-columns: 1fr; gap: 12px; margin: 21px 0 18px; }
+  .caesar-intro__journey li { gap: 15px; padding: 14px 16px; }
+  .caesar-intro__journey svg { width: 55px; }
+  .caesar-intro__journey h3 { font-size: 20px; margin: 3px 0 5px; }
+  .caesar-intro__journey p, .caesar-intro__guide p { font-size: 12px; }
+  .caesar-intro__guide { padding: 12px 15px; }
+  .caesar-intro__start button { min-width: 0; width: 100%; max-width: 350px; }
+}
+.games-index__illustration { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; }
+
+.caesar-world__notice--fallback { inset: auto 20px 78px auto; max-width: 360px; padding: 12px 20px; border: 1px solid #b88b4570; border-radius: 4px; }
+@media (max-width: 700px) { .caesar-world__notice--fallback { right: 12px; bottom: 65px; max-width: 250px; padding: 8px 12px; font-size: 11px; } }

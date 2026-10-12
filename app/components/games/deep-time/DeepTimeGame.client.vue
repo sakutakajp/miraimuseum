@@ -1,266 +1,104 @@
 <script setup lang="ts">
-import type { DinosaurRunScene } from "~/game/dinosaur/scenes/DinosaurRunScene";
-import type {
-  ClearResult,
-  ControlRect,
-  DeepTimeRecord,
-  RunMode,
-  UIAction,
-} from "~/game/dinosaur/types";
 import { gameCopy } from "~/game/dinosaur/copy";
-import { takeDinosaurRuntime, discardDinosaurPreload } from "~/game/dinosaur/preload";
-import {
-  DEEP_TIME_SAVE_KEY,
-  emptyRecord,
-  parseRecord,
-} from "~/game/dinosaur/systems/records";
-const props = withDefaults(defineProps<{ autoStart?: boolean }>(), { autoStart: false });
-const emit = defineEmits<{
-  record: [value: DeepTimeRecord];
-  cleared: [value: ClearResult];
-  leave: [];
-}>();
+import { DEEP_TIME_SAVE_KEY, emptyRecord, parseRecord } from "~/game/dinosaur/systems/records";
+import { readSettings, saveSettings, type Quality } from "~/three-d/settings";
+import { discardDinosaurAudio } from "~/game/dinosaur/audio-context";
+import type { RunWorld } from "~/games/dinosaur/RunWorld";
+import type { ClearResult, DeepTimeRecord, RunMode } from "~/game/dinosaur/types";
+const props = defineProps<{ autoStart?: boolean }>();
+const emit = defineEmits<{ cleared: [value: ClearResult]; leave: [] }>();
 const { locale } = useLanguage();
 const copy = computed(() => gameCopy(locale.value));
-const host = ref<HTMLDivElement>();
-const mode = ref<RunMode>("ready"),
-  loaded = ref(false),
-  fatal = ref(false),
-  attempts = ref(0),
-  best = ref(0),
-  storageAvailable = ref(true);
-const controls = shallowRef<ControlRect[]>([]);
-const result = shallowRef<ClearResult>();
-const debug = ref(false),
-  debugText = ref("");
-let scene: DinosaurRunScene | undefined;
-let game: import("phaser").Game | undefined;
-let observer: ResizeObserver | undefined;
-let disposed = false;
-const lifetime = new AbortController();
-let debugTimer: ReturnType<typeof setInterval> | undefined;
-const announce = computed(() =>
-  fatal.value
-    ? copy.value.failed
-    : mode.value === "dead"
-      ? copy.value.attemptBest(attempts.value, Math.floor(best.value * 100))
-      : mode.value === "paused"
-        ? copy.value.pausedTitle
-        : mode.value === "complete"
-          ? copy.value.result(result.value?.score ?? 0, Math.round((result.value?.sync ?? 0) * 100), result.value?.rank ?? "C")
-          : "",
-);
-function label(c: ControlRect) {
-  return {
-    start: copy.value.start,
-    pause: copy.value.pause,
-    resume: copy.value.resume,
-    mute: c.label,
-    leave: copy.value.home,
-    retry: copy.value.retry,
-  }[c.action];
-}
-function action(value: UIAction) {
-  scene?.act(value);
-}
-watch(locale, next => {
-  if (scene) { scene.locale = next; scene.ui?.refresh(); }
+const canvas = ref<HTMLCanvasElement>(), progress = ref<HTMLElement>();
+const mode = ref<RunMode>("ready"), ready = ref(false), fatal = ref(false), storageFailed = ref(false), audioFailed = ref(false);
+const record = ref(emptyRecord()), result = ref<ClearResult>(), failedProgress = ref(0);
+const settings = ref({ volume: 0.8, muted: false, quality: "high" as Quality });
+const overlay = computed(() => !ready.value || fatal.value || ["ready", "paused", "complete"].includes(mode.value));
+watch([mode, ready, fatal], async () => {
+  await nextTick();
+  if (mode.value === "running" && !fatal.value) canvas.value?.focus({ preventScroll: true });
+  const action = mode.value === "paused" ? "resume" : mode.value === "complete" ? "retry" : mode.value === "ready" && ready.value ? "start" : undefined;
+  if (action) document.querySelector<HTMLButtonElement>(`.deep-time-host [data-testid="${action}"]`)?.focus({ preventScroll: true });
 });
-function persist(record: DeepTimeRecord) {
-  best.value = record.bestProgress;
-  try {
-    localStorage.setItem(DEEP_TIME_SAVE_KEY, JSON.stringify(record));
-  } catch {
-    storageAvailable.value = false;
-  }
-  emit("record", { ...record });
+let world: RunWorld | undefined, loading: AbortController | undefined;
+function store(value: DeepTimeRecord) {
+  record.value = { ...value };
+  try { localStorage.setItem(DEEP_TIME_SAVE_KEY, JSON.stringify(value)); } catch { storageFailed.value = true; }
 }
-function error(value: unknown) {
-  console.error("Dinosaur game initialization failed", value);
-  fatal.value = true;
-  scene?.pause();
-  controls.value = [];
+function applySettings() {
+  world?.audio.setMuted(settings.value.muted); world?.audio.setVolume(settings.value.volume); world?.setQuality(settings.value.quality);
+  if (!saveSettings(settings.value)) storageFailed.value = true;
 }
-const lost = (event: Event) => {
-  event.preventDefault();
-  error(new Error("Graphics context lost"));
-};
-onMounted(async () => {
-  let record = emptyRecord();
+function mute() { settings.value.muted = !settings.value.muted; applySettings(); }
+function leave() { emit("leave"); }
+async function initialize() {
+  loading?.abort(); world?.dispose(); world = undefined; ready.value = false; fatal.value = false;
+  loading = new AbortController(); const signal = loading.signal;
   try {
-    record = parseRecord(localStorage.getItem(DEEP_TIME_SAVE_KEY));
-  } catch {
-    storageAvailable.value = false;
-  }
-  best.value = record.bestProgress;
-  try {
-    const { Phaser, DinosaurRunScene, DinosaurUIScene, playerModel } = await takeDinosaurRuntime(lifetime.signal);
-    if (disposed || !host.value) return;
-    const model = await playerModel.takePlayerModel(lifetime.signal);
-    if (disposed || !host.value) { playerModel.disposePlayerModel(model); return; }
-    scene = new DinosaurRunScene(
-      {
-        ready: () => {
-          loaded.value = true;
-          if (props.autoStart && !disposed) void scene?.start(true);
-        },
-        started: () => {
-          attempts.value = scene!.attempts;
-        },
-        best: persist,
-        paused: () => {},
-        failed: () => {},
-        cleared: (value) => {
-          result.value = value;
-          emit("cleared", value);
-        },
-        leave: () => emit("leave"),
-        fatal: error,
-        controls: (value) => {
-          controls.value = value;
-        },
-        mode: (value) => {
-          mode.value = value;
-        },
-      },
-      record,
-      matchMedia("(prefers-reduced-motion: reduce)").matches,
-      locale.value,
-      model,
-    );
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("webgl2", { antialias: true, alpha: false, depth: true, stencil: true });
-    game = new Phaser.Game({
-      type: context ? Phaser.WEBGL : Phaser.CANVAS,
-      canvas,
-      // Phaser accepts WebGL contexts; its config type only lists Canvas2D.
-      context: (context ?? undefined) as unknown as CanvasRenderingContext2D | undefined,
-      parent: host.value,
-      width: host.value.clientWidth,
-      height: host.value.clientHeight,
-      backgroundColor: "#10110f",
-      pixelArt: false,
-      roundPixels: false,
-      antialias: true,
-      scene: [scene, new DinosaurUIScene()],
-      scale: { mode: Phaser.Scale.NONE },
-      input: { activePointers: 1 },
-      audio: { noAudio: true },
-      fps: { smoothStep: false, target: 60 },
-    });
-    game.canvas.setAttribute("aria-hidden", "true");
-    game.canvas.addEventListener("webglcontextlost", lost);
-    observer = new ResizeObserver(() => {
-      if (game && host.value?.clientWidth && host.value.clientHeight)
-        game.scale.resize(host.value.clientWidth, host.value.clientHeight);
-    });
-    observer.observe(host.value);
-    if (
-      import.meta.dev &&
-      new URLSearchParams(location.search).has("deepTimeDebug")
-    ) {
-      debug.value = true;
-      scene.devEnabled = true;
-      // Exposed solely in development: Playwright can drive real physics through the whole level.
-      (window as unknown as { __deepTime?: DinosaurRunScene }).__deepTime =
-        scene;
-      debugTimer = setInterval(() => {
-        if (!scene) return;
-        const c = scene.runtime.world.clock,
-          s = scene.runtime.world.state;
-        debugText.value = `${scene.runtime.section.name} / BEAT ${c.beat.toFixed(2)} / BAR ${c.bar}\nTICK ${c.ticks} / Y ${s.playerY.toFixed(1)} / VY ${s.playerVelocityY.toFixed(1)}\nBUFFER ${(s.jumpBufferRemaining * 1000).toFixed(0)} / COYOTE ${(s.coyoteRemaining * 1000).toFixed(0)}\nFPS ${scene.game.loop.actualFps.toFixed(1)} / FRAME ${scene.game.loop.delta.toFixed(1)} ms\nCHUNKS ${scene.runtime.world.spatial.activeChunks} / ${scene.visual.quality.toUpperCase()}\nAUDIO Δ ${scene.audio.syncError.toFixed(3)} / SOURCES ${scene.audio.activeSources} / VFX ${scene.vfx?.activeCount ?? 0}\n${scene.runtime.triggers.log.slice(-2).join(" · ")}`;
-      }, 200);
+    const { RunWorld } = await import("~/games/dinosaur/RunWorld");
+    signal.throwIfAborted();
+    const next = await RunWorld.create(canvas.value!, record.value, {
+      ready: () => { if (!signal.aborted) ready.value = true; },
+      mode: value => { if (!signal.aborted) mode.value = value; }, record: store,
+      failed: value => failedProgress.value = value,
+      cleared: value => { result.value = value; emit("cleared", value); },
+      fatal: () => { if (!signal.aborted) fatal.value = true; },
+      warning: value => { if (value === "audio" && !signal.aborted) audioFailed.value = true; },
+    }, progress.value!, signal);
+    if (signal.aborted) { next.dispose(); return; }
+    world = next;
+    if (import.meta.dev && new URLSearchParams(location.search).has("deepTimeDebug")) {
+      const { runtimeResources } = await import("~/three-d/diagnostics");
+      (window as any).__deepTime = { world, resources: runtimeResources,
+        tick: (seconds: number) => { for (let remaining = seconds; remaining > 1e-8; remaining -= 0.05) world?.controller.tick(Math.min(remaining, 0.05)); },
+        queueAuthoredJumps: () => { for (const challenge of world!.stage.rules.challenges) world!.controller.runtime.world.queueJump(challenge.at); },
+      };
     }
-  } catch (value) {
-    if (!disposed) error(value);
-  }
+    if (props.autoStart) await world.start(true);
+  } catch { if (!signal.aborted) fatal.value = true; }
+}
+onMounted(() => {
+  settings.value = readSettings();
+  try { record.value = parseRecord(localStorage.getItem(DEEP_TIME_SAVE_KEY)); } catch { storageFailed.value = true; }
+  void initialize();
 });
-onBeforeUnmount(() => {
-  disposed = true;
-  lifetime.abort();
-  discardDinosaurPreload();
-  clearInterval(debugTimer);
-  observer?.disconnect();
-  game?.canvas.removeEventListener("webglcontextlost", lost);
-  scene?.dispose();
-  game?.destroy(true);
-  if (import.meta.dev)
-    delete (window as unknown as { __deepTime?: DinosaurRunScene }).__deepTime;
-});
+onBeforeUnmount(() => { loading?.abort(); world?.dispose(); discardDinosaurAudio(); if (import.meta.dev) delete (window as any).__deepTime; });
 </script>
 <template>
-  <section
-    class="deep-time-host"
-    :data-mode="mode"
-    :data-attempts="attempts"
-    :data-best="best"
-    :data-loaded="loaded"
-    data-player-species="brachiosaurus"
-    :aria-label="copy.gameAria"
-  >
-    <div ref="host" class="deep-time-canvas" />
-    <div class="deep-time-accessibility" v-if="!fatal">
-      <button
-        v-for="c in controls"
-        :key="c.action"
-        :class="`deep-time-control deep-time-${c.action}`"
-        :style="{
-          left: c.x + 'px',
-          top: c.y + 'px',
-          width: c.width + 'px',
-          height: c.height + 'px',
-        }"
-        :aria-label="label(c)"
-        :disabled="c.action === 'start' && !loaded"
-        @pointerdown.stop
-        @click.stop="action(c.action)"
-        @pointerenter="scene?.ui?.hover(c.action, true)"
-        @pointerleave="scene?.ui?.hover(c.action, false)"
-        @focus="scene?.ui?.hover(c.action, true)"
-        @blur="scene?.ui?.hover(c.action, false)"
-      >
-        {{ label(c) }}
-      </button>
-    </div>
-    <div v-if="!loaded || fatal" class="deep-time-loading" :class="{ fatal }">
+  <main class="deep-time-host" data-engine="babylon" :data-mode="mode" :data-ready="ready">
+    <canvas ref="canvas" class="run-canvas" tabindex="0" :inert="overlay" :aria-label="copy.gameAria" />
+    <header class="run-header" :inert="overlay">
+      <button type="button" @click="leave">{{ copy.home }}</button>
+      <div class="run-record"><span>{{ copy.attempt(record.attempts) }}</span><span>BEST {{ Math.round(record.bestProgress * 100) }}%</span></div>
+      <button type="button" data-testid="pause" :disabled="!ready || ['ready','complete'].includes(mode)" @click="world?.controller.pause()">{{ copy.pause }}</button>
+    </header>
+    <div class="run-progress" aria-hidden="true"><span ref="progress">0%</span></div>
+    <p class="run-hint" v-if="mode === 'running'">{{ copy.jumpHint }}</p>
+    <div v-if="!ready || fatal" class="run-overlay" role="status">
+      <p class="run-overline">DEEP TIME / 01</p><h1>CRETACEOUS<br />LAST DAY</h1>
       <p>{{ fatal ? copy.failed : copy.loading }}</p>
-      <button
-        v-if="fatal"
-        :aria-label="copy.home"
-        @click="emit('leave')"
-      >
-        {{ copy.home }} ↗
-      </button>
+      <button v-if="!fatal" @click="leave">{{ copy.home }}</button>
+      <div class="run-buttons" v-if="fatal"><button @click="initialize">{{ locale === 'ja' ? '再読み込み' : 'Reload' }}</button><button @click="leave">{{ copy.home }}</button></div>
     </div>
-    <p class="deep-time-sr" role="status" aria-live="polite">{{ announce }}</p>
-    <h1 v-if="mode === 'complete'" class="deep-time-sr">{{ copy.completeTitle }}</h1>
-    <p v-if="!storageAvailable" class="deep-time-storage" role="status">
-      {{ copy.noStorage }}
-    </p>
-    <aside v-if="debug" class="deep-time-debug">
-      <pre>{{ debugText }}</pre>
-      <button @click="scene!.hitboxes = !scene!.hitboxes">HITBOX</button
-      ><button
-        @click="
-          scene!.runtime.world.previewInvincible =
-            !scene!.runtime.world.previewInvincible
-        "
-      >
-        PREVIEW</button
-      ><button
-        v-for="(section, i) in [
-          'CALM',
-          'HERD',
-          'PREDATOR',
-          'FLASH',
-          'FALLOUT',
-          'BOUNDARY',
-        ]"
-        :key="section"
-        @click="scene!.debugSeek(i)"
-      >
-        {{ section }}</button
-      ><button @click="scene!.visual.quality = 'low'">LOW</button>
-    </aside>
-  </section>
+    <div v-else-if="mode === 'ready'" class="run-overlay">
+      <p class="run-overline">DEEP TIME / 01</p><h1>CRETACEOUS<br />LAST DAY</h1><p>{{ copy.metadata }}</p>
+      <button data-testid="start" @click="world?.start()">{{ copy.start }}</button>
+    </div>
+    <div v-else-if="mode === 'paused'" class="run-overlay" role="dialog" aria-modal="true" :aria-label="copy.pausedTitle">
+      <p class="run-overline">{{ copy.pauseCaption }}</p><h1>{{ copy.pausedTitle }}</h1>
+      <div class="run-buttons"><button data-testid="resume" @click="world?.resume()">{{ copy.resume }}</button><button @click="world?.controller.retry()">{{ copy.retry }}</button><button @click="leave">{{ copy.home }}</button></div>
+      <div class="run-settings">
+        <button @click="mute">{{ settings.muted ? copy.soundOff : copy.soundOn }}</button>
+        <label>{{ locale === 'ja' ? '音量' : 'Volume' }}<input type="range" :aria-label="locale === 'ja' ? '音量' : 'Volume'" min="0" max="1" step="0.05" v-model.number="settings.volume" @input="applySettings" /></label>
+        <label>{{ locale === 'ja' ? '画質' : 'Quality' }}<select :aria-label="locale === 'ja' ? '画質' : 'Quality'" v-model="settings.quality" @change="applySettings"><option value="high">{{ locale === 'ja' ? '高画質' : 'High' }}</option><option value="medium">{{ locale === 'ja' ? '標準' : 'Medium' }}</option><option value="low">{{ locale === 'ja' ? '軽量' : 'Low' }}</option></select></label>
+      </div>
+    </div>
+    <div v-else-if="mode === 'complete' && result" class="run-overlay" role="dialog" aria-modal="true" :aria-label="copy.completeTitle">
+      <p class="run-overline">{{ copy.scoreRank(result.rank) }}</p><h1>{{ result.score.toLocaleString() }}</h1><p>{{ copy.completeTitle }} · SYNC {{ Math.round(result.sync * 100) }}%</p>
+      <div class="run-buttons"><button data-testid="retry" @click="world?.controller.retry()">{{ copy.retry }}</button><button @click="leave">{{ copy.home }}</button></div>
+    </div>
+    <p v-if="mode === 'dead'" class="run-death" role="status">{{ Math.round(failedProgress * 100) }}%</p>
+    <p class="deep-time-sr" role="status" aria-live="polite">{{ mode === 'complete' && result ? copy.result(result.score, Math.round(result.sync * 100), result.rank) : mode === 'paused' ? copy.pausedTitle : '' }}</p>
+    <p v-if="storageFailed || audioFailed" class="run-warning">{{ storageFailed ? copy.noStorage : locale === 'ja' ? '音声を読み込めませんでした。音声なしで続けられます。' : 'Audio could not be loaded. You can continue silently.' }}</p>
+  </main>
 </template>

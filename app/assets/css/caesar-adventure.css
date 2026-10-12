@@ -1,0 +1,140 @@
+/* Only this game owns a viewport. Leaving it restores the site's ordinary flow. */
+.caesar-adventure {
+  --ink: #102332; --paper: #f4ebd8; --gold: #e4c38b; --teal: #57ddd4; --visible-cells: 3;
+  height: 100vh; height: 100dvh;
+  min-height: calc(35rem + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  grid-template-rows: minmax(3.5rem, max-content) minmax(2.5rem, 1fr) minmax(min-content, 2.15fr) minmax(11.5rem, max-content);
+  grid-template-areas: 'top' 'world' 'puzzle' 'controls';
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  color: var(--paper); background: #091721; font: 1rem/1.4 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif;
+}
+.caesar-adventure :is(h1, h2, p) { margin: 0; }
+.caesar-adventure button, .caesar-adventure select { font: inherit; color: inherit; cursor: pointer; }
+.caesar-adventure button:disabled { cursor: default; opacity: .5; }
+.caesar-adventure :is(a, button, select, .adventure-band):focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+.caesar-adventure a { color: inherit; text-decoration: none; }
+.adventure-topbar { grid-area: top; display: flex; gap: .35rem; align-items: center; padding: .15rem .7rem; background: #0b1e29; border-bottom: 1px solid #b88b4560; }
+.adventure-topbar > div { flex: 1; min-width: 0; display: grid; gap: .1rem; }
+.adventure-name { font-size: .85rem; color: var(--gold); }
+.adventure-progress { font-size: .8rem; }
+.adventure-icon-button { display: grid; place-items: center; background: #18313e; border: 1px solid #78918b70; border-radius: .35rem; min-width: 3rem; min-height: 3rem; }
+.adventure-icon-button svg { width: 1.4rem; height: 1.4rem; fill: currentColor; stroke: currentColor; stroke-width: 1.8; }
+.caesar-adventure .caesar-world { grid-area: world; position: relative; height: auto; min-height: 0; overflow: hidden; background: linear-gradient(145deg, #c9ae7c, #6fafa5 65%, #18394b); border-bottom: 2px solid #b88b45; }
+.caesar-adventure .caesar-world__illustration { object-position: 50% 60%; }
+.caesar-adventure .caesar-world__illustration.is-machine { object-position: 60% 38%; }
+.caesar-adventure .caesar-world__shade { background: linear-gradient(0deg, #09172180, transparent 60%); }
+.adventure-world-letters { position: absolute; bottom: 10%; left: 33%; right: 18%; display: flex; justify-content: center; gap: 6%; pointer-events: none; }
+.adventure-world-letters span { display: grid; place-items: center; width: 2rem; height: 2rem; font-size: 1.35rem; font-weight: 700; color: #302e22; background: linear-gradient(135deg, #f1d7a6, #c9ae7c); border: 1px solid #a08252; border-radius: .15rem; box-shadow: 0 3px #806a46; }
+.adventure-world-letters.solved span { border-color: var(--teal); }
+.adventure-world-character { position: absolute; width: clamp(3rem, 9vh, 5rem); bottom: 10%; left: var(--mii-position, 10%); transition: left 1.6s ease-in-out, bottom .5s; pointer-events: none; }
+.adventure-world-character.koro { width: clamp(2.5rem, 7vh, 4rem); left: 3%; bottom: 8%; }
+.adventure-world-character.crossed { --mii-position: 82%; }
+.adventure-world-steps { position: absolute; bottom: 8%; left: 25%; right: 8%; display: flex; justify-content: space-between; pointer-events: none; }
+.adventure-world-steps i { width: 16%; height: .6rem; background: linear-gradient(135deg, #ead6aa, #bda16e); border-bottom: 2px solid #57ddd4; border-radius: .1rem; opacity: 0; transform: translateY(.5rem); transition: opacity .4s, transform .4s; }
+.adventure-world-steps i.active { opacity: 1; transform: translateY(0); }
+.adventure-world-path { position: absolute; left: 25%; right: 8%; bottom: 6%; height: .35rem; opacity: 0; background: var(--teal); transition: opacity .6s; box-shadow: 0 0 12px #57ddd480; }
+.adventure-world-path.active { opacity: .8; }
+.adventure-world-home { position: absolute; right: 7%; bottom: 14%; font-size: 4rem; color: #f1d7a6; text-shadow: 0 2px #6f5539; pointer-events: none; }
+.adventure-repair-lights { position: absolute; top: .5rem; right: .65rem; display: flex; align-items: center; gap: .5rem; padding: .25rem .6rem; background: #102332e6; border: 1px solid #b88b4570; border-radius: .3rem; font-size: .8rem; }
+.adventure-repair-lights i { width: .65rem; height: .65rem; border-radius: 50%; background: #53646a; border: 1px solid #b88b45; }
+.adventure-repair-lights i.active { background: var(--teal); box-shadow: 0 0 8px #57ddd4a0; }
+.adventure-puzzle { grid-area: puzzle; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem; padding: .5rem 1rem; min-width: 0; background: radial-gradient(ellipse at 50% 10%, #203e49, transparent 85%), #102332; border-bottom: 1px solid #b88b4560; }
+.adventure-puzzle > * { max-width: 100%; }
+.adventure-target { display: flex; align-items: center; justify-content: center; gap: .65rem; min-height: 2.6rem; }
+.adventure-target > span:first-child { font-size: .9rem; color: #d6d8cb; }
+.adventure-target strong { font-size: 1.7rem; letter-spacing: .18em; color: var(--gold); }
+.adventure-target-icon { font-size: 1.8rem; color: var(--gold); }
+.adventure-target .adventure-character { width: 2.4rem; height: 2.4rem; }
+.adventure-original { font-size: .8rem; color: #c6d1cf; }
+.adventure-bands { width: min(100%, 34rem); user-select: none; }
+.adventure-band-label { text-align: center; font-size: .85rem; line-height: 1.25; margin-bottom: .3rem !important; }
+.adventure-band-label span { color: var(--teal); }
+.adventure-band-frame { display: flex; gap: .5rem; position: relative; }
+.adventure-band-link { width: .7rem; margin: .3rem 0; flex-shrink: 0; background: linear-gradient(90deg, #6d502d, #d0aa6c, #886b41); border-radius: .25rem; display: flex; flex-direction: column; justify-content: space-around; align-items: center; }
+.adventure-band-link i { border-radius: 50%; width: 1.2rem; height: 1.2rem; background: #af8951; border: 3px double #e4c38b; }
+.adventure-band-rows { flex: 1; display: grid; gap: .5rem; position: relative; min-width: 0; }
+.adventure-band { position: relative; height: 3.25rem; overflow: hidden; border: 1px solid #718481; border-radius: .2rem; box-shadow: 0 3px #081621; touch-action: pan-y; cursor: grab; }
+.adventure-band[aria-disabled='true'] { cursor: default; }.is-dragging .adventure-band { cursor: grabbing; }
+.adventure-band-strip { width: calc(100% * 7 / var(--visible-cells)); height: 100%; display: grid; grid-template-columns: repeat(7, 1fr); transform: translateX(calc((var(--visible-cells) - 7) / 14 * 100% + var(--band-drag, 0px))); }
+.adventure-band-strip span { display: grid; place-items: center; font-size: 2rem; font-weight: 700; color: #cad0cc; border-right: 1px solid #06121a; background: linear-gradient(135deg, #2c4350, #142736); }
+.adventure-band-strip .is-current { color: #fff5df; }
+.adventure-band-selection { position: absolute; top: -.15rem; bottom: -.15rem; left: calc((100% - 100% / var(--visible-cells)) / 2); width: calc(100% / var(--visible-cells)); pointer-events: none; border: 3px solid var(--teal); border-radius: .35rem; box-shadow: 0 0 9px #57ddd435; }
+.adventure-conversation { display: grid; justify-items: center; text-align: center; gap: .4rem; max-width: 30rem; }
+.adventure-conversation .adventure-character { width: 6rem; height: 6rem; }
+.adventure-conversation > span { color: var(--gold); font-size: .9rem; }
+.adventure-conversation p { font-size: clamp(1.25rem, 3vw, 1.8rem); line-height: 1.55; text-wrap: balance; }
+.adventure-character { display: block; flex-shrink: 0; }
+.adventure-character.is-happy { animation: adventure-happy .65s ease-out 2; }
+@keyframes adventure-happy { 50% { transform: translateY(-.35rem) rotate(-3deg); } }
+.adventure-home > span { font-size: 3.5rem; }
+.adventure-controls { grid-area: controls; display: grid; grid-template-rows: minmax(4.5rem, max-content) minmax(3.5rem, max-content) 3rem; gap: .25rem; padding: .3rem .8rem .65rem; background: linear-gradient(135deg, #142b3a, #0b1d29); }
+.adventure-guide { display: flex; align-items: center; gap: .55rem; width: min(100%, 40rem); margin: auto; min-height: 4.5rem; }
+.adventure-guide .adventure-character { width: 2.65rem; height: 2.65rem; }
+.adventure-guide p { line-height: 1.4; font-size: 1rem; }
+.adventure-main-actions { display: flex; align-items: stretch; justify-content: center; gap: .5rem; width: min(100%, 38rem); margin: 0 auto; min-height: 3.5rem; }
+.adventure-main-actions > .adventure-button { flex: 1; }
+.adventure-button { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; position: relative; min-height: 3rem; min-width: 3rem; padding: .45rem .6rem; border: 1px solid #d2a665; border-radius: .35rem; background: linear-gradient(140deg, #2b414e, #152c3b); color: var(--paper); box-shadow: inset 0 0 0 2px #e4c38b0d, 0 3px #060f17; font-size: 1rem; line-height: 1.3; text-align: center; }
+.adventure-button small { font-size: .75rem; color: #ccd7d1; }
+.adventure-button--primary { background: linear-gradient(140deg, #348e91, #1b5964); border-color: #81d6cd; color: #fff9e9; }
+.adventure-button[aria-pressed='true'] { border-color: var(--teal); background: #256168; }
+.adventure-button.is-guided { border-color: var(--gold); box-shadow: 0 0 0 3px #e4c38b25; }
+.adventure-hand { position: absolute; left: .35rem; top: -.35rem; color: var(--gold); font-size: 2.4rem; line-height: 1; pointer-events: none; animation: adventure-point 1.3s ease-in-out infinite; }
+@keyframes adventure-point { 50% { transform: translateY(.3rem); } }
+.adventure-tools { display: flex; justify-content: center; gap: .5rem; width: min(100%, 38rem); margin: auto; }
+.adventure-tools button { flex: 1; min-height: 3rem; border: 1px solid #82948b50; border-radius: .25rem; background: #102332; padding: .4rem; font-size: .85rem; }
+.adventure-prompt { font-size: .95rem; text-align: center; line-height: 1.35; }
+.adventure-clue { width: min(100%, 28rem); display: flex; justify-content: center; align-items: center; gap: .6rem; border: 1px solid #b88b4570; border-radius: .35rem; background: #d5bb8633; padding: .35rem; }
+.adventure-clue-title { font-size: .85rem; color: var(--gold); }
+.adventure-clue > div { display: grid; justify-items: center; gap: .05rem; }
+.adventure-clue small { font-size: .75rem; color: #f4e9cf; }
+.adventure-clue b { font-size: 1.6rem; font-weight: 700; line-height: 1.1; color: #ffe6ae; }
+.adventure-clue.is-lit { border: 2px solid var(--gold); background: #d5bb8645; }
+.adventure-word-block { display: grid; justify-items: center; gap: .15rem; }
+.adventure-word-block > span { font-size: .8rem; color: #ccd8d4; }
+.adventure-word { display: flex; justify-content: center; gap: .55rem; }
+.adventure-word > :is(b, button) { display: grid; place-items: center; width: 3.4rem; min-height: 3.2rem; border: 1px solid #bb9760; border-radius: .25rem; font-size: 2rem; font-weight: 700; color: #362f22; background: linear-gradient(140deg, #eed7af, #c2a06c); box-shadow: 0 3px #745b3e; line-height: 1; }
+.adventure-result .adventure-word b { color: #ecedde; background: #0d202f; border-color: #617a7c; box-shadow: none; min-height: 2.7rem; font-size: 1.8rem; }
+.adventure-result.correct .adventure-word b { border-color: var(--teal); color: #fff3cf; }
+.adventure-word--select button[aria-pressed='true'] { outline: 3px solid var(--teal); outline-offset: 2px; }
+.adventure-source { font-size: .85rem; }.adventure-source strong { font-size: 1.15rem; color: var(--gold); }
+.adventure-receiver { font-size: .85rem; min-height: 1.35rem; color: var(--gold); }
+.adventure-directions { display: flex; gap: .5rem; width: 100%; }.adventure-directions > button { flex: 1; }
+.adventure-main-actions > .adventure-small-button { flex: 0 0 auto; padding-inline: .6rem; }
+.adventure-number { display: flex; align-items: stretch; justify-content: center; gap: .25rem; flex: 1; }
+.adventure-number > button { padding-inline: 0; flex: 0 0 3rem; font-size: 1.55rem; }
+.adventure-number output { display: grid; place-items: center; min-width: 2.4rem; font-size: 1.65rem; color: var(--gold); }
+.adventure-tutorial-path { width: min(100%, 30rem); display: flex; align-items: center; justify-content: center; gap: .2rem; padding: 1.1rem 0; }
+.adventure-tutorial-path > span { display: grid; place-items: center; min-width: 3.15rem; padding: .4rem .1rem; font-size: 1.7rem; background: #263e4b; border: 1px solid #70817c; border-radius: .3rem; }
+.adventure-tutorial-path small { display: block; font-size: .85rem; color: #d0d7cb; }
+.adventure-tutorial-path > span.active { border: 2px solid var(--teal); background: #285859; color: #fff6df; }
+.adventure-tutorial-path i { color: var(--gold); font-style: normal; }
+.adventure-count { display: flex; align-items: center; gap: .5rem; }.adventure-count strong { color: var(--gold); font-size: 2.4rem; }
+.adventure-puzzle > small { font-size: .85rem; }
+.adventure-dialog { color: var(--paper); background: #102332; border: 2px solid #b88b45; border-radius: .65rem; width: min(90vw, 42rem); max-height: calc(100dvh - 2rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); padding: 1rem; overflow: auto; overscroll-behavior: contain; box-shadow: 0 20px 90px #0008; }
+.adventure-dialog::backdrop { background: #07121ac9; }
+.adventure-dialog-bar { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+.adventure-dialog h2 { font-size: 1.15rem; }.adventure-dialog-bar button { min-width: 4.5rem; }
+.adventure-menu { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }.adventure-menu p { grid-column: 1/-1; font-size: .9rem; }
+.adventure-quality { grid-column: 1/-1; display: flex; gap: 1rem; align-items: center; }.adventure-quality select { background: #173c47; border: 1px solid #b88b45; padding: .5rem; min-height: 3rem; }
+.adventure-kana-order ol { list-style: none; display: grid; gap: .45rem; padding: .5rem 0; margin: .5rem auto; width: min(100%, 25rem); }
+.adventure-kana-order li { display: flex; gap: .35rem; min-height: 2rem; }.adventure-kana-order li span { display: grid; place-items: center; width: 2.5rem; min-height: 2.5rem; font-size: 1.3rem; background: #23414b; border: 1px solid #b88b4550; border-radius: .2rem; }
+.adventure-kana-order p, .adventure-help p { margin-bottom: .8rem; }.adventure-help .adventure-character { width: 4rem; margin: auto; }
+.adventure-help .adventure-button { margin: .4rem .5rem .4rem 0; }.adventure-parents { line-height: 1.8; font-size: .95rem; }.adventure-parents p { margin-bottom: 1rem; }
+.adventure-parents .caesar-review__grid { display: grid; gap: .8rem; grid-template-columns: 1fr; }.adventure-parents .caesar-review { margin-top: 1rem; border-top: 1px solid #b88b4570; padding-top: 1rem; }.adventure-parents .caesar-review h3 { font-size: 1rem; }.adventure-parents .caesar-review p { margin: .4rem 0; }
+.adventure-sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px !important; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (min-width: 700px) and (min-height: 501px) {
+  .caesar-adventure { --visible-cells: 5; }
+  .adventure-topbar { padding-inline: max(1rem, calc((100% - 64rem) / 2)); }.adventure-topbar > div { display: flex; gap: 1.5rem; align-items: center; }.adventure-name { font-size: 1rem; }
+  .adventure-puzzle { padding: 1rem; gap: .6rem; }.adventure-band { height: 3.6rem; }.adventure-band-strip span { font-size: 2.2rem; }
+  .adventure-guide, .adventure-main-actions, .adventure-tools { max-width: 38rem; }.adventure-controls { padding-inline: 1.5rem; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .caesar-adventure { min-height: calc(21.5rem + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)); grid-template-columns: 1fr 1fr; grid-template-rows: minmax(3.5rem, max-content) minmax(4rem, 1fr) minmax(11.5rem, max-content); grid-template-areas: 'top top' 'world puzzle' 'controls puzzle'; }
+  .adventure-puzzle { padding: .5rem .7rem; }.adventure-controls { padding-inline: .6rem; }.adventure-conversation .adventure-character { width: 4rem; height: 4rem; }.adventure-conversation p { font-size: 1.2rem; }.adventure-guide p { font-size: .9rem; }
+  .adventure-main-actions:has(> button:nth-child(3)) { gap: .3rem; }.adventure-main-actions:has(> button:nth-child(3)) > button { padding-inline: .25rem; font-size: .9rem; }
+  .adventure-topbar > div { display: flex; align-items: center; gap: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .caesar-adventure *, .caesar-adventure *::before, .caesar-adventure *::after { animation: none !important; transition: none !important; }
+}

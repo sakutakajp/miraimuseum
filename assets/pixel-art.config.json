@@ -1,0 +1,282 @@
+{
+  "version": 1,
+  "reference": {
+    "viewport": {
+      "width": 360,
+      "height": 640
+    },
+    "render": {
+      "width": 180,
+      "height": 320
+    }
+  },
+  "profiles": {
+    "fine": {
+      "label": "細かめ",
+      "pixelSize": 1
+    },
+    "standard": {
+      "label": "標準",
+      "pixelSize": 2
+    },
+    "coarse": {
+      "label": "粗め",
+      "pixelSize": 3
+    }
+  },
+  "defaults": {
+    "downsample": "box",
+    "colors": null,
+    "palette": null,
+    "dither": false,
+    "previewScale": 2
+  },
+  "output": "public/museum/pixel",
+  "previews": "docs/pixel-previews",
+  "manifest": "app/museum/pixel-assets.generated.json",
+  "assets": [
+    {
+      "id": "exterior-phone",
+      "input": "public/museum/exterior.webp",
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640
+      },
+      "crop": {
+        "x": 480,
+        "y": 0,
+        "width": 576,
+        "height": 1024
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "exterior-wide",
+      "input": "public/museum/exterior.webp",
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900
+      },
+      "crop": {
+        "x": 0,
+        "y": 32,
+        "width": 1536,
+        "height": 960
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "exterior-landscape",
+      "input": "public/museum/exterior.webp",
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 360
+      },
+      "crop": {
+        "x": 0,
+        "y": 280,
+        "width": 1536,
+        "height": 576
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "courtyard-phone",
+      "input": "public/museum/roman-courtyard.webp",
+      "display": {
+        "x": 12,
+        "y": 56,
+        "width": 336,
+        "height": 224
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "courtyard-wide",
+      "input": "public/museum/roman-courtyard.webp",
+      "display": {
+        "x": 240,
+        "y": 56,
+        "width": 960,
+        "height": 640
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "nap-phone",
+      "input": "public/museum/roman-nap.webp",
+      "display": {
+        "x": 12,
+        "y": 56,
+        "width": 336,
+        "height": 224
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "nap-wide",
+      "input": "public/museum/roman-nap.webp",
+      "display": {
+        "x": 240,
+        "y": 56,
+        "width": 960,
+        "height": 640
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "forest-phone",
+      "input": "public/museum/forest.webp",
+      "display": {
+        "x": 12,
+        "y": 64,
+        "width": 366,
+        "height": 588
+      },
+      "crop": {
+        "x": 449,
+        "y": 0,
+        "width": 638,
+        "height": 1024
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "forest-wide",
+      "input": "public/museum/forest.webp",
+      "display": {
+        "x": 170,
+        "y": 64,
+        "width": 1100,
+        "height": 660
+      },
+      "crop": {
+        "x": 0,
+        "y": 51,
+        "width": 1536,
+        "height": 922
+      },
+      "downsample": "nearest"
+    },
+    {
+      "id": "ru-idle-96",
+      "input": "source-art/museum/ru-short-hair.png",
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 724,
+        "height": 724
+      },
+      "colors": 64,
+      "paletteGroup": "ru",
+      "animationGroup": "ru-96"
+    },
+    {
+      "id": "ru-walk-96",
+      "input": "source-art/museum/ru-short-hair.png",
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "crop": {
+        "x": 724,
+        "y": 0,
+        "width": 724,
+        "height": 724
+      },
+      "colors": 64,
+      "paletteGroup": "ru",
+      "animationGroup": "ru-96"
+    },
+    {
+      "id": "ru-sleep-96",
+      "input": "source-art/museum/ru-short-hair.png",
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "crop": {
+        "x": 1448,
+        "y": 0,
+        "width": 724,
+        "height": 724
+      },
+      "colors": 64,
+      "paletteGroup": "ru",
+      "animationGroup": "ru-96"
+    },
+    {
+      "id": "ru-idle-128",
+      "input": "source-art/museum/ru-short-hair.png",
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 724,
+        "height": 724
+      },
+      "colors": 64,
+      "paletteGroup": "ru",
+      "animationGroup": "ru-128"
+    },
+    {
+      "id": "ru-walk-128",
+      "input": "source-art/museum/ru-short-hair.png",
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "crop": {
+        "x": 724,
+        "y": 0,
+        "width": 724,
+        "height": 724
+      },
+      "colors": 64,
+      "paletteGroup": "ru",
+      "animationGroup": "ru-128"
+    },
+    {
+      "id": "ru-sleep-128",
+      "input": "source-art/museum/ru-short-hair.png",
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "crop": {
+        "x": 1448,
+        "y": 0,
+        "width": 724,
+        "height": 724
+      },
+      "colors": 64,
+      "paletteGroup": "ru",
+      "animationGroup": "ru-128"
+    }
+  ]
+}

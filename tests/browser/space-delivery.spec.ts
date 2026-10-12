@@ -67,7 +67,10 @@ test("actual drag flights deliver all six stages, persist stars, and reenter cle
     page.getByRole("button", { name: "音なし", exact: true }),
   ).toBeVisible();
   await page.getByRole("link", { name: "博物館へ" }).click();
-  await page.getByRole("link", { name: "ねこの宇宙宅配便 ↗" }).click();
+  await page.getByRole("button", { name: "メニュー", exact: true }).click();
+  await page
+    .getByRole("link", { name: "ねこの宇宙宅配便", exact: true })
+    .click();
   await ready(page);
   await expect(page.locator(".delivery canvas")).toHaveCount(1);
   await shoot(page, 0);
@@ -317,4 +320,117 @@ test("secondary pointers are ignored and background / rotation never auto-launch
   );
   await page.getByRole("button", { name: "▶ つづける", exact: true }).click();
   await expect(page.locator(".delivery")).toHaveAttribute("data-mode", "ready");
+});
+test("WebGL unavailable still delivers through the lightweight pixel canvas fallback", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+      value: function (
+        this: HTMLCanvasElement,
+        kind: string,
+        options: unknown,
+      ) {
+        if (kind.startsWith("webgl")) return null;
+        return Reflect.apply(original, this, [kind, options]);
+      },
+    });
+  });
+  await page.goto(url);
+  await ready(page);
+  await expect(page.locator(".delivery canvas")).toHaveAttribute(
+    "data-renderer",
+    "canvas",
+  );
+  await shoot(page, 0);
+  await expect(page.locator(".delivery")).toHaveAttribute(
+    "data-mode",
+    "success",
+    { timeout: 12000 },
+  );
+});
+test("render loops and game audio are released while museum music returns to its previous setting", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const frames = new Set<number>(),
+      contexts: AudioContext[] = [];
+    const request = window.requestAnimationFrame.bind(window),
+      cancel = window.cancelAnimationFrame.bind(window),
+      OriginalAudio = window.AudioContext;
+    Object.assign(window, {
+      __deliveryFrames: frames,
+      __deliveryAudio: contexts,
+    });
+    window.requestAnimationFrame = (callback) => {
+      const id = request((time) => {
+        frames.delete(id);
+        callback(time);
+      });
+      frames.add(id);
+      return id;
+    };
+    window.cancelAnimationFrame = (id) => {
+      frames.delete(id);
+      cancel(id);
+    };
+    window.AudioContext = class extends OriginalAudio {
+      constructor(options?: AudioContextOptions) {
+        super(options);
+        contexts.push(this);
+      }
+    };
+  });
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "おんがくを オン", exact: true })
+    .click();
+  const audioStates = () =>
+    page.evaluate(() =>
+      (
+        window as unknown as { __deliveryAudio: AudioContext[] }
+      ).__deliveryAudio.map((c) => c.state),
+    );
+  await expect.poll(audioStates).toEqual(["running"]);
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole("button", { name: "メニュー", exact: true }).click();
+    await page
+      .getByRole("link", { name: "ねこの宇宙宅配便", exact: true })
+      .click();
+    await ready(page);
+    await expect(page.locator(".delivery canvas")).toHaveAttribute(
+      "data-renderer",
+      "babylon",
+    );
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as unknown as { __deliveryFrames: Set<number> })
+              .__deliveryFrames.size,
+        ),
+      )
+      .toBe(1);
+    await expect
+      .poll(audioStates)
+      .toEqual(["suspended", ...Array(i).fill("closed")]);
+    await page.locator(".delivery-sound").click();
+    await page.getByRole("link", { name: "博物館へ" }).click();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as unknown as { __deliveryFrames: Set<number> })
+              .__deliveryFrames.size,
+        ),
+      )
+      .toBe(0);
+    await expect
+      .poll(audioStates)
+      .toEqual(["running", ...Array(i + 1).fill("closed")]);
+    await expect(
+      page.getByRole("button", { name: "おんがくを オフ", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+  }
 });

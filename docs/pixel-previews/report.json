@@ -1,0 +1,1749 @@
+{
+  "version": 1,
+  "reference": {
+    "viewport": {
+      "width": 360,
+      "height": 640
+    },
+    "render": {
+      "width": 180,
+      "height": 320
+    }
+  },
+  "configHash": "bb3e3f42de8eb770969fffd77d61329e3d78aa14140b39665241cb510114ad52",
+  "assets": [
+    {
+      "id": "exterior-phone",
+      "profile": "fine",
+      "width": 360,
+      "height": 640,
+      "pixelSize": 1,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/fine/exterior-phone.png",
+      "sha256": "b70cfbe85e17bf9ec585d045b020d266db00e92df35473fe30c7b0eea08805f1"
+    },
+    {
+      "id": "exterior-wide",
+      "profile": "fine",
+      "width": 1440,
+      "height": 900,
+      "pixelSize": 1,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/fine/exterior-wide.png",
+      "sha256": "5fb98ea2cc0657586ee6aa050ed906da854679dcb22cb01b55b62dc35529ea98"
+    },
+    {
+      "id": "exterior-landscape",
+      "profile": "fine",
+      "width": 960,
+      "height": 360,
+      "pixelSize": 1,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 360
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/fine/exterior-landscape.png",
+      "sha256": "4e921f3453576acd4e36caadee61318d0120dad26a725f9469e8676fb2e4e511"
+    },
+    {
+      "id": "courtyard-phone",
+      "profile": "fine",
+      "width": 336,
+      "height": 224,
+      "pixelSize": 1,
+      "display": {
+        "x": 12,
+        "y": 56,
+        "width": 336,
+        "height": 224
+      },
+      "source": "public/museum/roman-courtyard.webp",
+      "sourceHash": "b7af518d5e5951b62f966253d6efe0b5fd75acd4753388e9072570ad6941825e",
+      "output": "public/museum/pixel/fine/courtyard-phone.png",
+      "sha256": "ea87ff8e13eea700487a3f2985af1ad1a00f1b1866b63aa8133c66d0096cb8f1"
+    },
+    {
+      "id": "courtyard-wide",
+      "profile": "fine",
+      "width": 960,
+      "height": 640,
+      "pixelSize": 1,
+      "display": {
+        "x": 240,
+        "y": 56,
+        "width": 960,
+        "height": 640
+      },
+      "source": "public/museum/roman-courtyard.webp",
+      "sourceHash": "b7af518d5e5951b62f966253d6efe0b5fd75acd4753388e9072570ad6941825e",
+      "output": "public/museum/pixel/fine/courtyard-wide.png",
+      "sha256": "d092903fe3f28bd0be7ad756fc7f47cca361d1316052169847bedf7aec1c4033"
+    },
+    {
+      "id": "nap-phone",
+      "profile": "fine",
+      "width": 336,
+      "height": 224,
+      "pixelSize": 1,
+      "display": {
+        "x": 12,
+        "y": 56,
+        "width": 336,
+        "height": 224
+      },
+      "source": "public/museum/roman-nap.webp",
+      "sourceHash": "bc584dce845f7103e7018941a51674ac40bf23be3981d4178c2ec897c39fb424",
+      "output": "public/museum/pixel/fine/nap-phone.png",
+      "sha256": "90be909fb0aff3027257548be3f8d16c5a9253d1233554f10c8f88898cf00605"
+    },
+    {
+      "id": "nap-wide",
+      "profile": "fine",
+      "width": 960,
+      "height": 640,
+      "pixelSize": 1,
+      "display": {
+        "x": 240,
+        "y": 56,
+        "width": 960,
+        "height": 640
+      },
+      "source": "public/museum/roman-nap.webp",
+      "sourceHash": "bc584dce845f7103e7018941a51674ac40bf23be3981d4178c2ec897c39fb424",
+      "output": "public/museum/pixel/fine/nap-wide.png",
+      "sha256": "081379b7e9fb0da728d90a626a81d784536a8e952841c9dc5dfab2939d5e2598"
+    },
+    {
+      "id": "forest-phone",
+      "profile": "fine",
+      "width": 366,
+      "height": 587,
+      "pixelSize": 1,
+      "display": {
+        "x": 12,
+        "y": 64,
+        "width": 366,
+        "height": 588
+      },
+      "source": "public/museum/forest.webp",
+      "sourceHash": "c0ad0c9ad841b2bdf7bf2c0d8b07c75c5820ce8fb829c9e75f308467a226ca17",
+      "output": "public/museum/pixel/fine/forest-phone.png",
+      "sha256": "767567f0e0f1f88d75203e460580a5dccb04cdce5a16d12f13a06e74aaac2241"
+    },
+    {
+      "id": "forest-wide",
+      "profile": "fine",
+      "width": 1100,
+      "height": 660,
+      "pixelSize": 1,
+      "display": {
+        "x": 170,
+        "y": 64,
+        "width": 1100,
+        "height": 660
+      },
+      "source": "public/museum/forest.webp",
+      "sourceHash": "c0ad0c9ad841b2bdf7bf2c0d8b07c75c5820ce8fb829c9e75f308467a226ca17",
+      "output": "public/museum/pixel/fine/forest-wide.png",
+      "sha256": "b8088dc8d56d167bb39b537d674af0ae22745e96107c342d3432ccd6959ea2c6"
+    },
+    {
+      "id": "ru-idle-96",
+      "profile": "fine",
+      "width": 96,
+      "height": 96,
+      "pixelSize": 1,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/fine/ru-idle-96.png",
+      "sha256": "bd1e338c87264d71a92cada99dcc7b2260b5072e2cf51a4f9e5d569dbea3d5aa"
+    },
+    {
+      "id": "ru-walk-96",
+      "profile": "fine",
+      "width": 96,
+      "height": 96,
+      "pixelSize": 1,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/fine/ru-walk-96.png",
+      "sha256": "cce69d5aac6a4a768b9b011f83f79a5f2da259ea849d10b428c4c4c79293a4e2"
+    },
+    {
+      "id": "ru-sleep-96",
+      "profile": "fine",
+      "width": 96,
+      "height": 96,
+      "pixelSize": 1,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/fine/ru-sleep-96.png",
+      "sha256": "3377d715324196ea6f0808f6dc459cb1d6246d7e50c623542d03e36c9ebf43f3"
+    },
+    {
+      "id": "ru-idle-128",
+      "profile": "fine",
+      "width": 128,
+      "height": 128,
+      "pixelSize": 1,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/fine/ru-idle-128.png",
+      "sha256": "ec9d9010bbd768efc1bac743e05d127a70eebc9e1f2d8531f99b790d717eed4f"
+    },
+    {
+      "id": "ru-walk-128",
+      "profile": "fine",
+      "width": 128,
+      "height": 128,
+      "pixelSize": 1,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/fine/ru-walk-128.png",
+      "sha256": "eed580c17402e61bc4f5af2ecd9d729ad47248a5c9ebf4392e7d260c46f418e5"
+    },
+    {
+      "id": "ru-sleep-128",
+      "profile": "fine",
+      "width": 128,
+      "height": 128,
+      "pixelSize": 1,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/fine/ru-sleep-128.png",
+      "sha256": "4dc6a60ec13a357ec85e0c9045aac98dca9fd7c1458ff4c07a6aca40882c1015"
+    },
+    {
+      "id": "exterior-phone",
+      "profile": "standard",
+      "width": 180,
+      "height": 320,
+      "pixelSize": 2,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/standard/exterior-phone.png",
+      "sha256": "25091b48e8c2eeb0865dc1eac63b7dfde3714a842ef3dd0c959689da01300856"
+    },
+    {
+      "id": "exterior-wide",
+      "profile": "standard",
+      "width": 720,
+      "height": 450,
+      "pixelSize": 2,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/standard/exterior-wide.png",
+      "sha256": "5cb4573e9db2d67ebea027572f7e904236ae7f5f30bf701fe42358a5a60f6b35"
+    },
+    {
+      "id": "exterior-landscape",
+      "profile": "standard",
+      "width": 480,
+      "height": 180,
+      "pixelSize": 2,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 360
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/standard/exterior-landscape.png",
+      "sha256": "de576e397be6ebca3ef05481311326334cc5632d1e8814c37c6d0152d3abd8b2"
+    },
+    {
+      "id": "courtyard-phone",
+      "profile": "standard",
+      "width": 168,
+      "height": 112,
+      "pixelSize": 2,
+      "display": {
+        "x": 12,
+        "y": 56,
+        "width": 336,
+        "height": 224
+      },
+      "source": "public/museum/roman-courtyard.webp",
+      "sourceHash": "b7af518d5e5951b62f966253d6efe0b5fd75acd4753388e9072570ad6941825e",
+      "output": "public/museum/pixel/standard/courtyard-phone.png",
+      "sha256": "ed6e6ef8dbd1317d9565d0f550c2a7ba31202fc8cb2fffd4c9cc52c048eada2a"
+    },
+    {
+      "id": "courtyard-wide",
+      "profile": "standard",
+      "width": 480,
+      "height": 320,
+      "pixelSize": 2,
+      "display": {
+        "x": 240,
+        "y": 56,
+        "width": 960,
+        "height": 640
+      },
+      "source": "public/museum/roman-courtyard.webp",
+      "sourceHash": "b7af518d5e5951b62f966253d6efe0b5fd75acd4753388e9072570ad6941825e",
+      "output": "public/museum/pixel/standard/courtyard-wide.png",
+      "sha256": "daf008134a7331d58910e4eed2d519c810fea10b57072d5fe1294b32950758fd"
+    },
+    {
+      "id": "nap-phone",
+      "profile": "standard",
+      "width": 168,
+      "height": 112,
+      "pixelSize": 2,
+      "display": {
+        "x": 12,
+        "y": 56,
+        "width": 336,
+        "height": 224
+      },
+      "source": "public/museum/roman-nap.webp",
+      "sourceHash": "bc584dce845f7103e7018941a51674ac40bf23be3981d4178c2ec897c39fb424",
+      "output": "public/museum/pixel/standard/nap-phone.png",
+      "sha256": "ca1ab717e1838f89a39298bd12049737333380dfc6db33bf221561c7cb3432a9"
+    },
+    {
+      "id": "nap-wide",
+      "profile": "standard",
+      "width": 480,
+      "height": 320,
+      "pixelSize": 2,
+      "display": {
+        "x": 240,
+        "y": 56,
+        "width": 960,
+        "height": 640
+      },
+      "source": "public/museum/roman-nap.webp",
+      "sourceHash": "bc584dce845f7103e7018941a51674ac40bf23be3981d4178c2ec897c39fb424",
+      "output": "public/museum/pixel/standard/nap-wide.png",
+      "sha256": "a9446a44bf9c2ab2729cb4fb505bd59ce1f11cf28ab2b173bbf1ff882487c170"
+    },
+    {
+      "id": "forest-phone",
+      "profile": "standard",
+      "width": 183,
+      "height": 294,
+      "pixelSize": 2,
+      "display": {
+        "x": 12,
+        "y": 64,
+        "width": 366,
+        "height": 588
+      },
+      "source": "public/museum/forest.webp",
+      "sourceHash": "c0ad0c9ad841b2bdf7bf2c0d8b07c75c5820ce8fb829c9e75f308467a226ca17",
+      "output": "public/museum/pixel/standard/forest-phone.png",
+      "sha256": "45a4b47746f165b16c6f1d1fde6e0530a85d89d75dd8612b8e3ab47f414f9926"
+    },
+    {
+      "id": "forest-wide",
+      "profile": "standard",
+      "width": 550,
+      "height": 330,
+      "pixelSize": 2,
+      "display": {
+        "x": 170,
+        "y": 64,
+        "width": 1100,
+        "height": 660
+      },
+      "source": "public/museum/forest.webp",
+      "sourceHash": "c0ad0c9ad841b2bdf7bf2c0d8b07c75c5820ce8fb829c9e75f308467a226ca17",
+      "output": "public/museum/pixel/standard/forest-wide.png",
+      "sha256": "233ba8fd4f6380d01fb4290e58a06c77a72bc1adc904747d876108f5021933a2"
+    },
+    {
+      "id": "ru-idle-96",
+      "profile": "standard",
+      "width": 48,
+      "height": 48,
+      "pixelSize": 2,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/standard/ru-idle-96.png",
+      "sha256": "9e1c7c2d4fdf0d0aad1d3675b2462c34c799cd758a9b745bb51d2e50c3aff6b9"
+    },
+    {
+      "id": "ru-walk-96",
+      "profile": "standard",
+      "width": 48,
+      "height": 48,
+      "pixelSize": 2,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/standard/ru-walk-96.png",
+      "sha256": "00182b4e121332846fad1744b71174f19c4bec6235e16ffa1b52ead254cfb6ba"
+    },
+    {
+      "id": "ru-sleep-96",
+      "profile": "standard",
+      "width": 48,
+      "height": 48,
+      "pixelSize": 2,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/standard/ru-sleep-96.png",
+      "sha256": "d808cfed90a6f0d31f4a31a23f088e9ddedde8610e5f9d6deff490546baeb340"
+    },
+    {
+      "id": "ru-idle-128",
+      "profile": "standard",
+      "width": 64,
+      "height": 64,
+      "pixelSize": 2,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/standard/ru-idle-128.png",
+      "sha256": "44e9cc330e246e02c68a7a42030d5faa0f5be7ec8bd5862222074829c837bbc5"
+    },
+    {
+      "id": "ru-walk-128",
+      "profile": "standard",
+      "width": 64,
+      "height": 64,
+      "pixelSize": 2,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/standard/ru-walk-128.png",
+      "sha256": "fa3cfc691a0a04449bf0f0f29368ad65d1b0431e2436cca83e2a2ba4590170dc"
+    },
+    {
+      "id": "ru-sleep-128",
+      "profile": "standard",
+      "width": 64,
+      "height": 64,
+      "pixelSize": 2,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/standard/ru-sleep-128.png",
+      "sha256": "b315de54b9fc5ee1fe05adbe3aecc02f02b1590fa9cff812c044a81cdd100f93"
+    },
+    {
+      "id": "exterior-phone",
+      "profile": "coarse",
+      "width": 120,
+      "height": 213,
+      "pixelSize": 3,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/coarse/exterior-phone.png",
+      "sha256": "85e6b917a2426b61a64a2358d4b02d87baa814f648ae5a9be3d4845ca61f0e15"
+    },
+    {
+      "id": "exterior-wide",
+      "profile": "coarse",
+      "width": 480,
+      "height": 300,
+      "pixelSize": 3,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/coarse/exterior-wide.png",
+      "sha256": "61af9f684cf7fa56e496baa762352b1e54c37a738fb4fbeea45edb62f4dd57b2"
+    },
+    {
+      "id": "exterior-landscape",
+      "profile": "coarse",
+      "width": 320,
+      "height": 120,
+      "pixelSize": 3,
+      "display": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 360
+      },
+      "source": "public/museum/exterior.webp",
+      "sourceHash": "daf37866db717731f47c60ca152f229986b4ecc1513e17ad88b9e847abd9cdd4",
+      "output": "public/museum/pixel/coarse/exterior-landscape.png",
+      "sha256": "27597389609bce656284360889517f05dae7030a78615be6481917e1296c33b8"
+    },
+    {
+      "id": "courtyard-phone",
+      "profile": "coarse",
+      "width": 112,
+      "height": 75,
+      "pixelSize": 3,
+      "display": {
+        "x": 12,
+        "y": 56,
+        "width": 336,
+        "height": 224
+      },
+      "source": "public/museum/roman-courtyard.webp",
+      "sourceHash": "b7af518d5e5951b62f966253d6efe0b5fd75acd4753388e9072570ad6941825e",
+      "output": "public/museum/pixel/coarse/courtyard-phone.png",
+      "sha256": "f827848c211da06c9004a9d0d31c06df00487492ca80fc96c55490ee0e7abcb3"
+    },
+    {
+      "id": "courtyard-wide",
+      "profile": "coarse",
+      "width": 320,
+      "height": 213,
+      "pixelSize": 3,
+      "display": {
+        "x": 240,
+        "y": 56,
+        "width": 960,
+        "height": 640
+      },
+      "source": "public/museum/roman-courtyard.webp",
+      "sourceHash": "b7af518d5e5951b62f966253d6efe0b5fd75acd4753388e9072570ad6941825e",
+      "output": "public/museum/pixel/coarse/courtyard-wide.png",
+      "sha256": "ebca659b9f5eb72d3cc61e81eb097694872f724e8fcae46da8084325557fc2fe"
+    },
+    {
+      "id": "nap-phone",
+      "profile": "coarse",
+      "width": 112,
+      "height": 75,
+      "pixelSize": 3,
+      "display": {
+        "x": 12,
+        "y": 56,
+        "width": 336,
+        "height": 224
+      },
+      "source": "public/museum/roman-nap.webp",
+      "sourceHash": "bc584dce845f7103e7018941a51674ac40bf23be3981d4178c2ec897c39fb424",
+      "output": "public/museum/pixel/coarse/nap-phone.png",
+      "sha256": "f4e620836c57076e79d50aca0a9403734f3c1d3510eb880d5f0aa0512341c11e"
+    },
+    {
+      "id": "nap-wide",
+      "profile": "coarse",
+      "width": 320,
+      "height": 213,
+      "pixelSize": 3,
+      "display": {
+        "x": 240,
+        "y": 56,
+        "width": 960,
+        "height": 640
+      },
+      "source": "public/museum/roman-nap.webp",
+      "sourceHash": "bc584dce845f7103e7018941a51674ac40bf23be3981d4178c2ec897c39fb424",
+      "output": "public/museum/pixel/coarse/nap-wide.png",
+      "sha256": "df3a5be9221a2633a7e10528d2400a117f38d8624c19fd88ddb574e3430a8385"
+    },
+    {
+      "id": "forest-phone",
+      "profile": "coarse",
+      "width": 122,
+      "height": 196,
+      "pixelSize": 3,
+      "display": {
+        "x": 12,
+        "y": 64,
+        "width": 366,
+        "height": 588
+      },
+      "source": "public/museum/forest.webp",
+      "sourceHash": "c0ad0c9ad841b2bdf7bf2c0d8b07c75c5820ce8fb829c9e75f308467a226ca17",
+      "output": "public/museum/pixel/coarse/forest-phone.png",
+      "sha256": "6e5eb738617e7c2c60e9caa7dbe0e554b34b8e336239f7422db4ef9c04577c5c"
+    },
+    {
+      "id": "forest-wide",
+      "profile": "coarse",
+      "width": 367,
+      "height": 220,
+      "pixelSize": 3,
+      "display": {
+        "x": 170,
+        "y": 64,
+        "width": 1100,
+        "height": 660
+      },
+      "source": "public/museum/forest.webp",
+      "sourceHash": "c0ad0c9ad841b2bdf7bf2c0d8b07c75c5820ce8fb829c9e75f308467a226ca17",
+      "output": "public/museum/pixel/coarse/forest-wide.png",
+      "sha256": "301e99862521136f79723690ad8a174583b4b6845851b265f700cc19335a9f39"
+    },
+    {
+      "id": "ru-idle-96",
+      "profile": "coarse",
+      "width": 32,
+      "height": 32,
+      "pixelSize": 3,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/coarse/ru-idle-96.png",
+      "sha256": "50289f597c65a8acdf6697dd3b0fc5aace73e5e40e05e1e794124dd66ba5a825"
+    },
+    {
+      "id": "ru-walk-96",
+      "profile": "coarse",
+      "width": 32,
+      "height": 32,
+      "pixelSize": 3,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/coarse/ru-walk-96.png",
+      "sha256": "c9c06e893de27704533475e8e06260154eaad71411ad185b6e3ed7dec484b48f"
+    },
+    {
+      "id": "ru-sleep-96",
+      "profile": "coarse",
+      "width": 32,
+      "height": 32,
+      "pixelSize": 3,
+      "display": {
+        "x": 132,
+        "y": 432,
+        "width": 96,
+        "height": 96
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/coarse/ru-sleep-96.png",
+      "sha256": "d1aec7848d4115cf9c6293a76fa235dea35353d9b793edfe1e8691193ba0ed88"
+    },
+    {
+      "id": "ru-idle-128",
+      "profile": "coarse",
+      "width": 43,
+      "height": 43,
+      "pixelSize": 3,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/coarse/ru-idle-128.png",
+      "sha256": "6106d5e185c79b49eb01c8d4dfc623acbc4b4f8cf3ec9d9efbe7272e18c0036d"
+    },
+    {
+      "id": "ru-walk-128",
+      "profile": "coarse",
+      "width": 43,
+      "height": 43,
+      "pixelSize": 3,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/coarse/ru-walk-128.png",
+      "sha256": "307f2b412b257e278f0f81c7d2577a0b3169509fd181f4d2636fed2eecf44125"
+    },
+    {
+      "id": "ru-sleep-128",
+      "profile": "coarse",
+      "width": 43,
+      "height": 43,
+      "pixelSize": 3,
+      "display": {
+        "x": 116,
+        "y": 445,
+        "width": 128,
+        "height": 128
+      },
+      "source": "source-art/museum/ru-short-hair.png",
+      "sourceHash": "d39994320a26618ea0705895e0264e66f0d44ad977d1a374daae9efd46578de9",
+      "output": "public/museum/pixel/coarse/ru-sleep-128.png",
+      "sha256": "014fe8ec3fce1147a969e5891028d843102b0513aacd5b16288124082f175ef3"
+    }
+  ],
+  "palettes": {
+    "fine:ru": [
+      [
+        1,
+        1,
+        2
+      ],
+      [
+        4,
+        3,
+        5
+      ],
+      [
+        5,
+        5,
+        7
+      ],
+      [
+        6,
+        6,
+        10
+      ],
+      [
+        8,
+        8,
+        12
+      ],
+      [
+        9,
+        9,
+        14
+      ],
+      [
+        11,
+        10,
+        14
+      ],
+      [
+        11,
+        12,
+        17
+      ],
+      [
+        13,
+        13,
+        20
+      ],
+      [
+        14,
+        14,
+        22
+      ],
+      [
+        16,
+        16,
+        23
+      ],
+      [
+        16,
+        16,
+        25
+      ],
+      [
+        17,
+        17,
+        26
+      ],
+      [
+        17,
+        17,
+        27
+      ],
+      [
+        17,
+        18,
+        27
+      ],
+      [
+        18,
+        18,
+        27
+      ],
+      [
+        18,
+        19,
+        28
+      ],
+      [
+        18,
+        19,
+        29
+      ],
+      [
+        20,
+        21,
+        30
+      ],
+      [
+        22,
+        23,
+        34
+      ],
+      [
+        23,
+        24,
+        36
+      ],
+      [
+        24,
+        25,
+        37
+      ],
+      [
+        25,
+        26,
+        38
+      ],
+      [
+        26,
+        27,
+        39
+      ],
+      [
+        26,
+        28,
+        41
+      ],
+      [
+        27,
+        28,
+        41
+      ],
+      [
+        18,
+        40,
+        60
+      ],
+      [
+        15,
+        94,
+        115
+      ],
+      [
+        28,
+        29,
+        40
+      ],
+      [
+        27,
+        28,
+        42
+      ],
+      [
+        27,
+        29,
+        42
+      ],
+      [
+        28,
+        29,
+        42
+      ],
+      [
+        28,
+        29,
+        43
+      ],
+      [
+        28,
+        29,
+        40
+      ],
+      [
+        28,
+        30,
+        43
+      ],
+      [
+        29,
+        29,
+        42
+      ],
+      [
+        29,
+        30,
+        43
+      ],
+      [
+        38,
+        27,
+        27
+      ],
+      [
+        56,
+        39,
+        31
+      ],
+      [
+        97,
+        61,
+        31
+      ],
+      [
+        29,
+        31,
+        44
+      ],
+      [
+        31,
+        33,
+        48
+      ],
+      [
+        33,
+        35,
+        51
+      ],
+      [
+        34,
+        36,
+        52
+      ],
+      [
+        34,
+        37,
+        53
+      ],
+      [
+        32,
+        54,
+        84
+      ],
+      [
+        36,
+        37,
+        54
+      ],
+      [
+        37,
+        39,
+        56
+      ],
+      [
+        38,
+        40,
+        58
+      ],
+      [
+        39,
+        41,
+        59
+      ],
+      [
+        38,
+        51,
+        76
+      ],
+      [
+        40,
+        42,
+        59
+      ],
+      [
+        64,
+        46,
+        52
+      ],
+      [
+        48,
+        45,
+        61
+      ],
+      [
+        62,
+        75,
+        96
+      ],
+      [
+        52,
+        118,
+        168
+      ],
+      [
+        88,
+        61,
+        66
+      ],
+      [
+        97,
+        68,
+        71
+      ],
+      [
+        148,
+        104,
+        61
+      ],
+      [
+        110,
+        76,
+        81
+      ],
+      [
+        141,
+        102,
+        85
+      ],
+      [
+        131,
+        153,
+        148
+      ],
+      [
+        219,
+        168,
+        94
+      ],
+      [
+        236,
+        203,
+        140
+      ]
+    ],
+    "standard:ru": [
+      [
+        2,
+        2,
+        3
+      ],
+      [
+        5,
+        4,
+        7
+      ],
+      [
+        7,
+        7,
+        10
+      ],
+      [
+        9,
+        9,
+        14
+      ],
+      [
+        11,
+        11,
+        17
+      ],
+      [
+        12,
+        12,
+        18
+      ],
+      [
+        14,
+        13,
+        18
+      ],
+      [
+        14,
+        14,
+        21
+      ],
+      [
+        15,
+        15,
+        23
+      ],
+      [
+        16,
+        16,
+        23
+      ],
+      [
+        16,
+        17,
+        25
+      ],
+      [
+        17,
+        18,
+        26
+      ],
+      [
+        18,
+        19,
+        28
+      ],
+      [
+        19,
+        19,
+        29
+      ],
+      [
+        20,
+        20,
+        30
+      ],
+      [
+        22,
+        22,
+        33
+      ],
+      [
+        23,
+        24,
+        35
+      ],
+      [
+        24,
+        26,
+        38
+      ],
+      [
+        26,
+        27,
+        39
+      ],
+      [
+        26,
+        28,
+        40
+      ],
+      [
+        27,
+        28,
+        41
+      ],
+      [
+        19,
+        32,
+        48
+      ],
+      [
+        23,
+        40,
+        66
+      ],
+      [
+        19,
+        78,
+        95
+      ],
+      [
+        28,
+        27,
+        37
+      ],
+      [
+        27,
+        28,
+        42
+      ],
+      [
+        27,
+        29,
+        42
+      ],
+      [
+        28,
+        29,
+        42
+      ],
+      [
+        28,
+        29,
+        43
+      ],
+      [
+        28,
+        30,
+        43
+      ],
+      [
+        29,
+        30,
+        44
+      ],
+      [
+        28,
+        38,
+        61
+      ],
+      [
+        32,
+        25,
+        29
+      ],
+      [
+        29,
+        31,
+        44
+      ],
+      [
+        29,
+        31,
+        45
+      ],
+      [
+        30,
+        31,
+        45
+      ],
+      [
+        31,
+        32,
+        47
+      ],
+      [
+        32,
+        34,
+        49
+      ],
+      [
+        34,
+        36,
+        51
+      ],
+      [
+        33,
+        40,
+        60
+      ],
+      [
+        31,
+        64,
+        98
+      ],
+      [
+        37,
+        32,
+        40
+      ],
+      [
+        35,
+        37,
+        53
+      ],
+      [
+        35,
+        37,
+        54
+      ],
+      [
+        36,
+        39,
+        55
+      ],
+      [
+        38,
+        40,
+        58
+      ],
+      [
+        39,
+        41,
+        59
+      ],
+      [
+        38,
+        55,
+        85
+      ],
+      [
+        37,
+        92,
+        130
+      ],
+      [
+        48,
+        35,
+        39
+      ],
+      [
+        63,
+        44,
+        38
+      ],
+      [
+        68,
+        50,
+        54
+      ],
+      [
+        78,
+        59,
+        63
+      ],
+      [
+        69,
+        91,
+        82
+      ],
+      [
+        53,
+        111,
+        142
+      ],
+      [
+        91,
+        63,
+        65
+      ],
+      [
+        106,
+        76,
+        52
+      ],
+      [
+        146,
+        105,
+        58
+      ],
+      [
+        99,
+        69,
+        74
+      ],
+      [
+        106,
+        73,
+        79
+      ],
+      [
+        101,
+        123,
+        125
+      ],
+      [
+        116,
+        80,
+        85
+      ],
+      [
+        168,
+        142,
+        103
+      ],
+      [
+        222,
+        173,
+        99
+      ]
+    ],
+    "coarse:ru": [
+      [
+        3,
+        3,
+        5
+      ],
+      [
+        6,
+        6,
+        10
+      ],
+      [
+        8,
+        8,
+        13
+      ],
+      [
+        10,
+        10,
+        15
+      ],
+      [
+        11,
+        11,
+        17
+      ],
+      [
+        13,
+        13,
+        19
+      ],
+      [
+        16,
+        14,
+        18
+      ],
+      [
+        14,
+        14,
+        22
+      ],
+      [
+        15,
+        16,
+        24
+      ],
+      [
+        16,
+        17,
+        25
+      ],
+      [
+        18,
+        18,
+        26
+      ],
+      [
+        18,
+        19,
+        29
+      ],
+      [
+        20,
+        21,
+        30
+      ],
+      [
+        21,
+        22,
+        32
+      ],
+      [
+        22,
+        23,
+        34
+      ],
+      [
+        23,
+        24,
+        34
+      ],
+      [
+        24,
+        25,
+        36
+      ],
+      [
+        24,
+        26,
+        38
+      ],
+      [
+        25,
+        27,
+        39
+      ],
+      [
+        26,
+        27,
+        40
+      ],
+      [
+        22,
+        31,
+        49
+      ],
+      [
+        21,
+        50,
+        67
+      ],
+      [
+        28,
+        25,
+        31
+      ],
+      [
+        26,
+        28,
+        40
+      ],
+      [
+        27,
+        28,
+        40
+      ],
+      [
+        27,
+        28,
+        41
+      ],
+      [
+        27,
+        29,
+        42
+      ],
+      [
+        28,
+        29,
+        42
+      ],
+      [
+        28,
+        30,
+        43
+      ],
+      [
+        29,
+        30,
+        44
+      ],
+      [
+        28,
+        41,
+        69
+      ],
+      [
+        32,
+        27,
+        34
+      ],
+      [
+        29,
+        31,
+        44
+      ],
+      [
+        29,
+        31,
+        45
+      ],
+      [
+        30,
+        31,
+        45
+      ],
+      [
+        30,
+        33,
+        45
+      ],
+      [
+        31,
+        33,
+        47
+      ],
+      [
+        32,
+        34,
+        50
+      ],
+      [
+        33,
+        35,
+        51
+      ],
+      [
+        30,
+        47,
+        76
+      ],
+      [
+        32,
+        79,
+        111
+      ],
+      [
+        39,
+        30,
+        33
+      ],
+      [
+        39,
+        34,
+        42
+      ],
+      [
+        35,
+        36,
+        51
+      ],
+      [
+        35,
+        37,
+        53
+      ],
+      [
+        36,
+        39,
+        55
+      ],
+      [
+        37,
+        42,
+        57
+      ],
+      [
+        38,
+        40,
+        58
+      ],
+      [
+        39,
+        55,
+        78
+      ],
+      [
+        37,
+        76,
+        121
+      ],
+      [
+        49,
+        37,
+        41
+      ],
+      [
+        61,
+        44,
+        38
+      ],
+      [
+        70,
+        53,
+        54
+      ],
+      [
+        75,
+        64,
+        65
+      ],
+      [
+        58,
+        114,
+        119
+      ],
+      [
+        87,
+        61,
+        49
+      ],
+      [
+        88,
+        61,
+        67
+      ],
+      [
+        95,
+        65,
+        71
+      ],
+      [
+        98,
+        74,
+        78
+      ],
+      [
+        108,
+        78,
+        64
+      ],
+      [
+        114,
+        79,
+        84
+      ],
+      [
+        125,
+        100,
+        65
+      ],
+      [
+        137,
+        98,
+        59
+      ],
+      [
+        175,
+        139,
+        82
+      ]
+    ]
+  }
+}

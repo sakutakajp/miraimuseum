@@ -1,42 +1,264 @@
-import Phaser from "phaser";
+import {
+  Camera,
+  Color3,
+  Color4,
+  DirectionalLight,
+  DynamicTexture,
+  FreeCamera,
+  HemisphericLight,
+  MeshBuilder,
+  Material,
+  StandardMaterial,
+  Texture,
+  Vector3,
+  type Mesh,
+} from "@babylonjs/core";
+import { SceneRuntime } from "../../three-d/runtime";
+import { PixelGraphics } from "./graphics";
 import { SHIP_RADIUS, velocityFor } from "./physics";
 import type { DeliveryRuntime } from "./runtime";
 import type { Flight } from "./types";
-export class DeliveryScene extends Phaser.Scene {
-  private art!: Phaser.GameObjects.Graphics;
-  private lines!: Phaser.GameObjects.Graphics;
-  private ship!: Phaser.GameObjects.Graphics;
+/** Fixed orthographic camera, shaded sphere planets and one shared pixel grid. Physics never reads the renderer. */
+export class DeliveryScene {
+  canvas = document.createElement("canvas");
+  private background = new PixelGraphics();
+  private art = new PixelGraphics();
+  private lines = new PixelGraphics();
+  private ship = new PixelGraphics();
   private elapsed = 0;
   private dockingAge = 0;
   private deliveredFlight?: Flight;
+  private sceneRuntime?: SceneRuntime;
+  private backgroundTexture?: DynamicTexture;
+  private foregroundTexture?: DynamicTexture;
+  private planets: Mesh[] = [];
+  private shownStage = 0;
+  private fallbackContext?: CanvasRenderingContext2D;
+  private raf = 0;
+  private previous = 0;
+  private disposed = false;
+  private observer: ResizeObserver;
   constructor(
+    private host: HTMLElement,
     private runtime: DeliveryRuntime,
     private reducedMotion: boolean,
-    private ready: () => void,
+    ready: () => void,
   ) {
-    super("space-delivery");
+    this.canvas.setAttribute("aria-hidden", "true");
+    this.canvas.dataset.renderer = "babylon";
+    this.canvas.style.imageRendering = "pixelated";
+    this.canvas.style.display = "block";
+    host.append(this.canvas);
+    this.fit();
+    try {
+      this.sceneRuntime = new SceneRuntime(
+        this.canvas,
+        "low",
+        () => this.fallback(),
+        { pixelRatio: 0.5, antialias: false },
+      );
+      const scene = this.sceneRuntime.scene;
+      scene.clearColor = new Color4(0.047, 0.078, 0.17, 1);
+      const camera = new FreeCamera(
+        "Delivery fixed camera",
+        new Vector3(0, 0, 1000),
+        scene,
+      );
+      camera.setTarget(Vector3.Zero());
+      camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+      camera.orthoLeft = -180;
+      camera.orthoRight = 180;
+      camera.orthoTop = 260;
+      camera.orthoBottom = -260;
+      camera.minZ = 0.1;
+      camera.maxZ = 2000;
+      const hemi = new HemisphericLight(
+        "Soft toy light",
+        new Vector3(0, 1, 0),
+        scene,
+      );
+      hemi.intensity = 0.9;
+      hemi.groundColor = new Color3(0.12, 0.16, 0.3);
+      const key = new DirectionalLight(
+        "Upper left light",
+        new Vector3(0.5, -0.7, -1),
+        scene,
+      );
+      key.intensity = 0.8;
+      const layer = (name: string, z: number, alpha: boolean) => {
+        const texture = new DynamicTexture(
+          name,
+          { width: 180, height: 260 },
+          scene,
+          false,
+          Texture.NEAREST_SAMPLINGMODE,
+        );
+        texture.hasAlpha = alpha;
+        texture.wrapU = Texture.CLAMP_ADDRESSMODE;
+        texture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        const plane = MeshBuilder.CreatePlane(
+          name,
+          { width: 360, height: 520 },
+          scene,
+        );
+        plane.position.z = z;
+        plane.isPickable = false;
+        const mat = new StandardMaterial(name, scene);
+        mat.disableLighting = true;
+        mat.emissiveColor = Color3.White();
+        mat.diffuseColor = Color3.Black();
+        mat.transparencyMode = alpha
+          ? Material.MATERIAL_ALPHABLEND
+          : Material.MATERIAL_OPAQUE;
+        mat.disableDepthWrite = alpha;
+        plane.renderingGroupId = alpha ? 1 : 0;
+        if (alpha) mat.opacityTexture = texture;
+        mat.backFaceCulling = false;
+        mat.diffuseTexture = texture;
+        mat.emissiveTexture = texture;
+        mat.useAlphaFromDiffuseTexture = alpha;
+        plane.material = mat;
+        return texture;
+      };
+      this.backgroundTexture = layer("Pixel space", -80, false);
+      this.foregroundTexture = layer("Pixel delivery overlay", 60, true);
+      this.sceneRuntime.run((dt) => this.frame(dt));
+    } catch {
+      this.fallback();
+    }
+    this.observer = new ResizeObserver(() => this.resize());
+    this.observer.observe(host);
+    this.resize();
+    ready();
   }
-  create() {
-    this.art = this.add.graphics();
-    this.lines = this.add.graphics();
-    this.ship = this.add.graphics();
-    this.ready();
+  private fit() {
+    const scale = Math.min(
+      this.host.clientWidth / 360,
+      this.host.clientHeight / 520,
+    );
+    const width = 360 * scale,
+      height = 520 * scale;
+    this.canvas.style.width = width + "px";
+    this.canvas.style.height = height + "px";
+    this.canvas.style.marginLeft = (this.host.clientWidth - width) / 2 + "px";
+    this.canvas.style.marginTop = (this.host.clientHeight - height) / 2 + "px";
   }
-  override update(_time: number, delta: number) {
-    this.runtime.tick(delta / 1000);
-    if (this.runtime.mode !== "paused")
-      this.elapsed += Math.min(delta / 1000, 0.1);
+  private resize() {
+    if (this.disposed) return;
+    this.fit();
+    const width = Math.max(1, Math.round(this.canvas.clientWidth / 2)),
+      height = Math.max(1, Math.round(this.canvas.clientHeight / 2));
+    if (this.sceneRuntime) this.sceneRuntime.engine.resize();
+    else {
+      this.canvas.width = width;
+      this.canvas.height = height;
+    }
+    for (const g of [this.background, this.art, this.lines, this.ship])
+      g.resize(width, height);
+    this.backgroundTexture?.scaleTo(width, height);
+    this.foregroundTexture?.scaleTo(width, height);
+  }
+  private fallback() {
+    if (this.disposed) return;
+    this.sceneRuntime?.dispose();
+    this.sceneRuntime = undefined;
+    this.backgroundTexture = undefined;
+    this.foregroundTexture = undefined;
+    this.planets = [];
+    this.shownStage = 0;
+    // A canvas cannot switch from WebGL to 2D. Replace it while retaining the public element and layout.
+    const fresh = document.createElement("canvas");
+    fresh.style.cssText = this.canvas.style.cssText;
+    fresh.setAttribute("aria-hidden", "true");
+    fresh.dataset.renderer = "canvas";
+    this.canvas.replaceWith(fresh);
+    this.canvas = fresh;
+    this.fallbackContext = fresh.getContext("2d")!;
+    this.resize();
+    const render = (now: number) => {
+      if (this.disposed) return;
+      const dt = this.previous ? (now - this.previous) / 1000 : 0;
+      this.previous = now;
+      if (!document.hidden) {
+        this.frame(dt);
+        const c = this.fallbackContext!;
+        c.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        for (const g of [this.background, this.art, this.lines, this.ship])
+          c.drawImage(g.canvas, 0, 0, this.canvas.width, this.canvas.height);
+      } else this.previous = 0;
+      this.raf = requestAnimationFrame(render);
+    };
+    this.raf = requestAnimationFrame(render);
+  }
+  private frame(dt: number) {
+    this.runtime.tick(dt);
+    if (this.runtime.mode !== "paused") this.elapsed += Math.min(dt, 0.1);
     if (this.runtime.mode === "success") {
       if (this.deliveredFlight !== this.runtime.flight) {
         this.deliveredFlight = this.runtime.flight;
         this.dockingAge = 0;
       }
-      this.dockingAge += Math.min(delta / 1000, 0.1);
+      this.dockingAge += Math.min(dt, 0.1);
+    }
+    if (this.sceneRuntime && this.shownStage !== this.runtime.stage.id) {
+      for (const mesh of this.planets) {
+        mesh.material?.dispose();
+        mesh.dispose();
+      }
+      this.planets = [];
+      for (const p of this.runtime.stage.planets) {
+        const sphere = MeshBuilder.CreateSphere(
+          "Fixed planet",
+          { diameter: p.radius * 2, segments: 24 },
+          this.sceneRuntime.scene,
+        );
+        sphere.position.set(p.x - 180, 260 - p.y, 0);
+        sphere.isPickable = false;
+        const material = new StandardMaterial(
+          "Planet color",
+          this.sceneRuntime.scene,
+        );
+        material.diffuseColor = Color3.FromHexString(
+          "#" + p.color.toString(16).padStart(6, "0"),
+        );
+        material.specularColor = new Color3(0.04, 0.05, 0.08);
+        sphere.material = material;
+        this.planets.push(sphere);
+      }
+      this.shownStage = this.runtime.stage.id;
     }
     this.draw();
+    if (this.backgroundTexture && this.foregroundTexture) {
+      const bg = this.backgroundTexture.getContext();
+      bg.clearRect(
+        0,
+        0,
+        this.background.canvas.width,
+        this.background.canvas.height,
+      );
+      bg.drawImage(this.background.canvas, 0, 0);
+      this.backgroundTexture.update();
+      const fg = this.foregroundTexture.getContext();
+      fg.clearRect(0, 0, this.art.canvas.width, this.art.canvas.height);
+      for (const g of [this.art, this.lines, this.ship])
+        fg.drawImage(g.canvas, 0, 0);
+      this.foregroundTexture.update();
+    }
+  }
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.observer.disconnect();
+    cancelAnimationFrame(this.raf);
+    this.sceneRuntime?.dispose();
+    this.canvas.remove();
+    for (const g of [this.background, this.art, this.lines, this.ship]) {
+      g.canvas.width = 0;
+      g.canvas.height = 0;
+    }
   }
   private cat(
-    g: Phaser.GameObjects.Graphics,
+    g: PixelGraphics,
     x: number,
     y: number,
     happy: boolean,
@@ -68,12 +290,7 @@ export class DeliveryScene extends Phaser.Scene {
     g.lineBetween(x - 9, y + 3, x - 17, y + 1);
     g.lineBetween(x + 9, y + 3, x + 17, y + 1);
   }
-  private parcel(
-    g: Phaser.GameObjects.Graphics,
-    x: number,
-    y: number,
-    size = 12,
-  ) {
+  private parcel(g: PixelGraphics, x: number, y: number, size = 12) {
     g.fillStyle(0xeeb46b);
     g.fillRoundedRect(x - size / 2, y - size / 2, size, size, 2);
     g.fillStyle(0xffdfad);
@@ -81,12 +298,7 @@ export class DeliveryScene extends Phaser.Scene {
     g.lineStyle(1, 0x9f7548);
     g.strokeRect(x - size / 2, y - size / 2, size, size);
   }
-  private star(
-    g: Phaser.GameObjects.Graphics,
-    x: number,
-    y: number,
-    alpha: number,
-  ) {
+  private star(g: PixelGraphics, x: number, y: number, alpha: number) {
     const points = Array.from({ length: 10 }, (_, i) => {
       const a = -Math.PI / 2 + (i * Math.PI) / 5,
         r = i % 2 ? 5.5 : 12;
@@ -122,9 +334,10 @@ export class DeliveryScene extends Phaser.Scene {
   }
   private draw() {
     const r = this.runtime,
-      s = r.stage,
-      g = this.art;
+      s = r.stage;
+    let g = this.background;
     g.clear();
+    this.art.clear();
     this.lines.clear();
     this.ship.clear();
     g.fillStyle(0x0c142c);
@@ -139,39 +352,51 @@ export class DeliveryScene extends Phaser.Scene {
       g.fillStyle(i % 5 === 0 ? 0xb3cbe4 : 0x647293, i % 5 === 0 ? 0.52 : 0.3);
       g.fillCircle(x, y, i % 7 === 0 ? 1.1 : 0.6);
     }
-    for (const p of s.planets) {
-      g.lineStyle(1, p.color, 0.12);
-      g.strokeCircle(p.x, p.y, p.radius * 2.4);
-      g.fillStyle(0x000000, 0.2);
-      g.fillEllipse(p.x + 3, p.y + 7, p.radius * 2 + 5, p.radius * 2 + 5);
-      g.fillStyle(p.color);
-      g.fillCircle(p.x, p.y, p.radius);
-      g.fillStyle(0x101b4f, 0.25);
-      g.fillEllipse(
-        p.x + p.radius * 0.27,
-        p.y + p.radius * 0.16,
-        p.radius * 1.35,
-        p.radius * 1.62,
-      );
-      g.fillStyle(0xffffff, 0.11);
-      g.fillEllipse(
-        p.x - p.radius * 0.25,
-        p.y - p.radius * 0.28,
-        p.radius * 0.9,
-        p.radius * 0.6,
-      );
-      g.fillStyle(0xffffff, 0.14);
-      g.fillCircle(
-        p.x - p.radius * 0.42,
-        p.y - p.radius * 0.35,
-        p.radius * 0.13,
-      );
-      g.lineStyle(1, 0xffffff, 0.22);
-      g.strokeCircle(p.x, p.y, p.radius);
-      g.lineStyle(3, p.color, 0.25);
-      g.beginPath();
-      g.arc(p.x, p.y, p.radius + 5, -2.6, -1.3);
-      g.strokePath();
+    g = this.art;
+    if (this.sceneRuntime) {
+      for (const p of s.planets) {
+        g.lineStyle(1, p.color, 0.13);
+        g.strokeCircle(p.x, p.y, p.radius * 2.4);
+        g.lineStyle(2, p.color, 0.3);
+        g.beginPath();
+        g.arc(p.x, p.y, p.radius + 5, -2.6, -1.3);
+        g.strokePath();
+      }
+    } else {
+      for (const p of s.planets) {
+        g.lineStyle(1, p.color, 0.12);
+        g.strokeCircle(p.x, p.y, p.radius * 2.4);
+        g.fillStyle(0x000000, 0.2);
+        g.fillEllipse(p.x + 3, p.y + 7, p.radius * 2 + 5, p.radius * 2 + 5);
+        g.fillStyle(p.color);
+        g.fillCircle(p.x, p.y, p.radius);
+        g.fillStyle(0x101b4f, 0.25);
+        g.fillEllipse(
+          p.x + p.radius * 0.27,
+          p.y + p.radius * 0.16,
+          p.radius * 1.35,
+          p.radius * 1.62,
+        );
+        g.fillStyle(0xffffff, 0.11);
+        g.fillEllipse(
+          p.x - p.radius * 0.25,
+          p.y - p.radius * 0.28,
+          p.radius * 0.9,
+          p.radius * 0.6,
+        );
+        g.fillStyle(0xffffff, 0.14);
+        g.fillCircle(
+          p.x - p.radius * 0.42,
+          p.y - p.radius * 0.35,
+          p.radius * 0.13,
+        );
+        g.lineStyle(1, 0xffffff, 0.22);
+        g.strokeCircle(p.x, p.y, p.radius);
+        g.lineStyle(3, p.color, 0.25);
+        g.beginPath();
+        g.arc(p.x, p.y, p.radius + 5, -2.6, -1.3);
+        g.strokePath();
+      }
     }
     for (const rock of s.obstacles) {
       const pts = Array.from({ length: 8 }, (_, i) => {

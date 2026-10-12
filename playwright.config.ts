@@ -5,13 +5,14 @@ const executablePath =
   (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined);
 export default defineConfig({
   testDir: "./tests/browser",
+  outputDir: "test-results/production",
   timeout: 150_000,
   // Software WebGL shares GPU resources; parallel scenes distort quality sampling.
   workers: 1,
   use: {
     baseURL: "http://127.0.0.1:3001",
     headless: true,
-    launchOptions: { executablePath },
+    launchOptions: { executablePath, args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--disable-dev-shm-usage"] },
     screenshot: "only-on-failure",
     trace: { mode: "retain-on-failure", screenshots: false },
   },

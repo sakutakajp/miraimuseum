@@ -1,4 +1,10 @@
-# Floating low-poly Earth
+# Earth and exhibition assets
+
+## 現在のホーム（2026-10-09）
+
+Babylon.jsで `earth-vivid.glb`、`dinosaur.glb`、解放後の `cybertruck.glb`、常設の `statue-of-liberty-optimized.glb` を使用する。地球の静止画は `earth-photo.webp`。以下の `model.json` / `earth.svg` は初期ホームの生成原本と出典として保存しており、現在のホームは読み込まない。
+
+## 初期のlow-poly Earthの制作記録
 
 The homepage's Earth is an original, deterministic faceted interpretation of
 the user's visual direction: cobalt/cyan oceans, green/ochre continents,
@@ -7,7 +13,7 @@ pixels from the user-provided reference. Clouds and colors are authored artwork,
 not current weather or a scientific elevation model.
 
 `model.json` contains compact indexed surface/cloud vertices, triangle indices
-and one sRGB RGB color per face. The loader converts face colors into Three.js's
+and one sRGB RGB color per face. The former loader converted face colors into Three.js's
 linear working color space, expands vertices once and uses unlit materials
 without tone mapping. It makes one same-origin request and uses no runtime
 texture reads, tile server or third-party service.
@@ -58,3 +64,9 @@ Source SHA-256:
 day.jpg       7405c39a220bc37519474eba54625a0d1a02b6ad954895147c103a1bc8dd61fb
 land.geojson  e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b
 ```
+
+## Babylon.js移行（2026-10-09）
+
+全GLBはバイトを変更せず使用する。地球の青・雲影・大気は実行時のShaderMaterial、展示の縮尺・向き・原点は親TransformNodeで補正する。車のシルバーは実行時のスタジオ反射で維持する。
+
+`statue-of-liberty-optimized.glb` はユーザー提供GLBの未編集コピー。1,824,472 bytes、SHA-256 `85e893c00645e230c88ab4a432752f011c8bebefa86878b4c6a004927fb5c614`。出典・別途ライセンスは添付時に提示されていないため、地球素材のApacheライセンスをこのモデルへ転用しない。常設の展示で、ゲーム定義の11展示とは区別する。

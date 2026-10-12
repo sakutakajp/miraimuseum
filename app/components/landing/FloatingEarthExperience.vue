@@ -2,7 +2,9 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { FloatingEarthWorld } from "~/experiences/floating-earth/FloatingEarthWorld";
 import { prepareDinosaurAudio } from "~/game/dinosaur/audio-context";
-import { preloadDinosaurGame, discardDinosaurPreload } from "~/game/dinosaur/preload";
+import { readSettings, saveSettings, type Quality } from "~/three-d/settings";
+const settings = ref({ volume: 0.8, muted: false, quality: "high" as Quality });
+function changeQuality(event: Event) { settings.value.quality = (event.target as HTMLSelectElement).value as Quality; saveSettings(settings.value); world?.setQuality(settings.value.quality); }
 import { cybertruckUnlock } from "~/experiences/floating-earth/cybertruck-unlock";
 
 const root = ref<HTMLElement>();
@@ -46,6 +48,8 @@ function showNextGame() {
   if (gameNotice.value && !gameNotice.value.open) gameNotice.value.showModal();
 }
 
+function retryHome() { window.location.reload(); }
+
 function fallback() {
   ready.value = false;
   pending.value = false;
@@ -56,6 +60,7 @@ function fallback() {
 }
 
 onMounted(async () => {
+  settings.value = readSettings();
   loading = new AbortController();
   const signal = loading.signal;
   try {
@@ -78,9 +83,7 @@ onMounted(async () => {
   } finally {
     if (!signal.aborted) {
       void preloadRouteComponents("/dinosaur").catch(() => {});
-      void preloadDinosaurGame().then(prepared => {
-        if (!signal.aborted && root.value) root.value.dataset.gameReady = String(prepared);
-      });
+
     }
   }
 });
@@ -88,7 +91,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   clearInterval(tipsTimer);
   loading?.abort(); world?.dispose();
-  if (!entering) discardDinosaurPreload();
+
 });
 </script>
 
@@ -96,10 +99,10 @@ onBeforeUnmount(() => {
   <main ref="root" class="earth-home" data-testid="floating-earth-experience" data-renderer="static" data-earth-ready="false" data-earth-yaw="0" data-earth-pitch="0" data-dragging="false">
     <header class="earth-home__header">
       <h1 class="earth-home__title">MIRAI MUSEUM</h1>
-      <button class="earth-home__language" type="button" data-testid="language-switch"
+      <div class="earth-home__actions"><label class="earth-home__quality"><span class="earth-home__sr">{{ locale === "ja" ? "画質" : "Quality" }}</span><select aria-label="Quality" :value="settings.quality" @change="changeQuality"><option value="high">{{ locale === "ja" ? "高画質" : "High" }}</option><option value="medium">{{ locale === "ja" ? "標準" : "Medium" }}</option><option value="low">{{ locale === "ja" ? "軽量" : "Low" }}</option></select></label><button class="earth-home__language" type="button" data-testid="language-switch"
         :lang="locale === 'ja' ? 'en' : 'ja'"
         :aria-label="locale === 'ja' ? 'Switch to English' : '日本語に切り替える'"
-        @click="setLocale(locale === 'ja' ? 'en' : 'ja')">{{ locale === 'ja' ? 'EN' : '日本語' }}</button>
+        @click="setLocale(locale === 'ja' ? 'en' : 'ja')">{{ locale === 'ja' ? 'EN' : '日本語' }}</button></div>
     </header>
 
     <div class="earth-home__space">
@@ -113,7 +116,6 @@ onBeforeUnmount(() => {
     </div>
 
     <footer class="earth-home__footer">
-      <NuxtLink to="/games/space-delivery/" no-prefetch class="earth-home__delivery-link">{{ locale === 'ja' ? 'ねこの宇宙宅配便 ↗' : 'Space Cat Delivery ↗' }}</NuxtLink>
       <p id="earth-instructions" class="earth-home__instructions" :class="{ 'earth-home__instructions--ready': ready }">
         <Transition name="earth-tip" mode="out-in">
           <span :key="`${locale}-${tipIndex}`" class="earth-home__tip" data-testid="earth-tip" aria-hidden="true">{{ tip }}</span>
@@ -121,8 +123,10 @@ onBeforeUnmount(() => {
         <span class="earth-home__sr">{{ t('ゆっくり自転する地球。スクロール、地球のタップ、Enter、Spaceで回転。ドラッグ、矢印キーで向きを変更。Homeで元の向きに戻ります。ブラキオサウルスをタップするか、ブラキオサウルスのボタンにフォーカスしてEnterまたはSpaceで恐竜ゲームを開始します。') }}</span>
         <span v-if="carUnlocked" class="earth-home__sr">{{ t('車をタップするか、車のボタンにフォーカスしてEnterまたはSpaceで次のゲームの案内を表示します。') }}</span>
       </p>
+      <p v-if="!pending && !ready" class="earth-home__failure">{{ locale === "ja" ? "3D表示を読み込めませんでした。" : "The 3D view could not be loaded." }} <button type="button" @click="retryHome">{{ locale === "ja" ? "再読み込み" : "Reload" }}</button></p>
       <NuxtLink v-if="!pending && !ready" to="/dinosaur?play=1" no-prefetch class="earth-home__fallback-link" @click="prepareGameEntry">{{ t('恐竜ゲームをはじめる') }}</NuxtLink>
       <noscript><a class="earth-home__fallback-link" href="/dinosaur">{{ t('恐竜ゲームをはじめる') }}</a></noscript>
+      <NuxtLink to="/games" no-prefetch class="earth-home__games" :aria-label="locale === 'ja' ? 'ゲーム一覧 ↗' : 'Games ↗'"><template v-if="locale === 'ja'">ゲーム<ruby>一覧<rt aria-hidden="true">いちらん</rt></ruby></template><template v-else>Games</template> ↗</NuxtLink>
     </footer>
     <dialog ref="gameNotice" class="earth-home__game-notice" aria-labelledby="cybertruck-notice-title" @click.self="gameNotice?.close()">
       <h2 id="cybertruck-notice-title">{{ t('次のゲームは開発中です。') }}</h2>
@@ -157,6 +161,10 @@ onBeforeUnmount(() => {
   padding: max(24px, env(safe-area-inset-top)) max(36px, env(safe-area-inset-right)) 12px max(36px, env(safe-area-inset-left));
 }
 .earth-home__title { margin: 0; color: inherit; font-family: "M PLUS Rounded 1c", sans-serif; font-size: clamp(16px, 2vw, 22px); font-weight: 700; letter-spacing: .06em; line-height: 1.5; }
+.earth-home__actions { display: flex; align-items: center; gap: 10px; }
+.earth-home__games { position: absolute; right: max(20px, env(safe-area-inset-right)); bottom: max(4px, env(safe-area-inset-bottom)); display: inline-flex; align-items: center; min-height: 44px; color: #bbc4d0; font-size: 11px; text-decoration: none; white-space: nowrap; }
+.earth-home__games rt { font-size: 9px; line-height: 1; }
+.earth-home__quality select { background: #080c13; color: #bbc4d0; border: 1px solid #ffffff24; border-radius: 20px; padding: 8px; font: 11px inherit; }
 .earth-home__language { display: grid; place-items: center; flex-shrink: 0; min-width: 60px; min-height: 40px; padding: 8px 12px; border: 1px solid #ffffff24; border-radius: 24px; background: transparent; color: #dce0e8; font-family: inherit; font-size: 12px; line-height: 1.2; cursor: pointer; touch-action: manipulation; }
 .earth-home__language:hover { border-color: #ffffff60; color: #fff; }
 .earth-home__language:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
@@ -167,8 +175,8 @@ onBeforeUnmount(() => {
 .earth-home__game-notice h2 { margin: 0 0 24px; font-size: 18px; font-weight: 500; line-height: 1.7; }
 .earth-home__game-notice button { min-width: 104px; min-height: 44px; padding: 10px 24px; border: 1px solid #ffffff40; border-radius: 24px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
 .earth-home__game-notice button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
-.earth-home__delivery-link { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; margin-bottom: 5px; border: 1px solid #ffffff20; border-radius: 24px; color: #d5e6e3; font-size: 12px; text-decoration: none; }
-.earth-home__delivery-link:focus-visible { outline: 2px solid #d5e6e3; outline-offset: 4px; }
+.earth-home__failure { color: #a1abc0; font-size: 12px; margin: 6px; }
+.earth-home__failure button { background: transparent; color: inherit; border: 1px solid #ffffff40; padding: 6px 12px; }
 .earth-home__fallback-link { color: #bbc4d0; font-size: 13px; text-underline-offset: 5px; }
 .earth-home__loading { position: absolute; z-index: 2; bottom: 12px; display: flex; gap: 10px; align-items: center; color: #d9e7ff; font-size: 13px; letter-spacing: .08em; }
 .earth-home__loading span { width: 14px; height: 14px; border: 1px solid #ffffff30; border-top-color: #a5deff; border-radius: 50%; animation: earth-loading 1s linear infinite; }
