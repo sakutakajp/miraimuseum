@@ -113,6 +113,7 @@ onBeforeUnmount(() => {
     </div>
 
     <footer class="earth-home__footer">
+      <NuxtLink to="/games/space-delivery/" no-prefetch class="earth-home__delivery-link">{{ locale === 'ja' ? 'ねこの宇宙宅配便 ↗' : 'Space Cat Delivery ↗' }}</NuxtLink>
       <p id="earth-instructions" class="earth-home__instructions" :class="{ 'earth-home__instructions--ready': ready }">
         <Transition name="earth-tip" mode="out-in">
           <span :key="`${locale}-${tipIndex}`" class="earth-home__tip" data-testid="earth-tip" aria-hidden="true">{{ tip }}</span>
@@ -166,6 +167,8 @@ onBeforeUnmount(() => {
 .earth-home__game-notice h2 { margin: 0 0 24px; font-size: 18px; font-weight: 500; line-height: 1.7; }
 .earth-home__game-notice button { min-width: 104px; min-height: 44px; padding: 10px 24px; border: 1px solid #ffffff40; border-radius: 24px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
 .earth-home__game-notice button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.earth-home__delivery-link { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; margin-bottom: 5px; border: 1px solid #ffffff20; border-radius: 24px; color: #d5e6e3; font-size: 12px; text-decoration: none; }
+.earth-home__delivery-link:focus-visible { outline: 2px solid #d5e6e3; outline-offset: 4px; }
 .earth-home__fallback-link { color: #bbc4d0; font-size: 13px; text-underline-offset: 5px; }
 .earth-home__loading { position: absolute; z-index: 2; bottom: 12px; display: flex; gap: 10px; align-items: center; color: #d9e7ff; font-size: 13px; letter-spacing: .08em; }
 .earth-home__loading span { width: 14px; height: 14px; border: 1px solid #ffffff30; border-top-color: #a5deff; border-radius: 50%; animation: earth-loading 1s linear infinite; }
