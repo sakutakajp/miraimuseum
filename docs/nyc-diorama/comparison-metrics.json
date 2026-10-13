@@ -1,0 +1,19 @@
+{
+  "projection": {
+    "mae255": 2.7594,
+    "psnrDb": 30.54,
+    "captureSize": [
+      720,
+      721
+    ]
+  },
+  "parallax": {
+    "mae255": 2.7522,
+    "psnrDb": 31.0,
+    "captureSize": [
+      720,
+      721
+    ]
+  },
+  "note": "Whole-frame RGB comparison to the displayed original at yaw=0, pitch=0, zoom=1; includes resampling and fitted sky. Not a perceptual quality percentage."
+}

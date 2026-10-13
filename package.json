@@ -9,6 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
+    "diorama:prepare": "python3 scripts/prepare-nyc-diorama.py",
+    "test:nyc": "playwright test --config playwright.nyc.config.ts",
     "test": "vitest run",
     "test:lab": "playwright test --config playwright.roman.config.ts"
   },
