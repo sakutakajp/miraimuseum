@@ -1,3 +1,3 @@
 <template>
-  <main>開発中</main>
+  <NuxtPage />
 </template>
