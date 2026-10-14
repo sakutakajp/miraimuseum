@@ -30,29 +30,32 @@
     }
     .ocean-bubble[hidden] { display: none; }
   </style>
-  <script type="importmap">
-    {"imports":{"three":"./vendor/three.module.js"}}
-  </script>
 </head>
 <body>
   <div id="viewport" aria-label="アニメーションする四角い海のジオラマ"></div>
   <div id="status" role="status">海を読み込んでいます…</div>
   <script type="module">
     const status = document.getElementById('status');
+    let stage = 'load';
     try {
-    const { createOceanScene } = await import('./src/createOceanScene.js');
-    const ocean = createOceanScene(document.getElementById('viewport'));
-    status.textContent = '';
-    const canvas = document.querySelector('canvas');
-    canvas.addEventListener('webglcontextlost', (event) => {
-      event.preventDefault();
-      status.textContent = '描画が中断されました。復帰しない場合はページを再読み込みしてください。';
-    });
-    canvas.addEventListener('webglcontextrestored', () => { status.textContent = ''; });
-    window.addEventListener('pagehide', (event) => { if (!event.persisted) ocean.dispose(); });
+      const { createOceanScene } = await import('./src/createOceanScene.js?v=safari-1');
+      stage = 'render';
+      const ocean = createOceanScene(document.getElementById('viewport'));
+      status.textContent = '';
+      const canvas = document.querySelector('canvas');
+      canvas.addEventListener('webglcontextlost', (event) => {
+        event.preventDefault();
+        status.textContent = '描画が中断されました。復帰しない場合はページを再読み込みしてください。';
+      });
+      canvas.addEventListener('webglcontextrestored', () => { status.textContent = ''; });
+      window.addEventListener('pagehide', (event) => { if (!event.persisted) ocean.dispose(); });
     } catch (error) {
-      console.error(error);
-      status.textContent = '3D表示を開始できませんでした。WebGL対応のブラウザーで再読み込みしてください。';
+      console.error(`Ocean Diorama startup failed (${stage}):`, error);
+      status.textContent = stage === 'load'
+        ? '海のデータを読み込めませんでした。ページを再読み込みしてください。'
+        : error.code === 'OCEAN_WEBGL_CONTEXT'
+          ? '3Dの描画を開始できませんでした。ほかのタブを閉じてから再読み込みしてください。'
+          : '海の表示を開始できませんでした。ページを再読み込みしてください。';
     }
   </script>
 </body>

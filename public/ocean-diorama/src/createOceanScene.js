@@ -1,6 +1,7 @@
-import * as THREE from 'three';
-import { attachOceanBubble } from './oceanBubble.js';
-import { OrbitControls } from '../vendor/OrbitControls.js';
+import * as THREE from '../vendor/three.module.js?v=safari-1';
+import { attachOceanBubble } from './oceanBubble.js?v=safari-1';
+import { createOceanRenderer } from './createOceanRenderer.js?v=safari-1';
+import { OrbitControls } from '../vendor/OrbitControls.js?v=safari-1';
 
 /**
  * Miniature sea on a square white pedestal.
@@ -12,8 +13,8 @@ export function createOceanScene(container, options = {}) {
   const scene = new THREE.Scene();
   scene.background = null; // Let the soft sky gradient show behind the 3D scene.
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isSmall ? 1.35 : 1.75));
+  const { renderer, reducedQuality } = createOceanRenderer();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, reducedQuality ? 1 : isSmall ? 1.35 : 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
@@ -45,7 +46,8 @@ export function createOceanScene(container, options = {}) {
   const sun = new THREE.DirectionalLight('#fff9ef', 2.9);
   sun.position.set(10, 15, -5);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(isSmall ? 1024 : 2048, isSmall ? 1024 : 2048);
+  const shadowSize = reducedQuality ? 512 : isSmall ? 1024 : 2048;
+  sun.shadow.mapSize.set(shadowSize, shadowSize);
   sun.shadow.camera.left = -13;
   sun.shadow.camera.right = 13;
   sun.shadow.camera.top = 13;

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from '../vendor/three.module.js?v=safari-1';
 
 // Use the water footprint for picking; reject the pedestal and background.
 export function attachOceanBubble({ container, canvas, scene, camera, water }) {
