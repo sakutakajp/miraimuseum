@@ -1,3 +1,4 @@
+import { withNoindexMeta } from '../shared/indexing.ts';
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
@@ -12,6 +13,7 @@ export default defineConfig({
   publicDir: false,
   plugins: [{
     name: 'exhibit-licenses',
+    transformIndexHtml: html => withNoindexMeta(html),
     closeBundle() {
       const directory = resolve(root, '../public/exhibits/licenses');
       mkdirSync(directory, { recursive: true });

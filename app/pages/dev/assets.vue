@@ -2,7 +2,7 @@
 import type * as THREE from 'three';
 import { exhibits } from '~/data/exhibits';
 if (!import.meta.dev) throw createError({ statusCode: 404, statusMessage: 'Local review only' });
-useSeoMeta({ title: 'アセット確認 | MIRAI MUSEUM', robots: 'noindex, nofollow' });
+useSeoMeta({ title: 'アセット確認 | MIRAI MUSEUM' });
 const options = [...exhibits.map(e => ({ slug: e.slug, title: e.title })), { slug: 'library-20m', title: '図書館20m · 比較試作' }];
 const selected = ref('library-20m');
 const frame = ref<HTMLIFrameElement>();
