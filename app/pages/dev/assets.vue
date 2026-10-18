@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type * as THREE from 'three';
 import { exhibits } from '~/data/exhibits';
-if (!import.meta.dev) throw createError({ statusCode: 404, statusMessage: 'Local review only' });
 useSeoMeta({ title: 'アセット確認 | MIRAI MUSEUM' });
 const options = [...exhibits.map(e => ({ slug: e.slug, title: e.title })), { slug: 'library-20m', title: '図書館20m · 比較試作' }];
 const selected = ref('library-20m');
@@ -21,11 +20,10 @@ const scale = computed(() => selected.value === 'library-20m' ? {factor:2,label:
 const picked = computed(() => parts.value.find(p => p.id === component.value));
 const source = computed(() => `/exhibits/${selected.value}/index.html?inspect=1&hint=0&quality=low`);
 const provenance = computed(() => {
-  const prefix = `exhibits/${selected.value}/src/`;
-  if (!picked.value) return `${prefix}main.ts（シーン組立）`;
-  if (!isLibrary.value) return `${prefix}main.ts（シーン組立を起点に生成）`;
-  const map:Record<string,string> = { library:'room/structure.ts · bookcases.ts · furniture.ts · gallery.ts · spiral.ts（結合メッシュ）', 'pedestal-plate':'pedestal.ts', 'window-glass':'room/structure.ts · windows.ts', 'case-glass':'room/furniture.ts', plants:'room/furniture.ts', 'marble-floor':'main.ts · room/structure.ts', 'gallery-deck':'main.ts · room/gallery.ts', rug:'main.ts · room/textures.ts', globe:'room/furniture.ts · room/textures.ts', celestial:'room/furniture.ts · room/textures.ts' };
-  return prefix + (map[picked.value.name] || 'main.ts（シーン内の実オブジェクト）');
+  if (!picked.value) return '展示シーンの組み立て';
+  if (!isLibrary.value) return '展示シーン内で生成された部品';
+  const map:Record<string,string> = { library:'図書館の壁・棚・家具・回廊・階段（結合メッシュ）', 'pedestal-plate':'台座', 'window-glass':'窓ガラス', 'case-glass':'展示ケースのガラス', plants:'室内の植栽', 'marble-floor':'大理石の床', 'gallery-deck':'回廊の床', rug:'敷物', globe:'地球儀', celestial:'天球儀' };
+  return map[picked.value.name] || '図書館シーン内で生成された部品';
 });
 function dispose() {
   clearInterval(timer);
@@ -65,7 +63,7 @@ const fmt=(values:number[],factor=1)=>values.map(v=>(v*factor).toFixed(3)).join(
 </script>
 <template>
   <main class="asset-review">
-    <header><div><p class="eyebrow">MIRAI MUSEUM · LOCAL REVIEW</p><h1>アセット確認</h1><p>シーンと実際の部品を選び、形・大きさ・縮尺を確認します。</p></div><a href="/library-comparison.html?quality=low">図書館10m／20m比較 →</a></header>
+    <header><div><p class="eyebrow">MIRAI MUSEUM · ASSET REVIEW</p><h1>アセット確認</h1><p>シーンと実際の部品を選び、形・大きさ・縮尺を確認します。</p></div><a href="/library-comparison.html?quality=low">図書館10m／20m比較 →</a></header>
     <div class="review-layout"><aside>
       <label>展示<select v-model="selected" @change="change"><option v-for="o in options" :key="o.slug" :value="o.slug">{{o.title}}</option></select></label>
       <label>生成された部品<select v-model="component" :disabled="!ready"><option value="">シーン全体</option><option v-for="p in parts" :key="p.id" :value="p.id">{{p.name}}</option></select></label>
@@ -77,7 +75,7 @@ const fmt=(values:number[],factor=1)=>values.map(v=>(v*factor).toFixed(3)).join(
       </dl>
       <p class="note">寸法は現在の配置を含むワールド軸に沿った外接箱です。InstancedMeshは全配置の範囲を計測します。</p>
       <p class="note">図書館のlibraryは壁・棚・家具・階段を結合したメッシュです。机単体の独立モデルではありません。単独表示でも焼き込まれた陰影は元のシーンのままです。</p>
-    </aside><section><div class="review-toolbar"><button :disabled="!ready" @click="reset">全体に戻す</button><button :disabled="!ready" @click="zoom(.2)">＋ 拡大</button><button :disabled="!ready" @click="zoom(-.2)">− 縮小</button><span>ドラッグで回転 · ピンチ／ホイールで拡大</span></div><div class="review-stage"><iframe :key="revision" ref="frame" :src="source" :title="selected+' アセット確認'"/><div v-if="!ready" class="review-loading">{{failure || '小さな世界を準備しています…'}}</div></div><p class="note">ローカル開発用。モデルデータの書き出しや任意ファイルの閲覧機能はありません。表示は軽量品質です。</p></section></div>
+    </aside><section><div class="review-toolbar"><button :disabled="!ready" @click="reset">全体に戻す</button><button :disabled="!ready" @click="zoom(.2)">＋ 拡大</button><button :disabled="!ready" @click="zoom(-.2)">− 縮小</button><span>ドラッグで回転 · ピンチ／ホイールで拡大</span></div><div class="review-stage"><iframe :key="revision" ref="frame" :src="source" :title="selected+' アセット確認'"/><div v-if="!ready" class="review-loading">{{failure || '小さな世界を準備しています…'}}</div></div><p class="note">URLを知っている方はどなたでも閲覧できます。表示は軽量品質です。</p></section></div>
   </main>
 </template>
 <style scoped>

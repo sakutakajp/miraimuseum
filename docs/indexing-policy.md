@@ -9,6 +9,6 @@
 - 静的生成のページ・200/404フォールバックは `prerender:generate` でも処理する。
 - Cloudflareの静的配信には `public/_headers` を使い、`/` だけヘッダーを削除する。Workerが処理する応答はサーバーミドルウェアが担当する。
 
-robots.txtのDisallowでは代用しない。noindexはアクセス制限ではない。`/dev/assets` は開発時だけ利用可能で、本番は404、静的生成の対象外。
+robots.txtのDisallowでは代用しない。noindexはアクセス制限ではない。`/dev/assets` は認証なしでURLから直接閲覧でき、静的生成にも含める。トップからのリンクやサイトマップには追加しない。noindexは引き続き適用し、生成元の説明には環境パスや非公開設定を使わない。
 
 確認: `npm run test:indexing`、`npm run typecheck`、`npm run build`、`npm run generate`。HTTP確認では `/` の指定が空、他のページ・静的展示・404にnoindexがあることを確認する。
