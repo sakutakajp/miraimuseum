@@ -58,7 +58,9 @@ function isolate(){const a=app();if(!a||!isLibrary.value)return;a.scene.traverse
 watch(component,()=>{solo.value=false;isolate();});
 function reset(){solo.value=false;isolate();app()?.view.reset({animate:false});}
 function zoom(amount:number){const a=app();if(a)a.view.set({zoom:Math.max(.7,Math.min(3,(a.view.get().zoom||1)+amount))},{animate:false});}
-onMounted(startPolling);onBeforeUnmount(dispose);
+function restore(event:PageTransitionEvent){if(event.persisted)location.reload();}
+onMounted(()=>{startPolling();window.addEventListener('pagehide',dispose);window.addEventListener('pageshow',restore);});
+onBeforeUnmount(()=>{dispose();window.removeEventListener('pagehide',dispose);window.removeEventListener('pageshow',restore);});
 const fmt=(values:number[],factor=1)=>values.map(v=>(v*factor).toFixed(3)).join(' × ');
 </script>
 <template>

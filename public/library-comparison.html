@@ -16,5 +16,5 @@ document.querySelector('#reset').onclick=()=>{for(let i=0;i<2;i++)scene(i)?.view
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>setView({azimuth:b.dataset.view==='top'?22:-40,elevation:b.dataset.view==='top'?65:22.8,zoom:1,panX:0,panY:0}));
 document.querySelector('#zoom').oninput=e=>setView({zoom:Number(e.target.value)});
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{active=Number(b.dataset.tab);articles.forEach((a,i)=>a.classList.toggle('selected',i===active));document.querySelectorAll('[data-tab]').forEach(t=>t.setAttribute('aria-pressed',String(t===b)));previous[active]='';});
-window.addEventListener('pagehide',()=>{disposed=true;cancelAnimationFrame(raf);frames.forEach(f=>f.contentWindow?.__disposeScene?.());});loop();
+window.addEventListener('pagehide',()=>{disposed=true;cancelAnimationFrame(raf);frames.forEach(f=>f.contentWindow?.__disposeScene?.());});window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});loop();
 </script></body></html>
