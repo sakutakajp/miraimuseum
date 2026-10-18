@@ -392,18 +392,8 @@ function start(canvas: HTMLCanvasElement) {
     }
   };
 
+  // 操作開始・停止でcanvasをリサイズしない。解像度切替による輪郭の揺れと未描画を防ぐ。
   const basePixelRatio = () => Math.min(window.devicePixelRatio || 1, quality.maxPixelRatio);
-  let motionScale = 1;
-  let frameAvg = 16;
-  let idleSince = 0;
-  const setMotionScale = (scale: number) => {
-    if (scale === motionScale) return;
-    motionScale = scale;
-    renderer.setPixelRatio(basePixelRatio() * motionScale);
-    renderer.setSize(viewW, viewH, false);
-    water.invalidate();
-  };
-
   let loopRunning = false;
   let needsRender = true;
   let lastFrame = 0;
@@ -419,22 +409,7 @@ function start(canvas: HTMLCanvasElement) {
       water.invalidate();
       doRender = true;
     }
-    if (moving) {
-      idleSince = 0;
-      frameAvg += (Math.min(dtMs, 100) - frameAvg) * 0.2;
-      if (lowPower && motionScale > 0.5) setMotionScale(0.5);
-      else if (frameAvg > 34 && motionScale > 0.55) {
-        setMotionScale(Math.max(0.55, motionScale * 0.8));
-        frameAvg = 22;
-      }
-    } else if (motionScale < 1) {
-      if (!idleSince) idleSince = now;
-      if (now - idleSince > 250) {
-        setMotionScale(1);
-        frameAvg = 16;
-        doRender = true;
-      }
-    }
+
     const waterRunning = animate && waterVisible && !document.hidden;
     if (waterRunning && now - lastWaterTick >= 1000 / fps - 2) {
       lastWaterTick = now;
@@ -442,7 +417,7 @@ function start(canvas: HTMLCanvasElement) {
       doRender = true;
     }
     if (doRender) draw();
-    if (waterRunning || needsRender || moving || motionScale < 1 || controls?.isMoving()) {
+    if (waterRunning || needsRender || moving || controls?.isMoving()) {
       lifecycle.schedule(frame);
     } else {
       loopRunning = false;
@@ -508,7 +483,7 @@ function start(canvas: HTMLCanvasElement) {
   const resize = () => {
     viewW = Math.max(1, canvas.clientWidth);
     viewH = Math.max(1, canvas.clientHeight);
-    renderer.setPixelRatio(basePixelRatio() * motionScale);
+    renderer.setPixelRatio(basePixelRatio());
     renderer.setSize(viewW, viewH, false);
     updateCamera();
     water.invalidate();

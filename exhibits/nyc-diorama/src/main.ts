@@ -684,19 +684,8 @@ vec3 leafHash( vec3 p ) {
     }
   };
 
-  // 見る向きを変えているあいだだけ、描く解像度を下げることがある（重いときに動きを止めないため）。止まったら元に戻す
+  // 操作開始・停止でcanvasをリサイズしない。解像度切替による輪郭の揺れと未描画を防ぐ。
   const basePixelRatio = () => Math.min(window.devicePixelRatio || 1, quality.maxPixelRatio);
-  let motionScale = 1;
-  let frameAvg = 16;
-  let idleSince = 0;
-  const setMotionScale = (scale: number) => {
-    if (scale === motionScale) return;
-    motionScale = scale;
-    renderer.setPixelRatio(basePixelRatio() * motionScale);
-    renderer.setSize(viewW, viewH, false);
-    water.invalidate();
-  };
-
   let loopRunning = false;
   let needsRender = true;
   let lastFrame = 0;
@@ -713,22 +702,7 @@ vec3 leafHash( vec3 p ) {
       water.invalidate();
       doRender = true;
     }
-    if (moving) {
-      idleSince = 0;
-      frameAvg += (Math.min(dtMs, 100) - frameAvg) * 0.2;
-      if (lowPower && motionScale > 0.5) setMotionScale(0.5);
-      else if (frameAvg > 34 && motionScale > 0.55) {
-        setMotionScale(Math.max(0.55, motionScale * 0.8));
-        frameAvg = 22;
-      }
-    } else if (motionScale < 1) {
-      if (!idleSince) idleSince = now;
-      if (now - idleSince > 250) {
-        setMotionScale(1);
-        frameAvg = 16;
-        doRender = true;
-      }
-    }
+
     const seaRunning = animate && seaVisible;
     if (seaRunning && now - lastSeaTick >= 1000 / fps - 2) {
       lastSeaTick = now;
@@ -736,7 +710,7 @@ vec3 leafHash( vec3 p ) {
       doRender = true;
     }
     if (doRender) draw();
-    if (seaRunning || needsRender || moving || motionScale < 1 || controls?.isMoving()) {
+    if (seaRunning || needsRender || moving || controls?.isMoving()) {
       lifecycle.schedule(frame);
     } else {
       loopRunning = false;
@@ -804,7 +778,7 @@ vec3 leafHash( vec3 p ) {
   const resize = () => {
     viewW = Math.max(1, canvas.clientWidth);
     viewH = Math.max(1, canvas.clientHeight);
-    renderer.setPixelRatio(basePixelRatio() * motionScale);
+    renderer.setPixelRatio(basePixelRatio());
     renderer.setSize(viewW, viewH, false);
     updateCamera();
     water.invalidate();
