@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { cpSync, mkdirSync, readdirSync } from 'node:fs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
-const names = ['sand-pedestal', 'nyc-diorama', 'library-diorama', 'dino-diorama', 'electric-town-diorama'];
+const names = ['sand-pedestal', 'nyc-diorama', 'library-diorama', 'dino-diorama', 'electric-town-diorama', 'library-20m'];
 
 export default defineConfig({
   root,
