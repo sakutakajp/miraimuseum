@@ -9,6 +9,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
+    "test:indexing": "node --test tests/indexing/*.test.ts",
     "build:exhibits": "vite build --config exhibits/vite.config.ts",
     "typecheck:exhibits": "tsc --project exhibits/tsconfig.json",
     "test:exhibits": "playwright test --config playwright.exhibits.config.ts"
@@ -22,6 +23,7 @@
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
   },
   "devDependencies": {
+    "@types/node": "^24.19.2",
     "typescript": "5.9.3",
     "vue-tsc": "3.2.6",
     "@types/three": "0.186.0",

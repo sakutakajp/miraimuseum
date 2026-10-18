@@ -1,7 +1,10 @@
 import * as THREE from 'three';
+import { showAsset } from './asset-view';
 
 /** 各展示は別documentで動かす。切替前にGPUを解放し、非表示中の描画を止める。 */
 export function createSceneLifecycle(renderer: THREE.WebGLRenderer, scene: THREE.Scene) {
+  let inspection:ReturnType<typeof showAsset>|undefined;
+  if(new URLSearchParams(location.search).has('inspect')) (window as any).__showAsset = (kind:Parameters<typeof showAsset>[1]) => { inspection?.dispose(); inspection=showAsset(window,kind); return inspection; };
   let disposed = false;
   const pending = new Set<FrameRequestCallback>();
   const frames = new Set<number>();
@@ -29,6 +32,7 @@ export function createSceneLifecycle(renderer: THREE.WebGLRenderer, scene: THREE
     frames.forEach(cancelAnimationFrame);
     frames.clear();
     pending.clear();
+    inspection?.dispose();
     cleanups.forEach(cleanup => cleanup());
     document.removeEventListener('visibilitychange', onVisibility);
     window.removeEventListener('pagehide', dispose);

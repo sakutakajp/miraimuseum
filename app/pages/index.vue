@@ -5,7 +5,7 @@ useSeoMeta({ title: '箱庭の展示室 | MIRAI MUSEUM', description: '島と海
 
 <template>
   <div class="museum">
-    <header class="masthead"><NuxtLink to="/" class="brand">MIRAI MUSEUM<span>みらい博物館</span></NuxtLink><span class="edition">THE HAKONIWA COLLECTION</span></header>
+    <header class="masthead"><NuxtLink to="/" class="brand"><MuseumBrand /><span class="brand-subtitle">みらい博物館</span></NuxtLink><span class="edition">THE HAKONIWA COLLECTION</span></header>
     <main class="collection">
       <section class="intro"><p class="eyebrow">05 WORLDS · ENDLESS PERSPECTIVES</p><h1>小さな世界を、<br>好きな角度から。</h1><p class="intro-copy">海の向こうへ。街の路地へ。本の森へ。<br>くるりと回して、近づいて。<br class="mobile-break">あなただけの景色を見つけよう。</p></section>
       <section class="exhibit-grid" aria-label="5つの箱庭">
