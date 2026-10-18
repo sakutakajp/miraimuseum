@@ -5,7 +5,7 @@ export function shouldNoindex(path: string): boolean {
 }
 export function withNoindexMeta(html: string): string {
   // 個別のindex指定と衝突させず、検索エンジン別の指定も一本化する。
-  const clean = html.replace(/<meta\b(?=[^>]*\bname\s*=\s*["'](?:robots|googlebot|bingbot)["'])[^>]*>/gi, '');
+  const clean = html.replace(/<meta\b(?=[^>]*\bname\s*=\s*(?:"(?:robots|googlebot|bingbot)"|'(?:robots|googlebot|bingbot)'|(?:robots|googlebot|bingbot)(?=\s|\/?>)))[^>]*>/gi, '');
   const meta = `<meta name="robots" content="${ROBOTS_NOINDEX}">`;
   if (/<\/head\s*>/i.test(clean)) return clean.replace(/<\/head\s*>/i, `${meta}</head>`);
   // 既存の短縮HTML（headタグを省略したリダイレクト等）も対象。

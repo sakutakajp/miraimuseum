@@ -27,3 +27,8 @@ test("head省略の既存リダイレクトも対象", () => {
  assert.match(withNoindexMeta(html), /noindex, follow/);
  assert.equal(withNoindexMeta(withNoindexMeta(html)),withNoindexMeta(html));
 });
+
+test('引用符を省略したrobotsも置換し、indexとの競合を残さない',()=>{
+ const result=withNoindexMeta('<html><head><meta name=robots content=index><meta name=googlebot content=index><meta name=bingbot content=index></head></html>');
+ assert.doesNotMatch(result,/content=index/);assert.equal((result.match(/name="robots"/g)||[]).length,1);
+});
