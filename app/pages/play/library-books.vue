@@ -63,7 +63,7 @@ onBeforeUnmount(()=>{dispose();window.removeEventListener('pageshow',restore);})
 </script>
 <template>
   <main class="book-hunt">
-    <header><NuxtLink to="/hakoniwa/library-diorama" class="brand">MIRAI MUSEUM</NuxtLink><span class="edition">小さな図書館のあそび</span></header>
+    <header><NuxtLink to="/hakoniwa/library-diorama" class="brand"><MuseumBrand /></NuxtLink><span class="edition">小さな図書館のあそび</span></header>
     <div class="heading"><div><p class="eyebrow">A LITTLE DISCOVERY</p><h1>物語を、見つけよう。</h1></div><button v-if="playing" class="quiet" @click="leave">箱庭を眺める</button></div>
     <section ref="stage" class="stage" :class="{playing}" :aria-busy="!ready">
       <iframe ref="frame" src="/exhibits/library-diorama/index.html?inspect=1&hint=0&quality=low" title="10m図書館の箱庭" :tabindex="playing?-1:0"/>
