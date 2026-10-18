@@ -1,3 +1,4 @@
+import { captureFurniture } from '../../../shared/asset-capture';
 import * as THREE from 'three';
 import { V, type BuildContext } from './context';
 import { wallGeometry } from './structure';
@@ -44,7 +45,7 @@ export function spiralGeometry(ctx: BuildContext) {
   };
 }
 
-export function buildSpiralStair(ctx: BuildContext) {
+function original_buildSpiralStair(ctx: BuildContext) {
   const { cfg, st, mb } = ctx;
   const c = cfg.colors;
   const g = wallGeometry(ctx);
@@ -208,3 +209,5 @@ export function buildSpiralStair(ctx: BuildContext) {
     turned(pt(rh, end), g.gy, sp.railY(end) + 0.03);
   }
 }
+
+export function buildSpiralStair(...args:Parameters<typeof original_buildSpiralStair>):ReturnType<typeof original_buildSpiralStair> { return captureFurniture("buildSpiralStair",args[0],()=>original_buildSpiralStair(...args)); }

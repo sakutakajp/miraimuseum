@@ -3,7 +3,7 @@ import { shouldNoindex, withNoindexMeta } from './shared/indexing';
 
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-05",
-  css: ["~/assets/css/museum.css"],
+  css: ["~/assets/css/museum.css", "~/assets/css/asset-browser.css"],
   devtools: { enabled: false },
   routeRules: { "/dev/**": { prerender: false }, "/dev/assets": { prerender: true } },
   // package名からの自動生成に任せず、既存の配信先Worker名に合わせる。

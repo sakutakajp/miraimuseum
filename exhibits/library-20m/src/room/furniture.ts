@@ -1,3 +1,4 @@
+import { captureFurniture } from '../../../shared/asset-capture';
 import * as THREE from 'three';
 import { V, type BuildContext } from './context';
 import { wallGeometry } from './structure';
@@ -30,7 +31,7 @@ function lbox(ctx: BuildContext, P: (x: number, y: number, z: number) => THREE.V
 }
 
 /** 背もたれに細い棒の並ぶ木の椅子（座面の中心が c、座る人が向く向き angle） */
-export function chair(ctx: BuildContext, c: THREE.Vector3, angle: number) {
+function original_chair(ctx: BuildContext, c: THREE.Vector3, angle: number) {
   const { st, cfg, mb } = ctx;
   const col = cfg.colors;
   const wood = st.face('wood', col.woodLight, 0.06, ctx.rand);
@@ -57,7 +58,7 @@ export function chair(ctx: BuildContext, c: THREE.Vector3, angle: number) {
 }
 
 /** 緑のガラスの笠のバンカーズランプ（真鍮の台と柱、横長の半円筒の笠）。灯りも登録する */
-export function bankersLamp(ctx: BuildContext, c: THREE.Vector3, angle: number, scale = 1) {
+function original_bankersLamp(ctx: BuildContext, c: THREE.Vector3, angle: number, scale = 1) {
   const { st, cfg, mb, lamps } = ctx;
   const col = cfg.colors;
   const brass = st.face('brass', col.brass);
@@ -117,7 +118,7 @@ export function bankersLamp(ctx: BuildContext, c: THREE.Vector3, angle: number, 
 }
 
 /** 本を積む（寝かせた本の山）。c は山の底の中心 */
-export function bookStack(ctx: BuildContext, c: THREE.Vector3, angle: number, count: number) {
+function original_bookStack(ctx: BuildContext, c: THREE.Vector3, angle: number, count: number) {
   const { cfg, rand, books } = ctx;
   const palette = cfg.books.palette;
   let y = c.y;
@@ -142,7 +143,7 @@ export function bookStack(ctx: BuildContext, c: THREE.Vector3, angle: number, co
 }
 
 /** 開いた本（表紙の板の上に、少し反った左右の頁） */
-export function openBook(ctx: BuildContext, c: THREE.Vector3, angle: number, size = 1) {
+function original_openBook(ctx: BuildContext, c: THREE.Vector3, angle: number, size = 1) {
   const { st, cfg, mb, rand } = ctx;
   const b = basis(angle);
   const P = local(c, b);
@@ -161,7 +162,7 @@ export function openBook(ctx: BuildContext, c: THREE.Vector3, angle: number, siz
 }
 
 /** 長机（天板・幕板・ろくろ挽きの脚・貫） */
-function longTable(ctx: BuildContext, c: THREE.Vector3, len: number, wid: number, height: number) {
+function original_longTable(ctx: BuildContext, c: THREE.Vector3, len: number, wid: number, height: number) {
   const { st, cfg, mb } = ctx;
   const col = cfg.colors;
   const top = st.face('plank', col.wood);
@@ -194,7 +195,7 @@ function longTable(ctx: BuildContext, c: THREE.Vector3, len: number, wid: number
 }
 
 /** 小さな机（4 本脚と天板、引き出しの前板） */
-function smallDesk(ctx: BuildContext, c: THREE.Vector3, angle: number, w: number, d: number, h: number) {
+function original_smallDesk(ctx: BuildContext, c: THREE.Vector3, angle: number, w: number, d: number, h: number) {
   const { st, cfg, mb } = ctx;
   const col = cfg.colors;
   const P = local(c, basis(angle));
@@ -207,7 +208,7 @@ function smallDesk(ctx: BuildContext, c: THREE.Vector3, angle: number, w: number
 }
 
 /** 緑の革の袖付きの肘掛け椅子（丸みのある台・座のクッション・巻いた肘・高い背もたれと袖・短い木の脚） */
-function armchair(ctx: BuildContext, c: THREE.Vector3, angle: number) {
+function original_armchair(ctx: BuildContext, c: THREE.Vector3, angle: number) {
   const { st, cfg, mb } = ctx;
   const col = cfg.colors;
   const b = basis(angle);
@@ -231,7 +232,7 @@ function armchair(ctx: BuildContext, c: THREE.Vector3, angle: number) {
 }
 
 /** 丸い小机（天板・柱・3 本の脚）と黄色い笠のランプ */
-function sideTableWithLamp(ctx: BuildContext, c: THREE.Vector3) {
+function original_sideTableWithLamp(ctx: BuildContext, c: THREE.Vector3) {
   const { st, cfg, mb, lamps } = ctx;
   const col = cfg.colors;
   const wood = st.face('wood', col.wood);
@@ -253,7 +254,7 @@ function sideTableWithLamp(ctx: BuildContext, c: THREE.Vector3) {
 }
 
 /** 地球儀・天球儀（3 本脚の木の台、真鍮の子午線の輪、傾けた球）。map で球の地図を選ぶ */
-function globe(ctx: BuildContext, c: THREE.Vector3, map: 'globe' | 'celestial' = 'globe', spin = 0) {
+function original_globe(ctx: BuildContext, c: THREE.Vector3, map: 'globe' | 'celestial' = 'globe', spin = 0) {
   const { st, cfg, mb } = ctx;
   const col = cfg.colors;
   const wood = st.face('wood', col.wood);
@@ -295,7 +296,7 @@ function globe(ctx: BuildContext, c: THREE.Vector3, map: 'globe' | 'celestial' =
 }
 
 /** 図書館の梯子（2 本の側木と横木。上は棚の上の手すりに掛ける） */
-function ladder(ctx: BuildContext, foot: THREE.Vector3, topP: THREE.Vector3) {
+function original_ladder(ctx: BuildContext, foot: THREE.Vector3, topP: THREE.Vector3) {
   const { st, cfg, mb } = ctx;
   const col = cfg.colors;
   const wood = st.face('wood', col.woodLight);
@@ -317,7 +318,7 @@ function ladder(ctx: BuildContext, foot: THREE.Vector3, topP: THREE.Vector3) {
  * 鉢植え（植木鉢・土・細長い葉。葉は両面の形として foliage に）。
  * upright（0〜1）で葉を立てて垂れを減らし、stand（高さ）で木の花台に載せる（回廊の手すりの上に葉が出るように）
  */
-export function plant(ctx: BuildContext, c0: THREE.Vector3, size: number, leaves = 18, opts: { upright?: number; stand?: number } = {}) {
+function original_plant(ctx: BuildContext, c0: THREE.Vector3, size: number, leaves = 18, opts: { upright?: number; stand?: number } = {}) {
   const { st, cfg, mb, foliage, rand } = ctx;
   const col = cfg.colors;
   const up = opts.upright ?? 0;
@@ -369,7 +370,7 @@ export function plant(ctx: BuildContext, c0: THREE.Vector3, size: number, leaves
 }
 
 /** 書見台（ろくろ挽きの柱と 3 本の脚、斜めの台に開いた大きな本）。c は床の位置、angle は読む人が向く向き */
-function lectern(ctx: BuildContext, c: THREE.Vector3, angle: number) {
+function original_lectern(ctx: BuildContext, c: THREE.Vector3, angle: number) {
   const { st, cfg, mb } = ctx;
   const col = cfg.colors;
   const wood = st.face('wood', col.wood);
@@ -421,7 +422,7 @@ function lectern(ctx: BuildContext, c: THREE.Vector3, angle: number) {
 }
 
 /** 本の手押し車（2 段の棚と側板、4 つの小さな車輪、押し手）。棚の本は両側に背を向ける */
-function bookTrolley(ctx: BuildContext, c: THREE.Vector3, angle: number) {
+function original_bookTrolley(ctx: BuildContext, c: THREE.Vector3, angle: number) {
   const { st, cfg, mb, rand, books } = ctx;
   const col = cfg.colors;
   const wood = st.face('wood', col.wood);
@@ -465,7 +466,7 @@ function bookTrolley(ctx: BuildContext, c: THREE.Vector3, angle: number) {
 /**
  * 彩色写本（大きな開いた本の左右の頁に、金箔の大きな頭文字・朱と藍の挿絵の枠・金の縁取り・字の行）。陳列台の中に置く
  */
-function illuminatedBook(ctx: BuildContext, c: THREE.Vector3, angle: number, size = 1) {
+function original_illuminatedBook(ctx: BuildContext, c: THREE.Vector3, angle: number, size = 1) {
   const { st, cfg, mb } = ctx;
   const b = basis(angle);
   const P = local(c, b);
@@ -520,7 +521,7 @@ function illuminatedBook(ctx: BuildContext, c: THREE.Vector3, angle: number, siz
  * 陳列台（ガラスの蓋の付いた展示台。ロング・ルームの写本の陳列台のように）：ろくろ挽きの 4 本の脚と貫、幕板、浅い箱と緑のフェルトの底、
  * 中に彩色写本。蓋は手前へ下がる斜めのガラス（透明な形として別に作る）
  */
-function displayCase(ctx: BuildContext, c: THREE.Vector3, angle: number) {
+function original_displayCase(ctx: BuildContext, c: THREE.Vector3, angle: number) {
   const { st, cfg, mb, clearGlass } = ctx;
   const col = cfg.colors;
   const b = basis(angle);
@@ -701,3 +702,33 @@ export function buildFurniture(ctx: BuildContext) {
   for (const z of [-1.5,1.5]) placeAsset(ctx,V(-3.7,floor,z),()=>ladder(ctx,origin,V((g.caseFront+.1+3.7)*2,(lowerTop-floor)*2,0)));
   placeAsset(ctx,V(-4.05,gy,0.5),()=>ladder(ctx,origin,V((g.xi+ctx.cfg.room.upperCases.depth+.08+4.05)*2,(ctx.cfg.room.upperCases.top-.15-gy)*2,0)));
 }
+
+export function chair(...args:Parameters<typeof original_chair>):ReturnType<typeof original_chair> { return captureFurniture("chair",args[0],()=>original_chair(...args)); }
+
+export function bankersLamp(...args:Parameters<typeof original_bankersLamp>):ReturnType<typeof original_bankersLamp> { return captureFurniture("bankersLamp",args[0],()=>original_bankersLamp(...args)); }
+
+export function bookStack(...args:Parameters<typeof original_bookStack>):ReturnType<typeof original_bookStack> { return captureFurniture("bookStack",args[0],()=>original_bookStack(...args)); }
+
+export function openBook(...args:Parameters<typeof original_openBook>):ReturnType<typeof original_openBook> { return captureFurniture("openBook",args[0],()=>original_openBook(...args)); }
+
+function longTable(...args:Parameters<typeof original_longTable>):ReturnType<typeof original_longTable> { return captureFurniture("longTable",args[0],()=>original_longTable(...args)); }
+
+function smallDesk(...args:Parameters<typeof original_smallDesk>):ReturnType<typeof original_smallDesk> { return captureFurniture("smallDesk",args[0],()=>original_smallDesk(...args)); }
+
+function armchair(...args:Parameters<typeof original_armchair>):ReturnType<typeof original_armchair> { return captureFurniture("armchair",args[0],()=>original_armchair(...args)); }
+
+function sideTableWithLamp(...args:Parameters<typeof original_sideTableWithLamp>):ReturnType<typeof original_sideTableWithLamp> { return captureFurniture("sideTableWithLamp",args[0],()=>original_sideTableWithLamp(...args)); }
+
+function globe(...args:Parameters<typeof original_globe>):ReturnType<typeof original_globe> { return captureFurniture("globe",args[0],()=>original_globe(...args)); }
+
+function ladder(...args:Parameters<typeof original_ladder>):ReturnType<typeof original_ladder> { return captureFurniture("ladder",args[0],()=>original_ladder(...args)); }
+
+export function plant(...args:Parameters<typeof original_plant>):ReturnType<typeof original_plant> { return captureFurniture("plant",args[0],()=>original_plant(...args)); }
+
+function lectern(...args:Parameters<typeof original_lectern>):ReturnType<typeof original_lectern> { return captureFurniture("lectern",args[0],()=>original_lectern(...args)); }
+
+function bookTrolley(...args:Parameters<typeof original_bookTrolley>):ReturnType<typeof original_bookTrolley> { return captureFurniture("bookTrolley",args[0],()=>original_bookTrolley(...args)); }
+
+function illuminatedBook(...args:Parameters<typeof original_illuminatedBook>):ReturnType<typeof original_illuminatedBook> { return captureFurniture("illuminatedBook",args[0],()=>original_illuminatedBook(...args)); }
+
+function displayCase(...args:Parameters<typeof original_displayCase>):ReturnType<typeof original_displayCase> { return captureFurniture("displayCase",args[0],()=>original_displayCase(...args)); }

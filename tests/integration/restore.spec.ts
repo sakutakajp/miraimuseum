@@ -3,7 +3,7 @@ import {mkdirSync} from 'node:fs';
 const evidence=process.env.EVIDENCE_DIR||'test-results/integration';mkdirSync(evidence,{recursive:true});
 for(const kind of ['assets','comparison'])test(`${kind}: 解放後の履歴復元で再初期化する`,async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- const url=kind==='assets'?'/dev/assets':'/library-comparison.html?quality=low';
+ const url=kind==='assets'?'/dev/assets/mesh-review':'/library-comparison.html?quality=low';
  await page.goto(url,{waitUntil:'domcontentloaded'});
  const waitReady=async()=>{await page.waitForFunction(()=>[...document.querySelectorAll('iframe')].length>0&&[...document.querySelectorAll('iframe')].every(f=>f.contentDocument?.querySelector('canvas[data-ready=true]')&&(f.contentWindow as any).__scene),{},{timeout:240000});if(kind==='assets')await expect(page.locator('select').nth(1)).toBeEnabled();};
  await waitReady();await expect(page.locator('meta[name=robots]')).toHaveAttribute('content','noindex, follow');

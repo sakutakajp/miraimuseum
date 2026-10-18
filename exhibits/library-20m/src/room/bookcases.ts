@@ -1,3 +1,4 @@
+import { captureFurniture } from '../../../shared/asset-capture';
 import * as THREE from 'three';
 import { V, type BuildContext } from './context';
 import { archFrameFace, archBand, at, rectFace, wallFrame, type ArchHole, type Frame } from './arch';
@@ -93,7 +94,7 @@ export function fillShelf(
 }
 
 /** 壁の燭台（真鍮の腕と、白い光る火屋）。灯りとしても登録する */
-export function sconce(ctx: BuildContext, fr: Frame, u: number, y: number, c0: number) {
+function original_sconce(ctx: BuildContext, fr: Frame, u: number, y: number, c0: number) {
   const { cfg, st, mb, lamps } = ctx;
   const col = cfg.colors;
   const brass = st.face('brass', col.brass);
@@ -111,7 +112,7 @@ export function sconce(ctx: BuildContext, fr: Frame, u: number, y: number, c0: n
 }
 
 /** 2 階の壁際の本棚（側板・天板とコーニス・台輪・奥の板・仕切り・棚板・本） */
-function wallCase(ctx: BuildContext, fr: Frame, u0: number, u1: number, y0: number, y1: number, depth: number, opts: { columns: number; shelfSpacing: number; sides?: [boolean, boolean]; arch?: boolean; cornice?: boolean }) {
+function original_wallCase(ctx: BuildContext, fr: Frame, u0: number, u1: number, y0: number, y1: number, depth: number, opts: { columns: number; shelfSpacing: number; sides?: [boolean, boolean]; arch?: boolean; cornice?: boolean }) {
   const { cfg, st, mb } = ctx;
   const c = cfg.colors;
   const sideF = st.face('woodV', c.wood);
@@ -313,3 +314,7 @@ export function picture(ctx: BuildContext, fr: Frame, u: number, v: number, w: n
 }
 
 export { fbox };
+
+function wallCase(...args:Parameters<typeof original_wallCase>):ReturnType<typeof original_wallCase> { return captureFurniture("wallCase",args[0],()=>original_wallCase(...args)); }
+
+export function sconce(...args:Parameters<typeof original_sconce>):ReturnType<typeof original_sconce> { return captureFurniture("sconce",args[0],()=>original_sconce(...args)); }

@@ -1,3 +1,4 @@
+import { captureAsset } from '../../shared/asset-capture';
 import { createSceneLifecycle } from '../../shared/lifecycle';
 import * as THREE from 'three';
 import { config } from './config';
@@ -182,9 +183,9 @@ function start(canvas: HTMLCanvasElement) {
   const { styles, index } = facadeStyles(config);
   const mb = new MeshBuilder(0.09);
   addBuildings(mb, layout, config, index);
-  const bridge = addBridge(mb, layout, config, index, city);
-  const pier = addPier(mb, layout, config, index, city);
-  const ferry = addFerry(mb, layout, config, index, city.water);
+  const bridge = captureAsset("bridge", [["structures", mb]], () => addBridge(mb, layout, config, index, city));
+  const pier = captureAsset("pier", [["structures", mb]], () => addPier(mb, layout, config, index, city));
+  const ferry = captureAsset("ferry", [["structures", mb]], () => addFerry(mb, layout, config, index, city.water));
   {
     const an = layout.bridge.anchorage;
     const [px0, px1] = layout.pier.deck;
