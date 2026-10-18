@@ -16,7 +16,7 @@ let visibility = new Map<string, boolean>();
 type SceneApp = { scene: THREE.Scene; renderer: THREE.WebGLRenderer; requestRender?: () => void; view: { get: () => Record<string, number>; set: (value: Record<string, number>, options?: {animate:boolean}) => void; reset: (options?: {animate:boolean}) => void } };
 const app = () => (frame.value?.contentWindow as (Window & {__scene?:SceneApp}) | null)?.__scene;
 const isLibrary = computed(() => selected.value.startsWith('library'));
-const scale = computed(() => selected.value === 'library-20m' ? {factor:2,label:'20m四方 · 比較試作の設定'} : selected.value === 'library-diorama' ? {factor:1,label:'原作10m換算 · 合意済み20mへ未調整'} : {factor:null,label:'4段階規格への割当は未確定'});
+const scale = computed(() => selected.value === 'library-20m' ? {factor:2,label:'20m四方 · 比較試作の設定'} : selected.value === 'library-diorama' ? {factor:1,label:'10m四方 · 現行の基準'} : {factor:null,label:'4段階規格への割当は未確定'});
 const picked = computed(() => parts.value.find(p => p.id === component.value));
 const source = computed(() => `/exhibits/${selected.value}/index.html?inspect=1&hint=0&quality=low`);
 const provenance = computed(() => {
