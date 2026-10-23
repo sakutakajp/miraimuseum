@@ -1,3 +1,4 @@
+import { homeCamera, homeFraming } from '../../shared/home-camera';
 /**
  * シーンの調整パラメータ一式。
  * 前半（pedestal 〜 renderer）は箱庭シリーズの共通仕様（砂の台座・ニューヨーク・図書館と同じ値）。
@@ -101,26 +102,10 @@ export const config = {
    * カメラ（遠近のある固定の視点）。シリーズ共通（参考画像の台座の外形に合わせても、同じ値になった）。
    * 方位角は上から見た角度（度）で、0 は台座の手前の辺の正面、90 は右の辺の正面。
    */
-  camera: {
-    azimuth: 0,
-    /** 見下ろし角（度） */
-    elevation: 22.8,
-    /** 注視点までの距離（台座の一辺に対する倍率） */
-    distance: 4.86,
-    /** 注視点の高さ（土台の上面からの高さ、台座の一辺に対する比率） */
-    targetHeight: 0.165,
-    /** 正方形の画面での縦の画角（度） */
-    fov: 13.44,
-  },
+  camera: { ...homeCamera },
 
   /** 画面内の配置（画面サイズに対する比率）。台座の外形を基準に合わせ、木は上の余白に入る */
-  framing: {
-    paddingX: 0.029,
-    paddingXNarrow: 0.05,
-    paddingTop: 0.305,
-    paddingBottom: 0.15,
-    minTop: 0.04,
-  },
+  framing: { ...homeFraming },
   /** 元の向きから回したときの余白（どの方位に回しても台座全体が収まる構図） */
   framingOther: {
     paddingX: 0.05,

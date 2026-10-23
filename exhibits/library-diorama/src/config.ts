@@ -1,3 +1,4 @@
+import { homeCamera, homeFraming } from '../../shared/home-camera';
 /**
  * 図書館の箱庭の調整用パラメータ。長さはワールド単位（台座の幅 10）。
  * 前半はシリーズ（淡い砂の角丸ミニチュア台座・ニューヨークの箱庭）と同じ値：台座の土台・床・光・影・仕上げ・画面。
@@ -88,24 +89,12 @@ export const config = {
   },
 
   /**
-   * カメラ：仰角・画角・距離はシリーズと同じ。方位は参考画像に合わせて右手前から（22°）。
+   * カメラ：ニューヨークと共通の方位・俯角・距離・注視点。
    * targetHeight は注視点の高さ（台の上面からの高さ、台座の幅に対する比率）
    */
-  camera: {
-    azimuth: 22,
-    elevation: 22.8,
-    distance: 4.86,
-    targetHeight: 0.22,
-    fov: 13.44,
-  },
-  /** 元の向きの構図（参考画像の余白：左右 5%、上 8%、下 12%） */
-  framing: {
-    paddingX: 0.047,
-    paddingXNarrow: 0.05,
-    paddingTop: 0.08,
-    paddingBottom: 0.12,
-    minTop: 0.04,
-  },
+  camera: { ...homeCamera },
+  /** ニューヨークと共通の台座基準の構図 */
+  framing: { ...homeFraming },
   framingOther: {
     paddingX: 0.05,
     paddingXNarrow: 0.06,

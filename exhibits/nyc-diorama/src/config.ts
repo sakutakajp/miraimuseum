@@ -1,3 +1,4 @@
+import { homeCamera, homeFraming } from '../../shared/home-camera';
 import type { FacadeStyle } from './materials';
 
 /**
@@ -348,23 +349,8 @@ export const config = {
   },
 
   /** カメラ（シリーズと同じ：手前の辺の正面から見下ろす） */
-  camera: {
-    azimuth: 0,
-    elevation: 22.8,
-    /** 注視点までの距離（台座の一辺に対する倍率） */
-    distance: 4.86,
-    /** 注視点の高さ（土台の上面からの高さ、台座の一辺に対する比率） */
-    targetHeight: 0.24,
-    fov: 13.44,
-  },
-  framing: {
-    paddingX: 0.029,
-    paddingXNarrow: 0.05,
-    paddingTop: 0.305,
-    paddingBottom: 0.15,
-    /** 塔の上端から画面の上端までの最小の余白 */
-    minTop: 0.04,
-  },
+  camera: { ...homeCamera },
+  framing: { ...homeFraming },
   framingOther: {
     paddingX: 0.05,
     paddingXNarrow: 0.06,

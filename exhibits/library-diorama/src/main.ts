@@ -587,7 +587,7 @@ function start(canvas: HTMLCanvasElement) {
   });
   scene.add(floor);
 
-  // --- カメラ（仰角・画角・距離はシリーズと同じ、方位は参考画像に合わせて右手前から）と見る向き ---
+  // --- カメラ（ニューヨークと共通のホーム構図）と見る向き ---
   const angle = (name: string, fallback: number, min: number, max: number) => {
     const v = Number.parseFloat(params.get(name) ?? '');
     return Number.isFinite(v) ? THREE.MathUtils.clamp(v, min, max) : fallback;
@@ -601,8 +601,9 @@ function start(canvas: HTMLCanvasElement) {
   const camera = new THREE.PerspectiveCamera(cam.fov, 1, distance * 0.4, distance * 8);
   const lookAt = new THREE.Vector3(0, config.pedestal.thickness + cam.targetHeight * W, 0);
   // 画角合わせ用の外形：台座の底と台の上の縁、壁の上端（笠石）と柱の頭
+  const pedestalOutline = outlineAt(ctx.base, [0, R.slab.top], 3);
   const extentPoints = (() => {
-    const pts = outlineAt(ctx.base, [0, R.slab.top], 3);
+    const pts = [...pedestalOutline];
     const ch = R.coping.height;
     // 左の壁と奥の壁の笠石の両端、奥の左の丸い角、壁の端の柱の頭
     for (const z of [g.leftEnd, g.blc.z]) for (const x of [g.xo - 0.05, g.xi + 0.2]) pts.push(new THREE.Vector3(x, g.top + ch + 0.03, z));
@@ -659,7 +660,7 @@ function start(canvas: HTMLCanvasElement) {
     camera.updateMatrixWorld();
     const aspect = viewW / viewH;
     const w = Math.max(smooth01(angleDiff(v.azimuth, homeAzimuth) / ctl.blendRange[0]), smooth01(Math.abs(v.elevation - homeElevation) / ctl.blendRange[1]));
-    const local = w < 1 ? fitBounds(addViewBounds(camera.matrixWorldInverse, extentPoints, emptyBounds()), null, aspect, homeFraming, cam.fov) : null;
+    const local = w < 1 ? fitBounds(addViewBounds(camera.matrixWorldInverse, pedestalOutline, emptyBounds()), addViewBounds(camera.matrixWorldInverse, extentPoints, emptyBounds()), aspect, homeFraming, cam.fov) : null;
     const orbit = w > 0 ? fitBounds(orbitBounds(v.elevation), null, aspect, config.framingOther, cam.fov) : null;
     let fit: Fit;
     if (local && orbit) fit = { s: local.s + (orbit.s - local.s) * w, dx: local.dx + (orbit.dx - local.dx) * w, dy: local.dy + (orbit.dy - local.dy) * w };
